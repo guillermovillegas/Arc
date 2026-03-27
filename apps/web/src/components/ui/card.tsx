@@ -4,12 +4,12 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
   padding?: "sm" | "md" | "lg";
 }
 
-export function Card({ className = "", padding = "md", children, ...props }: CardProps) {
-  const paddings = { sm: "p-4", md: "p-6", lg: "p-8" };
+const paddings = { sm: "p-4", md: "p-6", lg: "p-8" };
 
+export function Card({ className = "", padding = "md", children, ...props }: CardProps) {
   return (
     <div
-      className={`rounded-xl border border-gray-200 bg-white shadow-sm ${paddings[padding]} ${className}`}
+      className={`rounded-2xl border border-neutral-200 bg-white ${paddings[padding]} ${className}`}
       {...props}
     >
       {children}

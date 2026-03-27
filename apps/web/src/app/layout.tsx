@@ -5,16 +5,25 @@ import "@/styles/globals.css";
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "ARC - Beauty Services On The Pull Up",
+  title: "ARC — Beauty Services, On Demand",
   description:
-    "Connect with top barbers, nail techs, makeup artists, and beauty professionals. Book on-demand or scheduled services. Mobile-friendly, house-call ready.",
+    "Book barbers, nail techs, makeup artists, and beauty professionals. At their shop or at your door. No subscriptions, no phone tag — just book and go.",
   openGraph: {
-    title: "ARC - Beauty Services On The Pull Up",
-    description: "Find and book beauty professionals near you.",
+    title: "ARC — Beauty Services, On Demand",
+    description:
+      "Book barbers, nail techs, makeup artists, and beauty professionals near you.",
     type: "website",
+    siteName: "ARC",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ARC — Beauty Services, On Demand",
+    description:
+      "Book barbers, nail techs, makeup artists, and beauty professionals near you.",
   },
 };
 

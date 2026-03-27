@@ -4,25 +4,57 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --border: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --background: #fafafa;
+    --foreground: #0a0a0a;
+    --muted: #f5f5f5;
+    --muted-foreground: #737373;
+    --border: #e5e5e5;
+    --ring: #0a0a0a;
+    --radius: 0.75rem;
   }
 
-  * {
-    @apply border-border;
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 
   body {
-    @apply bg-white text-foreground antialiased;
+    @apply bg-white text-neutral-900 antialiased;
+    font-feature-settings: "ss01", "ss02", "cv01";
+  }
+
+  ::selection {
+    @apply bg-neutral-900 text-white;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
   }
 }
 
-@layer utilities {
-  .border-border {
-    border-color: hsl(var(--border));
+@layer components {
+  .section-padding {
+    @apply px-5 sm:px-8 lg:px-12;
+  }
+
+  .section-width {
+    @apply mx-auto max-w-6xl;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-neutral-900 to-neutral-500;
+  }
+
+  .glass {
+    @apply bg-white/80 backdrop-blur-xl border border-neutral-200/60;
+  }
+
+  .subtle-ring {
+    @apply ring-1 ring-neutral-950/5;
   }
 }

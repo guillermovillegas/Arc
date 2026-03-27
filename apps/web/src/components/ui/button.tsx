@@ -2,20 +2,25 @@ import { ButtonHTMLAttributes, forwardRef } from "react";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "outline" | "ghost";
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
 }
 
 const variants = {
-  primary: "bg-brand-600 text-white hover:bg-brand-700 focus:ring-brand-500",
-  secondary: "bg-accent-500 text-white hover:bg-accent-600 focus:ring-accent-500",
-  outline: "border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-brand-500",
-  ghost: "text-gray-700 hover:bg-gray-100 focus:ring-brand-500",
+  primary:
+    "bg-neutral-900 text-white hover:bg-neutral-800 active:bg-neutral-950 focus-visible:ring-neutral-900",
+  secondary:
+    "bg-neutral-100 text-neutral-900 hover:bg-neutral-200 active:bg-neutral-150 focus-visible:ring-neutral-400",
+  outline:
+    "border border-neutral-300 text-neutral-700 hover:bg-neutral-50 hover:border-neutral-400 active:bg-neutral-100 focus-visible:ring-neutral-400",
+  ghost:
+    "text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 active:bg-neutral-150 focus-visible:ring-neutral-400",
 };
 
 const sizes = {
-  sm: "px-3 py-1.5 text-sm",
-  md: "px-4 py-2 text-sm",
-  lg: "px-6 py-3 text-base",
+  sm: "h-8 px-3 text-body-sm gap-1.5",
+  md: "h-10 px-4 text-body-sm gap-2",
+  lg: "h-12 px-6 text-body gap-2",
+  xl: "h-14 px-8 text-body-lg gap-2.5",
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -23,7 +28,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         ref={ref}
-        className={`inline-flex items-center justify-center rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${variants[variant]} ${sizes[size]} ${className}`}
+        className={`inline-flex items-center justify-center rounded-xl font-medium transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-40 disabled:pointer-events-none ${variants[variant]} ${sizes[size]} ${className}`}
         disabled={disabled}
         {...props}
       >
