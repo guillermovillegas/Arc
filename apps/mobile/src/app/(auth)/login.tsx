@@ -13,13 +13,34 @@ import { useRouter, Link } from "expo-router";
 import { api } from "@/lib/api-client";
 import { storeTokens } from "@/lib/auth";
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function LoginScreen() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  function validate(): boolean {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      Alert.alert("Validation Error", "Please enter your email address.");
+      return false;
+    }
+    if (!EMAIL_REGEX.test(trimmedEmail)) {
+      Alert.alert("Validation Error", "Please enter a valid email address.");
+      return false;
+    }
+    if (!password) {
+      Alert.alert("Validation Error", "Please enter your password.");
+      return false;
+    }
+    return true;
+  }
+
   async function handleLogin() {
+    if (!validate()) return;
+
     setLoading(true);
     try {
       const res = await api.post<{
@@ -28,7 +49,7 @@ export default function LoginScreen() {
           accessToken: string;
           refreshToken: string;
         };
-      }>("/auth/login", { email, password });
+      }>("/auth/login", { email: email.trim(), password });
 
       await storeTokens(res.data.accessToken, res.data.refreshToken, res.data.user);
 

@@ -2,21 +2,21 @@ import type { Metadata } from "next";
 import "@/styles/globals.css";
 
 export const metadata: Metadata = {
-  title: "ARC — Beauty Services, On Demand",
+  title: "Arc — Your connection to exceptional beauty",
   description:
-    "Book barbers, nail techs, makeup artists, and beauty professionals. At their shop or at your door. No subscriptions, no phone tag — just book and go.",
+    "Arc connects discerning clients with vetted barbers, nail artists, lash techs, and makeup professionals. At their studio or at your door.",
   openGraph: {
-    title: "ARC — Beauty Services, On Demand",
+    title: "Arc — Your connection to exceptional beauty",
     description:
-      "Book barbers, nail techs, makeup artists, and beauty professionals near you.",
+      "A refined way to book barbers, nail artists, lash techs, and makeup professionals.",
     type: "website",
-    siteName: "ARC",
+    siteName: "Arc",
   },
   twitter: {
     card: "summary_large_image",
-    title: "ARC — Beauty Services, On Demand",
+    title: "Arc — Your connection to exceptional beauty",
     description:
-      "Book barbers, nail techs, makeup artists, and beauty professionals near you.",
+      "A refined way to book barbers, nail artists, lash techs, and makeup professionals.",
   },
 };
 

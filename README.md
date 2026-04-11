@@ -1,70 +1,71 @@
-# ARC - Beauty Services Marketplace
+# ARC — Beauty Services Marketplace
 
-Two-sided marketplace connecting beauty service providers (barbers, nail techs, makeup artists) with clients seeking on-demand or scheduled services.
+Two-sided marketplace connecting beauty service providers (barbers, nail techs, makeup artists) with clients. Book at their shop or at your door.
 
 ## Architecture
 
 ```
 Arc/
-├── packages/shared/     # Shared types, Zod schemas, constants
+├── packages/shared/        # Types, Zod schemas, constants (@arc/shared)
 ├── apps/
-│   ├── api/             # Express + Prisma + Socket.IO backend
-│   ├── web/             # Next.js 14 frontend
-│   └── mobile/          # React Native + Expo mobile app
-├── docker-compose.yml   # Local Postgres + Redis
-└── turbo.json           # Turborepo build pipeline
+│   ├── api/                # Express + Prisma + Socket.IO
+│   ├── web/                # Next.js 14 (App Router) + shadcn/ui
+│   └── mobile/             # Expo + React Native (Expo Router)
+├── docker-compose.yml      # Local Postgres + Redis
+├── turbo.json              # Turborepo pipeline
+├── docs/
+│   ├── ROADMAP.md          # Feature roadmap and sprint plan
+│   ├── COSTS.md            # Infrastructure and business cost breakdown
+│   └── CALENDAR-SYNC.md    # Calendar integration strategy
 ```
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
-| Backend | Node.js, Express, TypeScript, Prisma ORM |
-| Database | PostgreSQL |
-| Auth | JWT (access + refresh tokens) |
-| Payments | Stripe Connect (Express accounts) |
-| Web | Next.js 14 (App Router), Tailwind CSS |
-| Mobile | React Native, Expo, Expo Router |
-| Real-time | Socket.IO |
-| Maps | Google Maps API |
-| SMS (optional) | Twilio + Claude AI |
-| Monorepo | pnpm workspaces + Turborepo |
+| **Backend** | Express, TypeScript, Prisma, PostgreSQL |
+| **Auth** | JWT (15min access + 7day refresh tokens) |
+| **Payments** | Stripe Connect Express (5% platform fee) |
+| **Web** | Next.js 14, Tailwind CSS 3.4, shadcn/ui (CVA + Radix) |
+| **Mobile** | React Native 0.73, Expo 50, Expo Router |
+| **Real-time** | Socket.IO (messaging, typing indicators) |
+| **Calendar Sync** | Google Calendar API (two-way), ICS feed import |
+| **Maps** | Google Maps API (Haversine geolocation) |
+| **Email** | Resend (transactional) + Google Workspace (business) |
+| **Monorepo** | pnpm 9 + Turborepo |
+| **Testing** | Vitest (web + API), Jest (mobile) — 293 tests |
 
-## Getting Started
-
-### Prerequisites
-
-- Node.js >= 20
-- pnpm >= 9 (`corepack enable`)
-- Docker & Docker Compose (for local DB)
-
-### Setup
+## Quick Start
 
 ```bash
-# 1. Clone and install
+# Prerequisites: Node >= 20, pnpm >= 9 (corepack enable), Docker
+
+# Install
 git clone <repo-url> && cd Arc
 pnpm install
 
-# 2. Start local database
+# Start Postgres + Redis
 docker compose up -d
 
-# 3. Configure environment
-cp .env.example .env
+# Configure
 cp apps/api/.env.example apps/api/.env
-cp apps/web/.env.example apps/web/.env
-# Edit .env files with your keys
+# Edit apps/api/.env with your keys (see Environment Variables below)
 
-# 4. Setup database
-pnpm db:migrate   # Run migrations
-pnpm db:seed      # Seed sample data
+# Database
+pnpm db:migrate
+pnpm db:seed
 
-# 5. Start development
-pnpm dev           # Starts all apps concurrently
+# Run everything
+pnpm dev
 ```
 
-### Seed Accounts
+| App | URL | Command |
+|-----|-----|---------|
+| Web | http://localhost:3000 | `pnpm --filter @arc/web dev` |
+| API | http://localhost:3001 | `pnpm --filter @arc/api dev` |
+| Mobile | Expo Dev Server | `pnpm --filter @arc/mobile dev` |
 
-After seeding, you can login with:
+### Seed Accounts
 
 | Role | Email | Password |
 |------|-------|----------|
@@ -72,90 +73,178 @@ After seeding, you can login with:
 | Provider | demo.barber@arc.app | provider123 |
 | Client | demo.client@arc.app | client123 |
 
-### Individual App Commands
+## Environment Variables
 
-```bash
-# API only
-pnpm --filter @arc/api dev        # http://localhost:3001
+### API (`apps/api/.env`)
 
-# Web only
-pnpm --filter @arc/web dev        # http://localhost:3000
-
-# Mobile
-pnpm --filter @arc/mobile dev     # Expo dev server
-```
+| Variable | Required | Default | Purpose |
+|----------|----------|---------|---------|
+| `DATABASE_URL` | Yes | — | PostgreSQL connection string |
+| `JWT_SECRET` | Yes | — | Access token signing (min 16 chars) |
+| `JWT_REFRESH_SECRET` | Yes | — | Refresh token signing (min 16 chars) |
+| `STRIPE_SECRET_KEY` | Yes | — | Stripe API key (sk_...) |
+| `STRIPE_WEBHOOK_SECRET` | Yes | — | Stripe webhook signing (whsec_...) |
+| `STRIPE_PLATFORM_FEE_PERCENT` | No | 5 | Platform fee (0-50%) |
+| `GOOGLE_CLIENT_ID` | No | — | Google Calendar OAuth |
+| `GOOGLE_CLIENT_SECRET` | No | — | Google Calendar OAuth |
+| `GOOGLE_REDIRECT_URI` | No | localhost callback | Google OAuth redirect |
+| `GOOGLE_MAPS_API_KEY` | No | — | Geolocation |
+| `S3_BUCKET` | No | — | Image upload storage |
+| `S3_REGION` | No | us-east-1 | AWS region |
+| `TWILIO_ACCOUNT_SID` | No | — | SMS notifications |
+| `TWILIO_AUTH_TOKEN` | No | — | SMS notifications |
+| `ANTHROPIC_API_KEY` | No | — | AI features |
+| `API_PORT` | No | 3001 | Server port |
+| `WEB_URL` | No | http://localhost:3000 | Frontend URL (CORS + redirects) |
 
 ## API Endpoints
 
-### Auth
-- `POST /api/v1/auth/register` - Register new user
-- `POST /api/v1/auth/login` - Login
-- `POST /api/v1/auth/refresh` - Refresh access token
-- `POST /api/v1/auth/logout` - Logout
+### Auth (`/api/v1/auth`)
+| Method | Path | Auth | Purpose |
+|--------|------|------|---------|
+| POST | `/register` | No | Register (rate-limited) |
+| POST | `/login` | No | Login (rate-limited) |
+| POST | `/refresh` | No | Refresh token (rate-limited) |
+| POST | `/logout` | Yes | Logout |
 
-### Search (Public)
-- `GET /api/v1/search/providers` - Search providers (location, category, text)
-- `GET /api/v1/search/providers/:slug` - Public provider profile
+### Search (`/api/v1/search`)
+| Method | Path | Auth | Purpose |
+|--------|------|------|---------|
+| GET | `/providers` | No | Search by location/category/text |
+| GET | `/providers/:slug` | No | Public provider profile |
 
-### Bookings
-- `POST /api/v1/bookings` - Create booking
-- `PATCH /api/v1/bookings/:id/status` - Update booking status
-- `GET /api/v1/bookings/client` - Client's bookings
-- `GET /api/v1/bookings/provider` - Provider's bookings
+### Bookings (`/api/v1/bookings`)
+| Method | Path | Auth | Purpose |
+|--------|------|------|---------|
+| POST | `/` | Client | Create booking (serializable transaction) |
+| PATCH | `/:id/status` | Provider | Update status |
+| GET | `/client` | Client | My bookings |
+| GET | `/provider` | Provider | My bookings |
 
-### Services
-- `POST /api/v1/services` - Create service (provider)
-- `GET /api/v1/services/mine` - Provider's services
-- `PUT /api/v1/services/:id` - Update service
-- `DELETE /api/v1/services/:id` - Deactivate service
+### Services (`/api/v1/services`)
+| Method | Path | Auth | Purpose |
+|--------|------|------|---------|
+| POST | `/` | Provider | Create service |
+| GET | `/mine` | Provider | List my services |
+| PUT | `/:id` | Provider | Update service |
+| DELETE | `/:id` | Provider | Deactivate service |
 
-### Availability
-- `PUT /api/v1/availability` - Set weekly schedule (provider)
-- `GET /api/v1/availability/:providerId` - Get provider schedule
-- `GET /api/v1/availability/:providerId/slots?date=&serviceDuration=` - Available time slots
-- `POST /api/v1/availability/overrides` - Block/modify specific dates
+### Availability (`/api/v1/availability`)
+| Method | Path | Auth | Purpose |
+|--------|------|------|---------|
+| PUT | `/` | Provider | Set weekly schedule |
+| GET | `/:providerId` | No | Get schedule |
+| GET | `/:providerId/slots` | No | Available slots (merges external calendar events) |
+| POST | `/overrides` | Provider | Block/modify dates |
 
-### Payments
-- `POST /api/v1/payments/connect` - Create Stripe Connect account
-- `POST /api/v1/payments/intent/:bookingId` - Create payment intent
-- `POST /api/v1/payments/webhook` - Stripe webhook
-- `GET /api/v1/payments/earnings` - Provider earnings
+### Calendar Sync (`/api/v1/calendar`)
+| Method | Path | Auth | Purpose |
+|--------|------|------|---------|
+| GET | `/connections` | Provider | List connections |
+| GET | `/google/connect` | Provider | Start Google OAuth |
+| GET | `/google/callback` | — | OAuth redirect handler |
+| POST | `/ics` | Provider | Add ICS feed URL |
+| POST | `/sync/:connectionId` | Provider | Manual sync trigger |
+| DELETE | `/connections/:connectionId` | Provider | Disconnect |
 
-### Messages
-- `GET /api/v1/messages/conversations` - List conversations
-- `GET /api/v1/messages/conversations/:id` - Get messages
-- `POST /api/v1/messages/send` - Send message
+### Payments (`/api/v1/payments`)
+| Method | Path | Auth | Purpose |
+|--------|------|------|---------|
+| POST | `/connect` | Provider | Stripe Connect onboarding |
+| POST | `/intent/:bookingId` | Client | Create payment intent |
+| POST | `/webhook` | — | Stripe webhook |
+| GET | `/earnings` | Provider | Revenue summary |
 
-### Community
-- `GET /api/v1/posts` - List posts
-- `GET /api/v1/posts/:id` - Get post with comments
-- `POST /api/v1/posts` - Create post
-- `POST /api/v1/posts/:id/comments` - Add comment
-- `DELETE /api/v1/posts/:id` - Delete post
+### Messages (`/api/v1/messages`)
+| Method | Path | Auth | Purpose |
+|--------|------|------|---------|
+| GET | `/conversations` | Yes | List conversations |
+| GET | `/conversations/:id` | Yes | Get messages |
+| POST | `/send` | Yes | Send message |
 
-### Admin
-- `GET /api/v1/admin/stats` - Platform statistics
-- `GET /api/v1/admin/users` - List users
-- `PATCH /api/v1/admin/users/:id/toggle` - Enable/disable user
-- `PATCH /api/v1/admin/providers/:id/verify` - Verify provider
+### Community (`/api/v1/posts`)
+| Method | Path | Auth | Purpose |
+|--------|------|------|---------|
+| GET | `/` | No | List posts |
+| GET | `/:id` | No | Post with comments |
+| POST | `/` | Yes | Create post |
+| POST | `/:id/comments` | Yes | Add comment |
+| DELETE | `/:id` | Yes | Delete post |
 
-## Business Model
+### Admin (`/api/v1/admin`)
+| Method | Path | Auth | Purpose |
+|--------|------|------|---------|
+| GET | `/stats` | Admin | Platform stats |
+| GET | `/users` | Admin | List users |
+| PATCH | `/users/:id/toggle` | Admin | Enable/disable user |
+| PATCH | `/providers/:id/verify` | Admin | Verify provider |
 
-- **Free to join** for providers - no monthly subscription
-- **Transaction-based fees**: Platform takes a small percentage (configurable, default 5%) on each completed booking via Stripe Connect
-- Low friction: providers join free, clients pay through the app
+## Database Schema
 
-## Infrastructure Costs (Annual Estimates)
+Key models (see `apps/api/prisma/schema.prisma` for full schema):
 
-| Service | Cost |
-|---------|------|
-| Domain | ~$100/yr |
-| Hosting (API) | ~$250/yr |
-| Database (Postgres) | ~$300/yr |
-| Google Maps API | ~$120/yr |
-| Stripe | Transaction fees only (2.9% + $0.30) |
-| Twilio (optional) | Per-message (~$0.0075/SMS) |
+- **User** — email, role (CLIENT/PROVIDER/ADMIN), profile
+- **ProviderProfile** — business info, location, Stripe account, ratings
+- **Service** — name, category (13 types), duration, price
+- **Booking** — client + provider + service + time + status + payment
+- **Availability** — weekly recurring slots + date-specific overrides
+- **CalendarConnection** — Google OAuth tokens or ICS feed URL
+- **ExternalEvent** — imported events from external calendars
+- **Payment** — Stripe payment tracking with platform fee split
+- **Conversation/Message** — real-time messaging
+- **Review** — 1-5 rating + text + photos
+- **Post/Comment** — community forum
 
-## License
+## Testing
 
-Proprietary - All rights reserved.
+```bash
+pnpm test                          # All packages
+pnpm --filter @arc/api test        # API: 85 tests (utils, middleware)
+pnpm --filter @arc/web test        # Web: 107 tests (components, pages)
+pnpm --filter @arc/mobile test     # Mobile: 101 tests (screens, lib)
+```
+
+| Package | Tests | Coverage |
+|---------|-------|----------|
+| `apps/api` | 85 | Utils (JWT, password, geo, pagination), middleware (auth, role, validation, errors) |
+| `apps/web` | 107 | UI components (Button, Card, Badge, Input), utils, landing page |
+| `apps/mobile` | 101 | Auth flow, all screens, API client, auth storage |
+| **Total** | **293** | |
+
+## UI Components (shadcn/ui)
+
+Located at `apps/web/src/components/ui/`:
+
+| Component | File | Notes |
+|-----------|------|-------|
+| Button | `button.tsx` | CVA variants, Radix Slot for `asChild` |
+| Card | `card.tsx` | Composable (Header/Title/Description/Content/Footer) |
+| Input | `input.tsx` | Label + error state support |
+| Badge | `badge.tsx` | default/secondary/outline/destructive |
+| Avatar | `avatar.tsx` | Radix-based with fallback |
+| Separator | `separator.tsx` | Radix-based |
+| Sheet | `sheet.tsx` | Radix Dialog-based mobile drawer |
+
+## Project Documents
+
+| Document | Purpose |
+|----------|---------|
+| `docs/ROADMAP.md` | Feature roadmap, sprint plan, what's built vs missing |
+| `docs/COSTS.md` | Full infrastructure costs, business setup, transaction economics |
+| `docs/CALENDAR-SYNC.md` | Calendar integration strategy (Google, ICS, Square, Booksy) |
+| `CLAUDE.md` | Project conventions for AI assistants and new contributors |
+
+## Scripts
+
+```bash
+pnpm dev              # Start all apps
+pnpm build            # Build all packages
+pnpm lint             # Lint all packages
+pnpm typecheck        # TypeScript check all packages
+pnpm test             # Run all tests
+pnpm db:migrate       # Run Prisma migrations
+pnpm db:push          # Push schema to DB (no migration)
+pnpm db:seed          # Seed sample data
+pnpm db:studio        # Open Prisma Studio
+pnpm clean            # Remove all build artifacts
+```

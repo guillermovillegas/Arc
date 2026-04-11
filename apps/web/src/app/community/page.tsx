@@ -33,18 +33,20 @@ const CATEGORY_LABELS: Record<string, string> = {
 export default function CommunityPage() {
   const [posts, setPosts] = useState<PostItem[]>([]);
   const [category, setCategory] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadPosts();
   }, [category]);
 
   async function loadPosts() {
+    setError(null);
     try {
       const params = category ? `?category=${category}` : "";
       const res = await api.get<{ data: { items: PostItem[] } }>(`/posts${params}`);
       setPosts(res.data.items);
     } catch {
-      // Handle error
+      setError("Failed to load posts. Please try again.");
     }
   }
 
@@ -58,6 +60,8 @@ export default function CommunityPage() {
           <p className="mt-2 text-gray-600">
             Connect with providers and clients. Share tips, sell gear, find collaborators.
           </p>
+
+          {error && <p className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-[0.875rem] text-red-600">{error}</p>}
 
           <div className="mt-6 flex gap-2 flex-wrap">
             <Button variant={!category ? "primary" : "outline"} size="sm" onClick={() => setCategory("")}>

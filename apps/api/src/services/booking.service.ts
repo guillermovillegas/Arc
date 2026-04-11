@@ -16,37 +16,42 @@ export async function createBooking(clientId: string, input: CreateBookingInput)
   const startTime = new Date(input.startTime);
   const endTime = new Date(startTime.getTime() + service.durationMinutes * 60 * 1000);
 
-  // Check for conflicting bookings
-  const conflict = await prisma.booking.findFirst({
-    where: {
-      providerProfileId: service.providerProfileId,
-      status: { in: ["PENDING", "CONFIRMED", "IN_PROGRESS"] },
-      startTime: { lt: endTime },
-      endTime: { gt: startTime },
-    },
-  });
+  // Wrap conflict check + creation in a serializable transaction to prevent race conditions
+  return prisma.$transaction(async (tx) => {
+    // Check for conflicting bookings
+    const conflict = await tx.booking.findFirst({
+      where: {
+        providerProfileId: service.providerProfileId,
+        status: { in: ["PENDING", "CONFIRMED", "IN_PROGRESS"] },
+        startTime: { lt: endTime },
+        endTime: { gt: startTime },
+      },
+    });
 
-  if (conflict) {
-    throw new AppError(409, "SLOT_UNAVAILABLE", "This time slot is no longer available");
-  }
+    if (conflict) {
+      throw new AppError(409, "SLOT_UNAVAILABLE", "This time slot is no longer available");
+    }
 
-  return prisma.booking.create({
-    data: {
-      clientId,
-      serviceId: input.serviceId,
-      providerProfileId: service.providerProfileId,
-      startTime,
-      endTime,
-      totalPriceInCents: service.priceInCents,
-      notes: input.notes,
-      location: input.location,
-      latitude: input.latitude,
-      longitude: input.longitude,
-    },
-    include: {
-      service: true,
-      providerProfile: { include: { user: { select: { firstName: true, lastName: true } } } },
-    },
+    return tx.booking.create({
+      data: {
+        clientId,
+        serviceId: input.serviceId,
+        providerProfileId: service.providerProfileId,
+        startTime,
+        endTime,
+        totalPriceInCents: service.priceInCents,
+        notes: input.notes,
+        location: input.location,
+        latitude: input.latitude,
+        longitude: input.longitude,
+      },
+      include: {
+        service: true,
+        providerProfile: { include: { user: { select: { firstName: true, lastName: true } } } },
+      },
+    });
+  }, {
+    isolationLevel: "Serializable",
   });
 }
 

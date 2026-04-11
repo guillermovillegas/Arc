@@ -12,17 +12,21 @@ export default function SplashScreen() {
   }, []);
 
   async function checkAuth() {
-    const { accessToken, user } = await getStoredTokens();
+    try {
+      const { accessToken, user } = await getStoredTokens();
 
-    if (!accessToken || !user) {
+      if (!accessToken || !user) {
+        router.replace("/(auth)/login");
+      } else if (user.role === "PROVIDER") {
+        router.replace("/(provider)/home");
+      } else {
+        router.replace("/(client)/home");
+      }
+    } catch {
       router.replace("/(auth)/login");
-    } else if (user.role === "PROVIDER") {
-      router.replace("/(provider)/home");
-    } else {
-      router.replace("/(client)/home");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   }
 
   return (

@@ -15,17 +15,19 @@ interface Stats {
 export default function AdminDashboardPage() {
   const { accessToken } = useAuth();
   const [stats, setStats] = useState<Stats | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (accessToken) loadStats();
   }, [accessToken]);
 
   async function loadStats() {
+    setError(null);
     try {
       const res = await api.get<{ data: Stats }>("/admin/stats", { token: accessToken! });
       setStats(res.data);
     } catch {
-      // Handle error
+      setError("Failed to load stats. Please try again.");
     }
   }
 
@@ -43,6 +45,8 @@ export default function AdminDashboardPage() {
     <div className="px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
         <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+
+        {error && <p className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-[0.875rem] text-red-600">{error}</p>}
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {cards.map((card) => (

@@ -27,6 +27,7 @@ export default function ProvidersPage() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string>("");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadProviders();
@@ -34,6 +35,7 @@ export default function ProvidersPage() {
 
   async function loadProviders() {
     setLoading(true);
+    setError(null);
     try {
       const params = new URLSearchParams();
       if (category) params.set("category", category);
@@ -42,7 +44,7 @@ export default function ProvidersPage() {
       const res = await api.get<{ data: { items: Provider[] } }>(`/search/providers?${params}`);
       setProviders(res.data.items);
     } catch {
-      // Handle error
+      setError("Failed to search providers.");
     } finally {
       setLoading(false);
     }
@@ -56,6 +58,8 @@ export default function ProvidersPage() {
         <div className="mx-auto max-w-6xl">
           <h1 className="text-3xl font-bold text-gray-900">Find a Provider</h1>
           <p className="mt-2 text-gray-600">Browse beauty professionals near you</p>
+
+          {error && <p className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-[0.875rem] text-red-600">{error}</p>}
 
           {/* Filters */}
           <div className="mt-6 flex flex-col gap-4 sm:flex-row">

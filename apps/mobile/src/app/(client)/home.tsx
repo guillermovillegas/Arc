@@ -6,6 +6,7 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
+  ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { api } from "@/lib/api-client";
@@ -26,18 +27,24 @@ export default function ClientHomeScreen() {
   const router = useRouter();
   const [providers, setProviders] = useState<Provider[]>([]);
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadProviders();
   }, []);
 
   async function loadProviders() {
+    setLoading(true);
+    setError(null);
     try {
       const params = search ? `?q=${encodeURIComponent(search)}` : "";
       const res = await api.get<{ data: { items: Provider[] } }>(`/search/providers${params}`);
       setProviders(res.data.items);
-    } catch {
-      // Handle error
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load providers");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -78,15 +85,21 @@ export default function ClientHomeScreen() {
         />
       </View>
 
-      <FlatList
-        data={providers}
-        renderItem={renderProvider}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.list}
-        ListEmptyComponent={
-          <Text style={styles.empty}>No providers found</Text>
-        }
-      />
+      {loading ? (
+        <ActivityIndicator size="large" color="#006fc9" style={styles.loader} />
+      ) : error ? (
+        <Text style={styles.error}>{error}</Text>
+      ) : (
+        <FlatList
+          data={providers}
+          renderItem={renderProvider}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.list}
+          ListEmptyComponent={
+            <Text style={styles.empty}>No providers found</Text>
+          }
+        />
+      )}
     </View>
   );
 }
@@ -109,4 +122,6 @@ const styles = StyleSheet.create({
   rating: { fontSize: 13, color: "#666", marginTop: 2 },
   bio: { fontSize: 13, color: "#888", marginTop: 4 },
   empty: { textAlign: "center", color: "#999", marginTop: 40 },
+  loader: { marginTop: 40 },
+  error: { textAlign: "center", color: "#ef4444", marginTop: 40, paddingHorizontal: 16 },
 });

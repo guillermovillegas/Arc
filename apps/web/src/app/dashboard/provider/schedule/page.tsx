@@ -18,6 +18,7 @@ export default function ProviderSchedulePage() {
   const { accessToken } = useAuth();
   const [slots, setSlots] = useState<Slot[]>([]);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // Default schedule: Mon-Sat 9-6
@@ -45,10 +46,11 @@ export default function ProviderSchedulePage() {
 
   async function handleSave() {
     setSaving(true);
+    setError(null);
     try {
       await api.put("/availability", { slots }, { token: accessToken! });
     } catch {
-      // Handle error
+      setError("Failed to save changes. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -58,6 +60,8 @@ export default function ProviderSchedulePage() {
     <div>
       <h1 className="text-2xl font-bold text-gray-900">Schedule</h1>
       <p className="mt-1 text-gray-600">Set your weekly availability</p>
+
+      {error && <p className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-[0.875rem] text-red-600">{error}</p>}
 
       <Card className="mt-6">
         <div className="space-y-3">

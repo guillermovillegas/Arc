@@ -19,32 +19,37 @@ interface EarningsData {
 export default function ProviderEarningsPage() {
   const { accessToken } = useAuth();
   const [earnings, setEarnings] = useState<EarningsData | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (accessToken) loadEarnings();
   }, [accessToken]);
 
   async function loadEarnings() {
+    setError(null);
     try {
       const res = await api.get<{ data: EarningsData }>("/payments/earnings", { token: accessToken! });
       setEarnings(res.data);
     } catch {
-      // Handle error
+      setError("Failed to load earnings. Please try again.");
     }
   }
 
   async function setupStripe() {
+    setError(null);
     try {
       const res = await api.post<{ data: { url: string } }>("/payments/connect", {}, { token: accessToken! });
       window.location.href = res.data.url;
     } catch {
-      // Handle error
+      setError("Failed to connect to Stripe. Please try again.");
     }
   }
 
   return (
     <div>
       <h1 className="text-2xl font-bold text-gray-900">Earnings</h1>
+
+      {error && <p className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-[0.875rem] text-red-600">{error}</p>}
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
         <Card>

@@ -19,25 +19,29 @@ interface ConversationItem {
 export default function ClientMessagesPage() {
   const { accessToken } = useAuth();
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (accessToken) loadConversations();
   }, [accessToken]);
 
   async function loadConversations() {
+    setError(null);
     try {
       const res = await api.get<{ data: ConversationItem[] }>("/messages/conversations", {
         token: accessToken!,
       });
       setConversations(res.data);
     } catch {
-      // Handle error
+      setError("Failed to load messages. Please try again.");
     }
   }
 
   return (
     <div>
       <h1 className="text-2xl font-bold text-gray-900">Messages</h1>
+
+      {error && <p className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-[0.875rem] text-red-600">{error}</p>}
 
       <div className="mt-6 space-y-3">
         {conversations.length === 0 ? (

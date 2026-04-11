@@ -17,6 +17,7 @@ export default function ProviderPortfolioPage() {
   const { accessToken } = useAuth();
   const [items, setItems] = useState<PortfolioItemData[]>([]);
   const [showForm, setShowForm] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({ imageUrl: "", caption: "" });
 
   useEffect(() => {
@@ -24,17 +25,19 @@ export default function ProviderPortfolioPage() {
   }, [accessToken]);
 
   async function loadPortfolio() {
+    setError(null);
     try {
       const res = await api.get<{ data: PortfolioItemData[] }>("/providers/me/portfolio", {
         token: accessToken!,
       });
       setItems(res.data);
     } catch {
-      // Handle error
+      setError("Failed to load portfolio. Please try again.");
     }
   }
 
   async function addItem() {
+    setError(null);
     try {
       await api.post("/providers/me/portfolio", {
         imageUrl: form.imageUrl,
@@ -44,16 +47,17 @@ export default function ProviderPortfolioPage() {
       setForm({ imageUrl: "", caption: "" });
       loadPortfolio();
     } catch {
-      // Handle error
+      setError("Failed to save changes. Please try again.");
     }
   }
 
   async function deleteItem(id: string) {
+    setError(null);
     try {
       await api.delete(`/providers/me/portfolio/${id}`, { token: accessToken! });
       loadPortfolio();
     } catch {
-      // Handle error
+      setError("Failed to delete portfolio item. Please try again.");
     }
   }
 
@@ -63,6 +67,8 @@ export default function ProviderPortfolioPage() {
         <h1 className="text-2xl font-bold text-gray-900">Portfolio</h1>
         <Button onClick={() => setShowForm(!showForm)}>{showForm ? "Cancel" : "Add Item"}</Button>
       </div>
+
+      {error && <p className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-[0.875rem] text-red-600">{error}</p>}
 
       {showForm && (
         <Card className="mt-4">

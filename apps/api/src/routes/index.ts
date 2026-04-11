@@ -10,6 +10,7 @@ import messageRoutes from "./message.routes";
 import reviewRoutes from "./review.routes";
 import postRoutes from "./post.routes";
 import adminRoutes from "./admin.routes";
+import calendarRoutes from "./calendar.routes";
 
 const router = Router();
 
@@ -24,5 +25,6 @@ router.use("/messages", messageRoutes);
 router.use("/reviews", reviewRoutes);
 router.use("/posts", postRoutes);
 router.use("/admin", adminRoutes);
+router.use("/calendar", calendarRoutes);
 
 export default router;

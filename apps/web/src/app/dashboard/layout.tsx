@@ -19,6 +19,7 @@ const providerNav = [
   { label: "Earnings", href: "/dashboard/provider/earnings" },
   { label: "Messages", href: "/dashboard/provider/messages" },
   { label: "Profile", href: "/dashboard/provider/profile" },
+  { label: "Settings", href: "/dashboard/provider/settings" },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {

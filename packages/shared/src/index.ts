@@ -8,6 +8,7 @@ export * from "./types/payment";
 export * from "./types/review";
 export * from "./types/post";
 export * from "./types/api";
+export * from "./types/calendar";
 
 // Schemas
 export * from "./schemas/auth.schema";
@@ -17,6 +18,7 @@ export * from "./schemas/service.schema";
 export * from "./schemas/availability.schema";
 export * from "./schemas/message.schema";
 export * from "./schemas/post.schema";
+export * from "./schemas/calendar.schema";
 
 // Constants
 export * from "./constants/categories";

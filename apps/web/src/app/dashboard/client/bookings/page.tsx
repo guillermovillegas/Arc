@@ -24,12 +24,14 @@ export default function ClientBookingsPage() {
   const { accessToken } = useAuth();
   const [bookings, setBookings] = useState<BookingItem[]>([]);
   const [filter, setFilter] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (accessToken) loadBookings();
   }, [accessToken, filter]);
 
   async function loadBookings() {
+    setError(null);
     try {
       const params = filter ? `?status=${filter}` : "";
       const res = await api.get<{ data: BookingItem[] }>(`/bookings/client${params}`, {
@@ -37,7 +39,7 @@ export default function ClientBookingsPage() {
       });
       setBookings(res.data);
     } catch {
-      // Handle error
+      setError("Failed to load bookings. Please try again.");
     }
   }
 
@@ -53,6 +55,8 @@ export default function ClientBookingsPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-gray-900">My Bookings</h1>
+
+      {error && <p className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-[0.875rem] text-red-600">{error}</p>}
 
       <div className="mt-4 flex gap-2">
         {["", "PENDING", "CONFIRMED", "COMPLETED", "CANCELLED"].map((s) => (

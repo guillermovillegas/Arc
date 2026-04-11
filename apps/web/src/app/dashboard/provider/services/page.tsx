@@ -22,6 +22,7 @@ export default function ProviderServicesPage() {
   const { accessToken } = useAuth();
   const [services, setServices] = useState<ServiceItem[]>([]);
   const [showForm, setShowForm] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: "",
     description: "",
@@ -35,16 +36,18 @@ export default function ProviderServicesPage() {
   }, [accessToken]);
 
   async function loadServices() {
+    setError(null);
     try {
       const res = await api.get<{ data: ServiceItem[] }>("/services/mine", { token: accessToken! });
       setServices(res.data);
     } catch {
-      // Handle error
+      setError("Failed to load services. Please try again.");
     }
   }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    setError(null);
     try {
       await api.post(
         "/services",
@@ -61,7 +64,7 @@ export default function ProviderServicesPage() {
       setForm({ name: "", description: "", category: "HAIRCUT", durationMinutes: "45", priceInCents: "" });
       loadServices();
     } catch {
-      // Handle error
+      setError("Failed to save changes. Please try again.");
     }
   }
 
@@ -73,6 +76,8 @@ export default function ProviderServicesPage() {
           {showForm ? "Cancel" : "Add Service"}
         </Button>
       </div>
+
+      {error && <p className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-[0.875rem] text-red-600">{error}</p>}
 
       {showForm && (
         <Card className="mt-4">

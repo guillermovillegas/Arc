@@ -56,6 +56,11 @@ enum PostCategory {
   RECOMMENDATION
 }
 
+enum CalendarProvider {
+  GOOGLE
+  ICS_FEED
+}
+
 // ─── Users ──────────────────────────────────────────────────────────────────
 
 model User {
@@ -77,9 +82,10 @@ model User {
   sentMessages      Message[]        @relation("SentMessages")
   posts             Post[]
   comments          Comment[]
-  conversationsAsA  Conversation[]   @relation("ParticipantA")
-  conversationsAsB  Conversation[]   @relation("ParticipantB")
-  refreshTokens     RefreshToken[]
+  conversationsAsA      Conversation[]       @relation("ParticipantA")
+  conversationsAsB      Conversation[]       @relation("ParticipantB")
+  refreshTokens         RefreshToken[]
+  calendarConnections   CalendarConnection[]
 
   @@index([email])
   @@index([role])
@@ -323,4 +329,43 @@ model Comment {
   createdAt DateTime @default(now())
 
   @@index([postId, createdAt])
+}
+
+// ─── Calendar Sync ─────────────────────────────────────────────────────────
+
+model CalendarConnection {
+  id           String           @id @default(uuid())
+  userId       String
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider     CalendarProvider
+  accessToken  String?          // encrypted, for Google OAuth
+  refreshToken String?          // encrypted, for Google OAuth
+  externalId   String?          // Google calendar ID
+  feedUrl      String?          // for ICS feeds
+  syncToken    String?          // Google incremental sync token
+  lastSyncedAt DateTime?
+  isActive     Boolean          @default(true)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  externalEvents ExternalEvent[]
+
+  @@unique([userId, provider])
+  @@index([userId])
+}
+
+model ExternalEvent {
+  id                   String             @id @default(uuid())
+  calendarConnectionId String
+  calendarConnection   CalendarConnection @relation(fields: [calendarConnectionId], references: [id], onDelete: Cascade)
+  externalId           String             // ID from external platform / ICS UID
+  title                String?
+  startTime            DateTime
+  endTime              DateTime
+  isAllDay             Boolean            @default(false)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  @@unique([calendarConnectionId, externalId])
+  @@index([calendarConnectionId, startTime])
 }

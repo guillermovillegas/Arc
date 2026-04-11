@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { View, Text, FlatList, StyleSheet } from "react-native";
+import { View, Text, FlatList, StyleSheet, ActivityIndicator } from "react-native";
 import { api } from "@/lib/api-client";
 import { getStoredTokens } from "@/lib/auth";
 
@@ -15,19 +15,28 @@ interface EarningsData {
 
 export default function EarningsScreen() {
   const [earnings, setEarnings] = useState<EarningsData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadEarnings();
   }, []);
 
   async function loadEarnings() {
+    setLoading(true);
+    setError(null);
     const { accessToken } = await getStoredTokens();
-    if (!accessToken) return;
+    if (!accessToken) {
+      setLoading(false);
+      return;
+    }
     try {
       const res = await api.get<{ data: EarningsData }>("/payments/earnings", { token: accessToken });
       setEarnings(res.data);
-    } catch {
-      // Handle error
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load earnings");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -41,25 +50,32 @@ export default function EarningsScreen() {
       </View>
 
       <Text style={styles.sectionTitle}>Payment History</Text>
-      <FlatList
-        data={earnings?.payments || []}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.list}
-        ListEmptyComponent={<Text style={styles.empty}>No payments yet</Text>}
-        renderItem={({ item }) => (
-          <View style={styles.paymentCard}>
-            <View>
-              <Text style={styles.serviceName}>{item.booking.service.name}</Text>
-              <Text style={styles.date}>
-                {new Date(item.booking.startTime).toLocaleDateString()}
+
+      {loading ? (
+        <ActivityIndicator size="large" color="#006fc9" style={styles.loader} />
+      ) : error ? (
+        <Text style={styles.error}>{error}</Text>
+      ) : (
+        <FlatList
+          data={earnings?.payments || []}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.list}
+          ListEmptyComponent={<Text style={styles.empty}>No payments yet</Text>}
+          renderItem={({ item }) => (
+            <View style={styles.paymentCard}>
+              <View>
+                <Text style={styles.serviceName}>{item.booking.service.name}</Text>
+                <Text style={styles.date}>
+                  {new Date(item.booking.startTime).toLocaleDateString()}
+                </Text>
+              </View>
+              <Text style={styles.amount}>
+                +${(item.providerPayoutInCents / 100).toFixed(2)}
               </Text>
             </View>
-            <Text style={styles.amount}>
-              +${(item.providerPayoutInCents / 100).toFixed(2)}
-            </Text>
-          </View>
-        )}
-      />
+          )}
+        />
+      )}
     </View>
   );
 }
@@ -81,4 +97,6 @@ const styles = StyleSheet.create({
   date: { fontSize: 13, color: "#888", marginTop: 2 },
   amount: { fontSize: 16, fontWeight: "700", color: "#10b981" },
   empty: { textAlign: "center", color: "#999", marginTop: 20 },
+  loader: { marginTop: 40 },
+  error: { textAlign: "center", color: "#ef4444", marginTop: 40, paddingHorizontal: 16 },
 });

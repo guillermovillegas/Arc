@@ -12,22 +12,58 @@ import { useRouter, Link } from "expo-router";
 import { api } from "@/lib/api-client";
 import { storeTokens } from "@/lib/auth";
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function RegisterScreen() {
   const router = useRouter();
   const [role, setRole] = useState<"CLIENT" | "PROVIDER">("CLIENT");
   const [form, setForm] = useState({ firstName: "", lastName: "", email: "", password: "" });
   const [loading, setLoading] = useState(false);
 
+  function validate(): boolean {
+    if (!form.firstName.trim()) {
+      Alert.alert("Validation Error", "Please enter your first name.");
+      return false;
+    }
+    if (!form.lastName.trim()) {
+      Alert.alert("Validation Error", "Please enter your last name.");
+      return false;
+    }
+    const trimmedEmail = form.email.trim();
+    if (!trimmedEmail) {
+      Alert.alert("Validation Error", "Please enter your email address.");
+      return false;
+    }
+    if (!EMAIL_REGEX.test(trimmedEmail)) {
+      Alert.alert("Validation Error", "Please enter a valid email address.");
+      return false;
+    }
+    if (form.password.length < 8) {
+      Alert.alert("Validation Error", "Password must be at least 8 characters.");
+      return false;
+    }
+    return true;
+  }
+
   async function handleRegister() {
+    if (!validate()) return;
+
     setLoading(true);
     try {
+      const payload = {
+        firstName: form.firstName.trim(),
+        lastName: form.lastName.trim(),
+        email: form.email.trim(),
+        password: form.password,
+        role,
+      };
       const res = await api.post<{
         data: {
           user: { id: string; email: string; firstName: string; lastName: string; role: string };
           accessToken: string;
           refreshToken: string;
         };
-      }>("/auth/register", { ...form, role });
+      }>("/auth/register", payload);
 
       await storeTokens(res.data.accessToken, res.data.refreshToken, res.data.user);
 
