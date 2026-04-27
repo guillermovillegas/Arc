@@ -25,3 +25,6 @@ export * from "./constants/brand";
 export * from "./constants/categories";
 export * from "./constants/booking-status";
 export * from "./constants/roles";
+
+// Theme
+export * from "./theme";
