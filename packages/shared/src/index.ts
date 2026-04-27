@@ -21,6 +21,7 @@ export * from "./schemas/post.schema";
 export * from "./schemas/calendar.schema";
 
 // Constants
+export * from "./constants/brand";
 export * from "./constants/categories";
 export * from "./constants/booking-status";
 export * from "./constants/roles";
