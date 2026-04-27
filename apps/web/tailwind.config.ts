@@ -106,6 +106,9 @@ const config: Config = {
         xl: "0.5rem",
         "2xl": "0.75rem",
       },
+      spacing: {
+        "18": "4.5rem",
+      },
       transitionTimingFunction: {
         "fai-smooth": "cubic-bezier(0.16, 1, 0.3, 1)",
       },
