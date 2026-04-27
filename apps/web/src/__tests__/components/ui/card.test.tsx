@@ -21,9 +21,9 @@ describe("Card component", () => {
   it("applies base styling classes", () => {
     render(<Card data-testid="card">Content</Card>);
     const card = screen.getByTestId("card");
-    expect(card.className).toContain("rounded-2xl");
+    expect(card.className).toContain("rounded-lg");
     expect(card.className).toContain("border");
-    expect(card.className).toContain("bg-white");
+    expect(card.className).toContain("bg-card");
   });
 
   it("applies padding=sm", () => {
@@ -35,13 +35,13 @@ describe("Card component", () => {
     expect(screen.getByTestId("card").className).toContain("p-4");
   });
 
-  it("applies padding=md", () => {
+  it("applies padding=none", () => {
     render(
-      <Card padding="md" data-testid="card">
+      <Card padding="none" data-testid="card">
         Content
       </Card>,
     );
-    expect(screen.getByTestId("card").className).toContain("p-6");
+    expect(screen.getByTestId("card").className).toContain("p-0");
   });
 
   it("applies padding=lg", () => {
@@ -57,7 +57,7 @@ describe("Card component", () => {
     render(<Card data-testid="card">Content</Card>);
     const className = screen.getByTestId("card").className;
     expect(className).not.toContain("p-4");
-    expect(className).not.toContain("p-6");
+    expect(className).not.toContain("p-0");
     expect(className).not.toContain("p-8");
   });
 
@@ -70,7 +70,7 @@ describe("Card component", () => {
     const card = screen.getByTestId("card");
     expect(card.className).toContain("shadow-xl");
     // Base classes still present
-    expect(card.className).toContain("rounded-2xl");
+    expect(card.className).toContain("rounded-lg");
   });
 
   it("forwards ref", () => {
@@ -166,7 +166,7 @@ describe("CardDescription component", () => {
     render(
       <CardDescription data-testid="desc">Description</CardDescription>,
     );
-    expect(screen.getByTestId("desc").className).toContain("text-neutral-500");
+    expect(screen.getByTestId("desc").className).toContain("text-muted-foreground");
   });
 
   it("forwards ref", () => {

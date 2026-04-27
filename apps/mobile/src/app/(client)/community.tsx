@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { View, Text, FlatList, StyleSheet } from "react-native";
 import { api } from "@/lib/api-client";
+import { colors, fonts, base } from "@/lib/theme";
 
 interface Post {
   id: string;
@@ -29,12 +30,17 @@ export default function CommunityScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={base.screen}>
       <FlatList
         data={posts}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
-        ListEmptyComponent={<Text style={styles.empty}>No posts yet</Text>}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyTitle}>No posts yet</Text>
+            <Text style={styles.emptyBody}>The journal is waiting for its first entry.</Text>
+          </View>
+        }
         renderItem={({ item }) => (
           <View style={styles.card}>
             <Text style={styles.category}>{item.category}</Text>
@@ -54,13 +60,23 @@ export default function CommunityScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  list: { padding: 16 },
-  card: { borderWidth: 1, borderColor: "#eee", borderRadius: 12, padding: 16, marginBottom: 12 },
-  category: { fontSize: 11, fontWeight: "600", color: "#006fc9", textTransform: "uppercase" },
-  title: { fontSize: 16, fontWeight: "600", color: "#111", marginTop: 4 },
-  body: { fontSize: 14, color: "#666", marginTop: 4 },
-  meta: { flexDirection: "row", justifyContent: "space-between", marginTop: 8 },
-  metaText: { fontSize: 12, color: "#999" },
-  empty: { textAlign: "center", color: "#999", marginTop: 40 },
+  list: { padding: 20 },
+  card: {
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.espresso[200],
+    backgroundColor: colors.ivory[50],
+    padding: 16,
+    marginBottom: 12,
+  },
+  category: {
+    ...base.label,
+    color: colors.brass[600],
+  },
+  title: { fontSize: 16, fontFamily: fonts.serif, color: colors.espresso[800], marginTop: 4 },
+  body: { fontSize: 14, color: colors.espresso[500], marginTop: 4, lineHeight: 20 },
+  meta: { flexDirection: "row", justifyContent: "space-between", marginTop: 10 },
+  metaText: { fontSize: 12, color: colors.espresso[300] },
+  emptyContainer: { alignItems: "center", marginTop: 60 },
+  emptyTitle: { fontFamily: fonts.serif, fontSize: 18, color: colors.espresso[800] },
+  emptyBody: { fontSize: 14, color: colors.espresso[400], marginTop: 6 },
 });

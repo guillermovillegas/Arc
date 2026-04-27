@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { View, Text, ActivityIndicator } from "react-native";
+import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { getStoredTokens } from "@/lib/auth";
+import { colors, fonts } from "@/lib/theme";
 
 export default function SplashScreen() {
   const router = useRouter();
@@ -30,9 +31,33 @@ export default function SplashScreen() {
   }
 
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#006fc9" }}>
-      <Text style={{ fontSize: 48, fontWeight: "bold", color: "white" }}>ARC</Text>
-      {loading && <ActivityIndicator color="white" style={{ marginTop: 20 }} />}
+    <View style={styles.container}>
+      <Text style={styles.logo}>Arc</Text>
+      <Text style={styles.tagline}>Exceptional beauty, anywhere.</Text>
+      {loading && <ActivityIndicator color={colors.brass[500]} style={styles.loader} />}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: colors.espresso[800],
+  },
+  logo: {
+    fontSize: 56,
+    fontFamily: fonts.serif,
+    color: colors.ivory[100],
+    letterSpacing: 1,
+  },
+  tagline: {
+    fontSize: 14,
+    fontFamily: fonts.serif,
+    fontStyle: "italic",
+    color: colors.brass[500],
+    marginTop: 8,
+  },
+  loader: { marginTop: 32 },
+});

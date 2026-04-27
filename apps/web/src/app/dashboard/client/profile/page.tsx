@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -8,32 +9,51 @@ import { useAuth } from "@/lib/auth";
 import { api } from "@/lib/api-client";
 
 export default function ClientProfilePage() {
-  const { user, accessToken } = useAuth();
+  const { user, accessToken, isLoading } = useAuth();
   const [form, setForm] = useState({
     firstName: user?.firstName || "",
     lastName: user?.lastName || "",
   });
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSave() {
     setSaving(true);
     setMessage("");
+    setError(null);
     try {
       await api.put("/providers/me", form, { token: accessToken! });
       setMessage("Profile updated!");
     } catch {
-      setMessage("Failed to update profile");
+      setError("Failed to update profile. Please try again.");
     } finally {
       setSaving(false);
     }
   }
 
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-12">
+        <Loader2 className="h-6 w-6 animate-spin text-espresso-300" />
+      </div>
+    );
+  }
+
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900">My Profile</h1>
+      <h1 className="font-serif text-heading text-espresso-800">My Profile</h1>
+      <p className="mt-1 text-body-sm text-espresso-400">
+        Update your personal information and preferences.
+      </p>
 
-      <Card className="mt-6 max-w-lg">
+      {error && (
+        <div className="mt-4 border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
+      <Card className="mt-6 max-w-lg border border-espresso-200/60 bg-ivory-50">
         <div className="space-y-4">
           <Input
             label="First Name"
@@ -48,12 +68,10 @@ export default function ClientProfilePage() {
           <Input label="Email" value={user?.email || ""} disabled />
 
           {message && (
-            <p className={`text-sm ${message.includes("Failed") ? "text-red-600" : "text-green-600"}`}>
-              {message}
-            </p>
+            <p className="text-sm text-[#3b7a57]">{message}</p>
           )}
 
-          <Button onClick={handleSave} disabled={saving}>
+          <Button variant="arc" onClick={handleSave} disabled={saving}>
             {saving ? "Saving..." : "Save Changes"}
           </Button>
         </div>

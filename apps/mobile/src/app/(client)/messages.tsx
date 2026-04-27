@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from "react-native";
 import { api } from "@/lib/api-client";
 import { getStoredTokens } from "@/lib/auth";
+import { colors, fonts, base } from "@/lib/theme";
 
 interface Conversation {
   id: string;
@@ -28,14 +29,19 @@ export default function MessagesScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={base.screen}>
       <FlatList
         data={conversations}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
-        ListEmptyComponent={<Text style={styles.empty}>No conversations yet</Text>}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyTitle}>No conversations yet</Text>
+            <Text style={styles.emptyBody}>Messages with your professionals will appear here.</Text>
+          </View>
+        }
         renderItem={({ item }) => (
-          <TouchableOpacity style={styles.card}>
+          <TouchableOpacity style={styles.card} activeOpacity={0.7}>
             <View style={styles.avatar}>
               <Text style={styles.avatarText}>
                 {item.otherParticipant.firstName[0]}{item.otherParticipant.lastName[0]}
@@ -57,16 +63,26 @@ export default function MessagesScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  list: { padding: 16 },
-  card: { flexDirection: "row", padding: 12, borderBottomWidth: 1, borderBottomColor: "#f0f0f0" },
-  avatar: {
-    width: 44, height: 44, borderRadius: 22, backgroundColor: "#e0effe",
-    justifyContent: "center", alignItems: "center", marginRight: 12,
+  list: { padding: 20 },
+  card: {
+    flexDirection: "row",
+    paddingVertical: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.espresso[200],
   },
-  avatarText: { fontWeight: "bold", color: "#006fc9" },
+  avatar: {
+    width: 44,
+    height: 44,
+    backgroundColor: colors.ivory[300],
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 14,
+  },
+  avatarText: { fontFamily: fonts.serif, fontSize: 14, color: colors.espresso[700] },
   content: { flex: 1, justifyContent: "center" },
-  name: { fontSize: 15, fontWeight: "600", color: "#111" },
-  preview: { fontSize: 13, color: "#888", marginTop: 2 },
-  empty: { textAlign: "center", color: "#999", marginTop: 40 },
+  name: { fontSize: 15, fontFamily: fonts.serif, color: colors.espresso[800] },
+  preview: { fontSize: 13, color: colors.espresso[400], marginTop: 2 },
+  emptyContainer: { alignItems: "center", marginTop: 60 },
+  emptyTitle: { fontFamily: fonts.serif, fontSize: 18, color: colors.espresso[800] },
+  emptyBody: { fontSize: 14, color: colors.espresso[400], marginTop: 6 },
 });

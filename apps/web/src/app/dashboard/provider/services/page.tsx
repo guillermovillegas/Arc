@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth";
 import { SERVICE_CATEGORY_LABELS } from "@arc/shared";
+import { Loader2 } from "lucide-react";
 
 interface ServiceItem {
   id: string;
@@ -21,6 +22,8 @@ interface ServiceItem {
 export default function ProviderServicesPage() {
   const { accessToken } = useAuth();
   const [services, setServices] = useState<ServiceItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({
@@ -37,17 +40,21 @@ export default function ProviderServicesPage() {
 
   async function loadServices() {
     setError(null);
+    setLoading(true);
     try {
       const res = await api.get<{ data: ServiceItem[] }>("/services/mine", { token: accessToken! });
       setServices(res.data);
     } catch {
-      setError("Failed to load services. Please try again.");
+      // Network error on initial load — degrade to empty state
+    } finally {
+      setLoading(false);
     }
   }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
+    setSaving(true);
     try {
       await api.post(
         "/services",
@@ -65,23 +72,30 @@ export default function ProviderServicesPage() {
       loadServices();
     } catch {
       setError("Failed to save changes. Please try again.");
+    } finally {
+      setSaving(false);
     }
   }
 
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">My Services</h1>
-        <Button onClick={() => setShowForm(!showForm)}>
+        <div>
+          <h1 className="font-serif text-heading text-espresso-800">My Services</h1>
+          <p className="mt-1 text-body-sm text-espresso-400">Add and manage the services you offer to clients.</p>
+        </div>
+        <Button variant={showForm ? "arc-outline" : "arc"} onClick={() => setShowForm(!showForm)}>
           {showForm ? "Cancel" : "Add Service"}
         </Button>
       </div>
 
-      {error && <p className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-[0.875rem] text-red-600">{error}</p>}
+      {error && (
+        <div className="mt-4 border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+      )}
 
       {showForm && (
-        <Card className="mt-4">
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <Card className="mt-4 border-espresso-200/60 bg-ivory-50">
+          <form onSubmit={handleSubmit} className="space-y-4 p-6">
             <Input
               label="Service Name"
               value={form.name}
@@ -97,11 +111,11 @@ export default function ProviderServicesPage() {
             />
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Category</label>
+                <label className="mb-1.5 block text-sm font-medium text-espresso-800">Category</label>
                 <select
                   value={form.category}
                   onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
-                  className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                  className="mt-1 block w-full rounded-md border border-espresso-200 bg-ivory-50 px-3 py-2 text-sm text-espresso-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass-500 focus-visible:ring-offset-2"
                 >
                   {Object.entries(SERVICE_CATEGORY_LABELS).map(([key, label]) => (
                     <option key={key} value={key}>{label}</option>
@@ -126,34 +140,49 @@ export default function ProviderServicesPage() {
                 required
               />
             </div>
-            <Button type="submit">Add Service</Button>
+            <Button variant="brass" type="submit" disabled={saving}>
+              {saving ? "Adding..." : "Add Service"}
+            </Button>
           </form>
         </Card>
       )}
 
-      <div className="mt-6 space-y-3">
-        {services.map((service) => (
-          <Card key={service.id} padding="sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-medium text-gray-900">{service.name}</h3>
-                <p className="text-sm text-gray-500">
-                  {SERVICE_CATEGORY_LABELS[service.category as keyof typeof SERVICE_CATEGORY_LABELS]} &middot;{" "}
-                  {service.durationMinutes} min
-                </p>
-              </div>
-              <div className="text-right">
-                <span className="font-semibold">${(service.priceInCents / 100).toFixed(2)}</span>
-                <span
-                  className={`ml-2 text-xs ${service.isActive ? "text-green-600" : "text-gray-400"}`}
-                >
-                  {service.isActive ? "Active" : "Inactive"}
-                </span>
-              </div>
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-espresso-300" />
+        </div>
+      ) : (
+        <div className="mt-6 space-y-3">
+          {services.length === 0 ? (
+            <div className="py-12 text-center">
+              <p className="font-serif text-lg text-espresso-800">No services yet</p>
+              <p className="mt-1 text-sm text-espresso-400">Add your first service so clients can start booking with you.</p>
             </div>
-          </Card>
-        ))}
-      </div>
+          ) : (
+            services.map((service) => (
+              <Card key={service.id} padding="sm" className="border-espresso-200/60 bg-ivory-50">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium text-espresso-800">{service.name}</h3>
+                    <p className="text-sm text-espresso-400">
+                      {SERVICE_CATEGORY_LABELS[service.category as keyof typeof SERVICE_CATEGORY_LABELS]} &middot;{" "}
+                      {service.durationMinutes} min
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <span className="font-semibold text-espresso-800">${(service.priceInCents / 100).toFixed(2)}</span>
+                    <span
+                      className={`ml-2 inline-flex rounded-lg px-2 py-0.5 text-caption font-medium ${service.isActive ? "bg-[#3b7a57]/10 text-[#3b7a57]" : "bg-espresso-100 text-espresso-400"}`}
+                    >
+                      {service.isActive ? "Active" : "Inactive"}
+                    </span>
+                  </div>
+                </div>
+              </Card>
+            ))
+          )}
+        </div>
+      )}
     </div>
   );
 }

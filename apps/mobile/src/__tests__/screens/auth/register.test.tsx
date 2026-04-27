@@ -21,49 +21,49 @@ describe("RegisterScreen", () => {
   it("renders registration form elements", () => {
     const { getByText, getByPlaceholderText } = render(<RegisterScreen />);
 
-    expect(getByText("ARC")).toBeTruthy();
-    expect(getByText("Create your account")).toBeTruthy();
-    expect(getByPlaceholderText("First Name")).toBeTruthy();
-    expect(getByPlaceholderText("Last Name")).toBeTruthy();
-    expect(getByPlaceholderText("Email")).toBeTruthy();
-    expect(getByPlaceholderText("Password (8+ characters)")).toBeTruthy();
+    expect(getByText("Arc")).toBeTruthy();
+    expect(getByText("Begin your journey")).toBeTruthy();
+    expect(getByPlaceholderText("First name")).toBeTruthy();
+    expect(getByPlaceholderText("Last name")).toBeTruthy();
+    expect(getByPlaceholderText("you@example.com")).toBeTruthy();
+    expect(getByPlaceholderText("8+ characters")).toBeTruthy();
     expect(getByText("Create Account")).toBeTruthy();
   });
 
   it("renders role toggle with CLIENT and PROVIDER options", () => {
     const { getByText } = render(<RegisterScreen />);
 
-    expect(getByText("I need services")).toBeTruthy();
-    expect(getByText("I offer services")).toBeTruthy();
+    expect(getByText("Client")).toBeTruthy();
+    expect(getByText("Professional")).toBeTruthy();
   });
 
   it("defaults to CLIENT role", () => {
     const { getByText } = render(<RegisterScreen />);
     // CLIENT button should be active (has active styles)
-    const clientButton = getByText("I need services");
+    const clientButton = getByText("Client");
     expect(clientButton).toBeTruthy();
   });
 
   it("allows toggling to PROVIDER role", () => {
     const { getByText } = render(<RegisterScreen />);
 
-    fireEvent.press(getByText("I offer services"));
+    fireEvent.press(getByText("Professional"));
     // No crash means toggle works
-    expect(getByText("I offer services")).toBeTruthy();
+    expect(getByText("Professional")).toBeTruthy();
   });
 
   it("updates form fields on input", () => {
     const { getByPlaceholderText } = render(<RegisterScreen />);
 
-    fireEvent.changeText(getByPlaceholderText("First Name"), "Jane");
-    fireEvent.changeText(getByPlaceholderText("Last Name"), "Smith");
-    fireEvent.changeText(getByPlaceholderText("Email"), "jane@test.com");
-    fireEvent.changeText(getByPlaceholderText("Password (8+ characters)"), "secret123");
+    fireEvent.changeText(getByPlaceholderText("First name"), "Jane");
+    fireEvent.changeText(getByPlaceholderText("Last name"), "Smith");
+    fireEvent.changeText(getByPlaceholderText("you@example.com"), "jane@test.com");
+    fireEvent.changeText(getByPlaceholderText("8+ characters"), "secret123");
 
-    expect(getByPlaceholderText("First Name").props.value).toBe("Jane");
-    expect(getByPlaceholderText("Last Name").props.value).toBe("Smith");
-    expect(getByPlaceholderText("Email").props.value).toBe("jane@test.com");
-    expect(getByPlaceholderText("Password (8+ characters)").props.value).toBe("secret123");
+    expect(getByPlaceholderText("First name").props.value).toBe("Jane");
+    expect(getByPlaceholderText("Last name").props.value).toBe("Smith");
+    expect(getByPlaceholderText("you@example.com").props.value).toBe("jane@test.com");
+    expect(getByPlaceholderText("8+ characters").props.value).toBe("secret123");
   });
 
   it("sends register API call with form data and CLIENT role", async () => {
@@ -79,10 +79,10 @@ describe("RegisterScreen", () => {
 
     const { getByPlaceholderText, getByText } = render(<RegisterScreen />);
 
-    fireEvent.changeText(getByPlaceholderText("First Name"), "Jane");
-    fireEvent.changeText(getByPlaceholderText("Last Name"), "Smith");
-    fireEvent.changeText(getByPlaceholderText("Email"), "jane@test.com");
-    fireEvent.changeText(getByPlaceholderText("Password (8+ characters)"), "secret123");
+    fireEvent.changeText(getByPlaceholderText("First name"), "Jane");
+    fireEvent.changeText(getByPlaceholderText("Last name"), "Smith");
+    fireEvent.changeText(getByPlaceholderText("you@example.com"), "jane@test.com");
+    fireEvent.changeText(getByPlaceholderText("8+ characters"), "secret123");
     fireEvent.press(getByText("Create Account"));
 
     await waitFor(() => {
@@ -109,11 +109,11 @@ describe("RegisterScreen", () => {
 
     const { getByPlaceholderText, getByText } = render(<RegisterScreen />);
 
-    fireEvent.press(getByText("I offer services"));
-    fireEvent.changeText(getByPlaceholderText("First Name"), "Pro");
-    fireEvent.changeText(getByPlaceholderText("Last Name"), "User");
-    fireEvent.changeText(getByPlaceholderText("Email"), "pro@test.com");
-    fireEvent.changeText(getByPlaceholderText("Password (8+ characters)"), "secret123");
+    fireEvent.press(getByText("Professional"));
+    fireEvent.changeText(getByPlaceholderText("First name"), "Pro");
+    fireEvent.changeText(getByPlaceholderText("Last name"), "User");
+    fireEvent.changeText(getByPlaceholderText("you@example.com"), "pro@test.com");
+    fireEvent.changeText(getByPlaceholderText("8+ characters"), "secret123");
     fireEvent.press(getByText("Create Account"));
 
     await waitFor(() => {
@@ -136,10 +136,10 @@ describe("RegisterScreen", () => {
 
     const { getByPlaceholderText, getByText } = render(<RegisterScreen />);
 
-    fireEvent.changeText(getByPlaceholderText("First Name"), "A");
-    fireEvent.changeText(getByPlaceholderText("Last Name"), "B");
-    fireEvent.changeText(getByPlaceholderText("Email"), "a@b.com");
-    fireEvent.changeText(getByPlaceholderText("Password (8+ characters)"), "password1");
+    fireEvent.changeText(getByPlaceholderText("First name"), "A");
+    fireEvent.changeText(getByPlaceholderText("Last name"), "B");
+    fireEvent.changeText(getByPlaceholderText("you@example.com"), "a@b.com");
+    fireEvent.changeText(getByPlaceholderText("8+ characters"), "password1");
     fireEvent.press(getByText("Create Account"));
 
     await waitFor(() => {
@@ -160,11 +160,11 @@ describe("RegisterScreen", () => {
 
     const { getByPlaceholderText, getByText } = render(<RegisterScreen />);
 
-    fireEvent.press(getByText("I offer services"));
-    fireEvent.changeText(getByPlaceholderText("First Name"), "A");
-    fireEvent.changeText(getByPlaceholderText("Last Name"), "B");
-    fireEvent.changeText(getByPlaceholderText("Email"), "a@b.com");
-    fireEvent.changeText(getByPlaceholderText("Password (8+ characters)"), "password1");
+    fireEvent.press(getByText("Professional"));
+    fireEvent.changeText(getByPlaceholderText("First name"), "A");
+    fireEvent.changeText(getByPlaceholderText("Last name"), "B");
+    fireEvent.changeText(getByPlaceholderText("you@example.com"), "a@b.com");
+    fireEvent.changeText(getByPlaceholderText("8+ characters"), "password1");
     fireEvent.press(getByText("Create Account"));
 
     await waitFor(() => {
@@ -180,13 +180,13 @@ describe("RegisterScreen", () => {
 
     const { getByText, getByPlaceholderText } = render(<RegisterScreen />);
 
-    fireEvent.changeText(getByPlaceholderText("First Name"), "A");
-    fireEvent.changeText(getByPlaceholderText("Last Name"), "B");
-    fireEvent.changeText(getByPlaceholderText("Email"), "a@b.com");
-    fireEvent.changeText(getByPlaceholderText("Password (8+ characters)"), "password1");
+    fireEvent.changeText(getByPlaceholderText("First name"), "A");
+    fireEvent.changeText(getByPlaceholderText("Last name"), "B");
+    fireEvent.changeText(getByPlaceholderText("you@example.com"), "a@b.com");
+    fireEvent.changeText(getByPlaceholderText("8+ characters"), "password1");
     fireEvent.press(getByText("Create Account"));
 
-    expect(getByText("Creating...")).toBeTruthy();
+    expect(getByText("Creating\u2026")).toBeTruthy();
 
     resolvePost!({
       data: {
@@ -207,10 +207,10 @@ describe("RegisterScreen", () => {
 
     const { getByPlaceholderText, getByText } = render(<RegisterScreen />);
 
-    fireEvent.changeText(getByPlaceholderText("First Name"), "A");
-    fireEvent.changeText(getByPlaceholderText("Last Name"), "B");
-    fireEvent.changeText(getByPlaceholderText("Email"), "dup@test.com");
-    fireEvent.changeText(getByPlaceholderText("Password (8+ characters)"), "password1");
+    fireEvent.changeText(getByPlaceholderText("First name"), "A");
+    fireEvent.changeText(getByPlaceholderText("Last name"), "B");
+    fireEvent.changeText(getByPlaceholderText("you@example.com"), "dup@test.com");
+    fireEvent.changeText(getByPlaceholderText("8+ characters"), "password1");
     fireEvent.press(getByText("Create Account"));
 
     await waitFor(() => {

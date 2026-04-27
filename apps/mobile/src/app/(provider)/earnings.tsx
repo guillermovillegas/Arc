@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { View, Text, FlatList, StyleSheet, ActivityIndicator } from "react-native";
 import { api } from "@/lib/api-client";
 import { getStoredTokens } from "@/lib/auth";
+import { colors, fonts, base } from "@/lib/theme";
 
 interface EarningsData {
   totalEarnings: number;
@@ -41,7 +42,7 @@ export default function EarningsScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={base.screen}>
       <View style={styles.totalCard}>
         <Text style={styles.totalLabel}>Total Earnings</Text>
         <Text style={styles.totalAmount}>
@@ -52,7 +53,7 @@ export default function EarningsScreen() {
       <Text style={styles.sectionTitle}>Payment History</Text>
 
       {loading ? (
-        <ActivityIndicator size="large" color="#006fc9" style={styles.loader} />
+        <ActivityIndicator size="large" color={colors.brass[500]} style={styles.loader} />
       ) : error ? (
         <Text style={styles.error}>{error}</Text>
       ) : (
@@ -60,7 +61,12 @@ export default function EarningsScreen() {
           data={earnings?.payments || []}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
-          ListEmptyComponent={<Text style={styles.empty}>No payments yet</Text>}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyTitle}>No payments yet</Text>
+              <Text style={styles.emptyBody}>Earnings will appear here after your first service.</Text>
+            </View>
+          }
           renderItem={({ item }) => (
             <View style={styles.paymentCard}>
               <View>
@@ -81,22 +87,69 @@ export default function EarningsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
   totalCard: {
-    margin: 16, padding: 24, backgroundColor: "#006fc9", borderRadius: 16, alignItems: "center",
+    margin: 20,
+    padding: 28,
+    backgroundColor: colors.espresso[800],
+    alignItems: "center",
   },
-  totalLabel: { color: "#b9dffe", fontSize: 14 },
-  totalAmount: { color: "#fff", fontSize: 36, fontWeight: "bold", marginTop: 4 },
-  sectionTitle: { fontSize: 16, fontWeight: "600", paddingHorizontal: 16, marginTop: 8, color: "#111" },
-  list: { padding: 16 },
+  totalLabel: {
+    ...base.label,
+    color: colors.brass[400],
+  },
+  totalAmount: {
+    fontFamily: fonts.serif,
+    color: colors.ivory[100],
+    fontSize: 40,
+    marginTop: 6,
+  },
+  sectionTitle: {
+    ...base.label,
+    paddingHorizontal: 20,
+    marginTop: 8,
+  },
+  list: { padding: 20 },
   paymentCard: {
-    flexDirection: "row", justifyContent: "space-between", alignItems: "center",
-    paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: "#f0f0f0",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.espresso[200],
   },
-  serviceName: { fontSize: 15, fontWeight: "500", color: "#111" },
-  date: { fontSize: 13, color: "#888", marginTop: 2 },
-  amount: { fontSize: 16, fontWeight: "700", color: "#10b981" },
-  empty: { textAlign: "center", color: "#999", marginTop: 20 },
+  serviceName: {
+    fontSize: 15,
+    fontFamily: fonts.serif,
+    color: colors.espresso[800],
+  },
+  date: {
+    fontSize: 13,
+    color: colors.espresso[400],
+    marginTop: 2,
+  },
+  amount: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colors.status.confirmed,
+    fontFamily: fonts.sans,
+  },
+  emptyContainer: { alignItems: "center", marginTop: 40 },
+  emptyTitle: {
+    fontFamily: fonts.serif,
+    fontSize: 18,
+    color: colors.espresso[800],
+  },
+  emptyBody: {
+    fontSize: 14,
+    color: colors.espresso[400],
+    marginTop: 6,
+  },
   loader: { marginTop: 40 },
-  error: { textAlign: "center", color: "#ef4444", marginTop: 40, paddingHorizontal: 16 },
+  error: {
+    textAlign: "center",
+    color: colors.status.error,
+    marginTop: 40,
+    paddingHorizontal: 20,
+    fontSize: 14,
+  },
 });

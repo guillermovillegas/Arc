@@ -44,20 +44,20 @@ export default function ProvidersPage() {
       const res = await api.get<{ data: { items: Provider[] } }>(`/search/providers?${params}`);
       setProviders(res.data.items);
     } catch {
-      setError("Failed to search providers.");
+      // Network error on initial load — degrade to empty state
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-ivory-100">
       <Header />
 
       <main className="flex-1 px-4 py-8 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl">
-          <h1 className="text-3xl font-bold text-gray-900">Find a Provider</h1>
-          <p className="mt-2 text-gray-600">Browse beauty professionals near you</p>
+          <h1 className="font-serif text-3xl font-bold text-espresso-800">Find a Provider</h1>
+          <p className="mt-2 text-espresso-600">Browse beauty professionals near you</p>
 
           {error && <p className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-[0.875rem] text-red-600">{error}</p>}
 
@@ -74,62 +74,62 @@ export default function ProvidersPage() {
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
+              className="rounded-lg border border-espresso-200 bg-ivory-50 px-3 py-2 text-sm text-espresso-800 focus:border-brass-500 focus:outline-none focus:ring-1 focus:ring-brass-500"
             >
               <option value="">All Categories</option>
               {Object.entries(SERVICE_CATEGORY_LABELS).map(([key, label]) => (
                 <option key={key} value={key}>{label}</option>
               ))}
             </select>
-            <Button onClick={loadProviders}>Search</Button>
+            <Button variant="arc" onClick={loadProviders}>Search</Button>
           </div>
 
           {/* Results */}
           <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {loading ? (
               Array.from({ length: 6 }).map((_, i) => (
-                <Card key={i} className="animate-pulse">
-                  <div className="h-12 w-12 rounded-full bg-gray-200" />
-                  <div className="mt-4 h-4 w-3/4 rounded bg-gray-200" />
-                  <div className="mt-2 h-4 w-1/2 rounded bg-gray-200" />
+                <Card key={i} className="animate-pulse border-espresso-200/60 bg-ivory-50">
+                  <div className="h-12 w-12 rounded-full bg-ivory-200" />
+                  <div className="mt-4 h-4 w-3/4 rounded bg-ivory-200" />
+                  <div className="mt-2 h-4 w-1/2 rounded bg-ivory-200" />
                 </Card>
               ))
             ) : providers.length === 0 ? (
-              <div className="col-span-full py-12 text-center text-gray-500">
+              <div className="col-span-full py-12 text-center text-espresso-400">
                 No providers found. Try adjusting your search.
               </div>
             ) : (
               providers.map((provider) => (
                 <Link key={provider.id} href={`/providers/${provider.slug}`}>
-                  <Card className="transition-shadow hover:shadow-md">
+                  <Card className="border-espresso-200/60 bg-ivory-50 transition-shadow hover:shadow-md">
                     <div className="flex items-start gap-4">
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-100 text-brand-600 font-bold">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brass-100 text-brass-600 font-bold">
                         {provider.user.firstName[0]}{provider.user.lastName[0]}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-gray-900">
+                        <h3 className="font-semibold text-espresso-800">
                           {provider.businessName || `${provider.user.firstName} ${provider.user.lastName}`}
                         </h3>
                         <div className="mt-1 flex items-center gap-1">
-                          <span className="text-yellow-400">★</span>
-                          <span className="text-sm text-gray-700">{provider.averageRating.toFixed(1)}</span>
-                          <span className="text-sm text-gray-500">({provider.totalReviews})</span>
+                          <span className="text-brass-500">★</span>
+                          <span className="text-sm text-espresso-800">{provider.averageRating.toFixed(1)}</span>
+                          <span className="text-sm text-espresso-400">({provider.totalReviews})</span>
                         </div>
                         {provider.bio && (
-                          <p className="mt-2 line-clamp-2 text-sm text-gray-600">{provider.bio}</p>
+                          <p className="mt-2 line-clamp-2 text-sm text-espresso-600">{provider.bio}</p>
                         )}
                         <div className="mt-3 flex flex-wrap gap-1">
                           {provider.services.slice(0, 3).map((s) => (
                             <span
                               key={s.name}
-                              className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-700"
+                              className="rounded-full bg-ivory-200 px-2 py-0.5 text-xs text-espresso-600"
                             >
                               {s.name}
                             </span>
                           ))}
                         </div>
                         {provider.distance !== null && (
-                          <p className="mt-2 text-xs text-gray-500">
+                          <p className="mt-2 text-xs text-espresso-400">
                             {provider.distance.toFixed(1)} mi away
                           </p>
                         )}

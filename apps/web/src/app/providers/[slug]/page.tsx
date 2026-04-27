@@ -42,13 +42,13 @@ export default async function ProviderProfilePage({ params }: Props) {
 
   if (!provider) {
     return (
-      <div className="flex min-h-screen flex-col">
+      <div className="flex min-h-screen flex-col bg-ivory-100">
         <Header />
         <main className="flex flex-1 items-center justify-center">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900">Provider Not Found</h1>
-            <p className="mt-2 text-gray-600">This profile doesn&apos;t exist or has been removed.</p>
-            <Link href="/providers" className="mt-4 inline-block text-brand-600 hover:underline">
+            <h1 className="font-serif text-2xl font-bold text-espresso-800">Provider Not Found</h1>
+            <p className="mt-2 text-espresso-600">This profile doesn&apos;t exist or has been removed.</p>
+            <Link href="/providers" className="mt-4 inline-block text-brass-600 hover:underline">
               Browse all providers
             </Link>
           </div>
@@ -61,59 +61,59 @@ export default async function ProviderProfilePage({ params }: Props) {
   const name = provider.businessName || `${provider.user.firstName} ${provider.user.lastName}`;
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-ivory-100">
       <Header />
 
       <main className="flex-1 px-4 py-8 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl">
           {/* Profile Header */}
           <div className="flex flex-col items-start gap-6 sm:flex-row">
-            <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-brand-100 text-3xl font-bold text-brand-600">
+            <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-brass-100 text-3xl font-bold text-brass-600">
               {provider.user.firstName[0]}{provider.user.lastName[0]}
             </div>
             <div className="flex-1">
               <div className="flex items-start justify-between">
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900">{name}</h1>
+                  <h1 className="font-serif text-2xl font-bold text-espresso-800">{name}</h1>
                   {provider.address && (
-                    <p className="mt-1 text-gray-600">{provider.address}</p>
+                    <p className="mt-1 text-espresso-600">{provider.address}</p>
                   )}
                   <div className="mt-2 flex items-center gap-2">
-                    <span className="text-yellow-400 text-lg">★</span>
-                    <span className="font-semibold">{provider.averageRating.toFixed(1)}</span>
-                    <span className="text-gray-500">({provider.totalReviews} reviews)</span>
+                    <span className="text-brass-500 text-lg">★</span>
+                    <span className="font-semibold text-espresso-800">{provider.averageRating.toFixed(1)}</span>
+                    <span className="text-espresso-400">({provider.totalReviews} reviews)</span>
                     {provider.isVerified && (
-                      <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                      <span className="rounded-full bg-brass-100 px-2 py-0.5 text-xs font-medium text-brass-700">
                         Verified
                       </span>
                     )}
                   </div>
                 </div>
                 <Link href={`/book/${provider.id}`}>
-                  <Button size="lg">Book Now</Button>
+                  <Button variant="brass" size="lg">Book Now</Button>
                 </Link>
               </div>
-              {provider.bio && <p className="mt-4 text-gray-700">{provider.bio}</p>}
+              {provider.bio && <p className="mt-4 text-espresso-600">{provider.bio}</p>}
             </div>
           </div>
 
           {/* Services */}
           <section className="mt-12">
-            <h2 className="text-xl font-bold text-gray-900">Services</h2>
+            <h2 className="font-serif text-xl font-bold text-espresso-800">Services</h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {provider.services.map((service: { id: string; name: string; category: string; description: string | null; durationMinutes: number; priceInCents: number }) => (
-                <Card key={service.id} padding="sm">
+                <Card key={service.id} padding="sm" className="border-espresso-200/60 bg-ivory-50">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="font-medium text-gray-900">{service.name}</h3>
-                      <p className="text-sm text-gray-500">
+                      <h3 className="font-medium text-espresso-800">{service.name}</h3>
+                      <p className="text-sm text-espresso-400">
                         {SERVICE_CATEGORY_LABELS[service.category as keyof typeof SERVICE_CATEGORY_LABELS] || service.category} &middot; {service.durationMinutes} min
                       </p>
                       {service.description && (
-                        <p className="mt-1 text-sm text-gray-600">{service.description}</p>
+                        <p className="mt-1 text-sm text-espresso-600">{service.description}</p>
                       )}
                     </div>
-                    <span className="text-lg font-semibold text-gray-900">
+                    <span className="text-lg font-semibold text-brass-600">
                       ${(service.priceInCents / 100).toFixed(2)}
                     </span>
                   </div>
@@ -125,18 +125,18 @@ export default async function ProviderProfilePage({ params }: Props) {
           {/* Portfolio */}
           {provider.portfolioItems?.length > 0 && (
             <section className="mt-12">
-              <h2 className="text-xl font-bold text-gray-900">Portfolio</h2>
+              <h2 className="font-serif text-xl font-bold text-espresso-800">Portfolio</h2>
               <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {provider.portfolioItems.map((item: { id: string; imageUrl: string; caption: string | null }) => (
-                  <div key={item.id} className="group relative aspect-square overflow-hidden rounded-lg bg-gray-100">
+                  <div key={item.id} className="group relative aspect-square overflow-hidden rounded-lg bg-ivory-200">
                     <img
                       src={item.imageUrl}
                       alt={item.caption || "Portfolio image"}
                       className="h-full w-full object-cover"
                     />
                     {item.caption && (
-                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 p-3 opacity-0 transition-opacity group-hover:opacity-100">
-                        <p className="text-sm text-white">{item.caption}</p>
+                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-espresso-800/70 p-3 opacity-0 transition-opacity group-hover:opacity-100">
+                        <p className="text-sm text-ivory-100">{item.caption}</p>
                       </div>
                     )}
                   </div>
@@ -148,26 +148,26 @@ export default async function ProviderProfilePage({ params }: Props) {
           {/* Reviews */}
           {provider.reviews?.length > 0 && (
             <section className="mt-12">
-              <h2 className="text-xl font-bold text-gray-900">Reviews</h2>
+              <h2 className="font-serif text-xl font-bold text-espresso-800">Reviews</h2>
               <div className="mt-4 space-y-4">
                 {provider.reviews.map((review: { id: string; rating: number; text: string | null; createdAt: string; client: { firstName: string; lastName: string } }) => (
-                  <Card key={review.id} padding="sm">
+                  <Card key={review.id} padding="sm" className="border-espresso-200/60 bg-ivory-50">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium text-gray-900">
+                      <span className="font-medium text-espresso-800">
                         {review.client.firstName} {review.client.lastName[0]}.
                       </span>
                       <div className="flex">
                         {Array.from({ length: 5 }).map((_, i) => (
-                          <span key={i} className={i < review.rating ? "text-yellow-400" : "text-gray-300"}>
+                          <span key={i} className={i < review.rating ? "text-brass-500" : "text-espresso-300"}>
                             ★
                           </span>
                         ))}
                       </div>
-                      <span className="text-sm text-gray-500">
+                      <span className="text-sm text-espresso-400">
                         {new Date(review.createdAt).toLocaleDateString()}
                       </span>
                     </div>
-                    {review.text && <p className="mt-2 text-sm text-gray-700">{review.text}</p>}
+                    {review.text && <p className="mt-2 text-sm text-espresso-600">{review.text}</p>}
                   </Card>
                 ))}
               </div>

@@ -41,3 +41,6 @@ apps/api/prisma/migrations/**/migration_lock.toml
 apps/mobile/ios/
 apps/mobile/android/
 .vercel
+
+# Superpowers brainstorming sessions
+.superpowers/

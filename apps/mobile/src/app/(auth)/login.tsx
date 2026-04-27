@@ -12,6 +12,7 @@ import {
 import { useRouter, Link } from "expo-router";
 import { api } from "@/lib/api-client";
 import { storeTokens } from "@/lib/auth";
+import { colors, fonts, base } from "@/lib/theme";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -68,24 +69,30 @@ export default function LoginScreen() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={styles.container}
+      style={base.screen}
     >
       <View style={styles.inner}>
-        <Text style={styles.logo}>ARC</Text>
-        <Text style={styles.title}>Welcome back</Text>
+        <Text style={styles.logo}>Arc</Text>
+        <Text style={styles.subtitle}>Welcome back</Text>
 
+        <View style={styles.divider} />
+
+        <Text style={styles.label}>Email</Text>
         <TextInput
           style={styles.input}
-          placeholder="Email"
+          placeholder="you@example.com"
+          placeholderTextColor={colors.espresso[300]}
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
           autoCapitalize="none"
         />
 
+        <Text style={styles.label}>Password</Text>
         <TextInput
           style={styles.input}
-          placeholder="Password"
+          placeholder="Enter your password"
+          placeholderTextColor={colors.espresso[300]}
           value={password}
           onChangeText={setPassword}
           secureTextEntry
@@ -95,13 +102,17 @@ export default function LoginScreen() {
           style={[styles.button, loading && styles.buttonDisabled]}
           onPress={handleLogin}
           disabled={loading}
+          activeOpacity={0.8}
         >
-          <Text style={styles.buttonText}>{loading ? "Signing in..." : "Sign In"}</Text>
+          <Text style={base.buttonPrimaryText}>
+            {loading ? "Signing in\u2026" : "Sign In"}
+          </Text>
         </TouchableOpacity>
 
         <Link href="/(auth)/register" style={styles.link}>
           <Text style={styles.linkText}>
-            Don&apos;t have an account? <Text style={styles.linkBold}>Sign up</Text>
+            New to Arc?{" "}
+            <Text style={styles.linkAccent}>Create an account</Text>
           </Text>
         </Link>
       </View>
@@ -110,18 +121,53 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  inner: { flex: 1, justifyContent: "center", padding: 24 },
-  logo: { fontSize: 36, fontWeight: "bold", color: "#006fc9", textAlign: "center" },
-  title: { fontSize: 20, fontWeight: "600", textAlign: "center", marginTop: 8, marginBottom: 32, color: "#111" },
-  input: {
-    borderWidth: 1, borderColor: "#ddd", borderRadius: 12, padding: 14, fontSize: 16,
-    marginBottom: 12, backgroundColor: "#fafafa",
+  inner: {
+    flex: 1,
+    justifyContent: "center",
+    paddingHorizontal: 28,
   },
-  button: { backgroundColor: "#006fc9", borderRadius: 12, padding: 16, alignItems: "center", marginTop: 8 },
-  buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
-  link: { marginTop: 24, alignItems: "center" },
-  linkText: { color: "#666", fontSize: 14 },
-  linkBold: { color: "#006fc9", fontWeight: "600" },
+  logo: {
+    fontSize: 48,
+    fontFamily: fonts.serif,
+    color: colors.espresso[800],
+    textAlign: "center",
+  },
+  subtitle: {
+    fontSize: 16,
+    fontFamily: fonts.serif,
+    fontStyle: "italic",
+    color: colors.brass[500],
+    textAlign: "center",
+    marginTop: 4,
+  },
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: colors.espresso[200],
+    marginVertical: 32,
+    marginHorizontal: 40,
+  },
+  label: {
+    ...base.label,
+    marginBottom: 6,
+    marginTop: 12,
+  },
+  input: {
+    ...base.input,
+    marginBottom: 4,
+  },
+  button: {
+    ...base.buttonPrimary,
+    marginTop: 24,
+  },
+  buttonDisabled: { opacity: 0.5 },
+  link: { marginTop: 28, alignItems: "center" },
+  linkText: {
+    color: colors.espresso[400],
+    fontSize: 14,
+    textAlign: "center",
+  },
+  linkAccent: {
+    color: colors.brass[600],
+    fontWeight: "600",
+  },
 });

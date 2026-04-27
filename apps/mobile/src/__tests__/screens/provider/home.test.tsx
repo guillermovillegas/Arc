@@ -11,30 +11,37 @@ beforeEach(() => {
   jest.clearAllMocks();
 });
 
-const today = new Date().toISOString().split("T")[0];
+// Build ISO strings that resolve to "today" in any local timezone by anchoring
+// to noon local time so that the UTC representation still falls on the same
+// calendar day when converted back via toDateString().
+function todayAt(hour: number, minute = 0): string {
+  const d = new Date();
+  d.setHours(hour, minute, 0, 0);
+  return d.toISOString();
+}
 
 const mockBookings = [
   {
     id: "b1",
     status: "CONFIRMED",
-    startTime: `${today}T10:00:00.000Z`,
-    endTime: `${today}T10:30:00.000Z`,
+    startTime: todayAt(10),
+    endTime: todayAt(10, 30),
     service: { name: "Haircut" },
     client: { firstName: "John", lastName: "Doe" },
   },
   {
     id: "b2",
     status: "PENDING",
-    startTime: `${today}T14:00:00.000Z`,
-    endTime: `${today}T15:00:00.000Z`,
+    startTime: todayAt(14),
+    endTime: todayAt(15),
     service: { name: "Hair Color" },
     client: { firstName: "Jane", lastName: "Smith" },
   },
   {
     id: "b3",
     status: "CONFIRMED",
-    startTime: "2026-01-01T10:00:00.000Z",
-    endTime: "2026-01-01T10:30:00.000Z",
+    startTime: "2025-01-01T10:00:00.000Z",
+    endTime: "2025-01-01T10:30:00.000Z",
     service: { name: "Old Booking" },
     client: { firstName: "Old", lastName: "Client" },
   },

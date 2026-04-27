@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { api } from "@/lib/api-client";
+import { colors, fonts, base } from "@/lib/theme";
 
 interface Provider {
   id: string;
@@ -54,6 +55,7 @@ export default function ClientHomeScreen() {
       <TouchableOpacity
         style={styles.card}
         onPress={() => router.push(`/provider/${item.id}`)}
+        activeOpacity={0.7}
       >
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>
@@ -63,8 +65,8 @@ export default function ClientHomeScreen() {
         <View style={styles.cardContent}>
           <Text style={styles.providerName}>{name}</Text>
           <Text style={styles.rating}>
-            ★ {item.averageRating.toFixed(1)} ({item.totalReviews})
-            {item.distance !== null ? ` • ${item.distance.toFixed(1)} mi` : ""}
+            {"\u2605"} {item.averageRating.toFixed(1)} ({item.totalReviews})
+            {item.distance !== null ? ` \u00B7 ${item.distance.toFixed(1)} mi` : ""}
           </Text>
           {item.bio && <Text style={styles.bio} numberOfLines={2}>{item.bio}</Text>}
         </View>
@@ -73,11 +75,12 @@ export default function ClientHomeScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={base.screen}>
       <View style={styles.searchRow}>
         <TextInput
           style={styles.searchInput}
-          placeholder="Search providers..."
+          placeholder="Search by name, craft, or location\u2026"
+          placeholderTextColor={colors.espresso[300]}
           value={search}
           onChangeText={setSearch}
           onSubmitEditing={loadProviders}
@@ -86,7 +89,7 @@ export default function ClientHomeScreen() {
       </View>
 
       {loading ? (
-        <ActivityIndicator size="large" color="#006fc9" style={styles.loader} />
+        <ActivityIndicator size="large" color={colors.brass[500]} style={styles.loader} />
       ) : error ? (
         <Text style={styles.error}>{error}</Text>
       ) : (
@@ -96,7 +99,10 @@ export default function ClientHomeScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
           ListEmptyComponent={
-            <Text style={styles.empty}>No providers found</Text>
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyTitle}>No professionals found</Text>
+              <Text style={styles.emptyBody}>Try a different search or check back later.</Text>
+            </View>
           }
         />
       )}
@@ -105,23 +111,71 @@ export default function ClientHomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  searchRow: { padding: 16, borderBottomWidth: 1, borderBottomColor: "#eee" },
+  searchRow: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.espresso[200],
+  },
   searchInput: {
-    borderWidth: 1, borderColor: "#ddd", borderRadius: 12, padding: 12, fontSize: 16, backgroundColor: "#fafafa",
+    ...base.input,
   },
-  list: { padding: 16 },
-  card: { flexDirection: "row", padding: 16, borderWidth: 1, borderColor: "#eee", borderRadius: 12, marginBottom: 12 },
+  list: { padding: 20 },
+  card: {
+    flexDirection: "row",
+    padding: 16,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.espresso[200],
+    backgroundColor: colors.ivory[50],
+    marginBottom: 12,
+  },
   avatar: {
-    width: 48, height: 48, borderRadius: 24, backgroundColor: "#e0effe",
-    justifyContent: "center", alignItems: "center", marginRight: 12,
+    width: 48,
+    height: 48,
+    backgroundColor: colors.ivory[300],
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 14,
   },
-  avatarText: { fontSize: 16, fontWeight: "bold", color: "#006fc9" },
+  avatarText: {
+    fontSize: 15,
+    fontFamily: fonts.serif,
+    color: colors.espresso[700],
+  },
   cardContent: { flex: 1 },
-  providerName: { fontSize: 16, fontWeight: "600", color: "#111" },
-  rating: { fontSize: 13, color: "#666", marginTop: 2 },
-  bio: { fontSize: 13, color: "#888", marginTop: 4 },
-  empty: { textAlign: "center", color: "#999", marginTop: 40 },
-  loader: { marginTop: 40 },
-  error: { textAlign: "center", color: "#ef4444", marginTop: 40, paddingHorizontal: 16 },
+  providerName: {
+    fontSize: 16,
+    fontFamily: fonts.serif,
+    color: colors.espresso[800],
+  },
+  rating: {
+    fontSize: 13,
+    color: colors.brass[600],
+    marginTop: 2,
+  },
+  bio: {
+    fontSize: 13,
+    color: colors.espresso[400],
+    marginTop: 4,
+    lineHeight: 18,
+  },
+  emptyContainer: { alignItems: "center", marginTop: 60 },
+  emptyTitle: {
+    fontFamily: fonts.serif,
+    fontSize: 18,
+    color: colors.espresso[800],
+  },
+  emptyBody: {
+    fontSize: 14,
+    color: colors.espresso[400],
+    marginTop: 6,
+  },
+  loader: { marginTop: 60 },
+  error: {
+    textAlign: "center",
+    color: colors.status.error,
+    marginTop: 40,
+    paddingHorizontal: 20,
+    fontSize: 14,
+  },
 });

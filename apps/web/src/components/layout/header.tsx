@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,12 +13,6 @@ import {
   SheetClose,
 } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
-
-const NAV_LINKS = [
-  { href: "/providers", label: "Discover" },
-  { href: "/community", label: "Journal" },
-  { href: "/about", label: "About" },
-] as const;
 
 function ArcMark({ className = "" }: { className?: string }) {
   return (
@@ -40,48 +35,62 @@ function ArcMark({ className = "" }: { className?: string }) {
 
 export function Header() {
   const { user, logout } = useAuth();
+  const pathname = usePathname();
+  const isDashboard = pathname.startsWith("/dashboard");
+
+  const navLinks = [
+    { href: "/providers", label: "Discover" },
+    { href: "/community", label: "Journal" },
+    { href: "/about", label: "About" },
+    ...(user ? [{ href: "/dashboard", label: "Dashboard" }] : []),
+  ];
 
   return (
-    <header className="sticky top-0 z-50 bg-ivory-100/85 backdrop-blur-xl border-b border-espresso-200/40">
-      <div className="mx-auto max-w-6xl px-5 sm:px-8 lg:px-12 flex h-16 items-center justify-between">
+    <header className="sticky top-0 z-50 border-b border-espresso-200/40 bg-ivory-100/85 backdrop-blur-xl">
+      <div className="mx-auto flex h-14 max-w-7xl items-center gap-6 px-5 sm:px-8 lg:px-12">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <ArcMark className="h-7 w-7 text-espresso-800 transition-colors group-hover:text-brass-600" />
-          <span className="font-serif text-[1.375rem] leading-none text-espresso-900 tracking-[0.01em]">
+        <Link href="/" className="group flex items-center gap-2">
+          <ArcMark className="h-6 w-6 text-espresso-800 transition-colors group-hover:text-brass-600" />
+          <span className="font-serif text-xl leading-none text-espresso-900 tracking-[0.01em]">
             Arc
           </span>
         </Link>
 
-        {/* Desktop Nav */}
-        <nav className="hidden items-center gap-1 md:flex">
-          {NAV_LINKS.map(({ href, label }) => (
-            <Link
-              key={href}
-              href={href}
-              className="rounded-lg px-3.5 py-2 text-body-sm text-espresso-500 transition-colors hover:text-espresso-900"
-            >
-              {label}
-            </Link>
-          ))}
+        {/* Desktop Nav — centered */}
+        <nav className="hidden flex-1 items-center gap-0.5 md:flex">
+          {navLinks.map(({ href, label }) => {
+            const isActive = pathname === href || (href === "/dashboard" && isDashboard);
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={`px-3 py-1.5 text-[0.8125rem] transition-colors ${
+                  isActive
+                    ? "font-medium text-espresso-900"
+                    : "text-espresso-400 hover:text-espresso-800"
+                }`}
+              >
+                {label}
+              </Link>
+            );
+          })}
         </nav>
 
-        {/* Desktop Actions */}
+        {/* Desktop Actions — right */}
         <div className="hidden items-center gap-2 md:flex">
           {user ? (
-            <>
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/dashboard">Dashboard</Link>
-              </Button>
-              <Button variant="outline" size="sm" onClick={logout}>
-                Sign Out
-              </Button>
-            </>
+            <Button variant="arc-outline" size="sm" onClick={logout}>
+              Sign Out
+            </Button>
           ) : (
             <>
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/login">Log in</Link>
-              </Button>
-              <Button size="sm" asChild>
+              <Link
+                href="/login"
+                className="px-3 py-1.5 text-[0.8125rem] text-espresso-400 transition-colors hover:text-espresso-800"
+              >
+                Sign in
+              </Link>
+              <Button variant="arc" size="sm" asChild>
                 <Link href="/register">Get Started</Link>
               </Button>
             </>
@@ -89,76 +98,71 @@ export function Header() {
         </div>
 
         {/* Mobile Menu */}
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden"
-              aria-label="Open menu"
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
-          </SheetTrigger>
+        <div className="ml-auto md:hidden">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9"
+                aria-label="Open menu"
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
 
-          <SheetContent side="right" className="w-72 bg-ivory-100">
-            <SheetHeader>
-              <SheetTitle className="flex items-center gap-2.5">
-                <ArcMark className="h-7 w-7 text-espresso-800" />
-                <span className="font-serif text-[1.375rem] leading-none text-espresso-900 tracking-[0.01em]">
-                  Arc
-                </span>
-              </SheetTitle>
-            </SheetHeader>
+            <SheetContent side="right" className="w-72 bg-ivory-100">
+              <SheetHeader>
+                <SheetTitle className="flex items-center gap-2">
+                  <ArcMark className="h-6 w-6 text-espresso-800" />
+                  <span className="font-serif text-xl leading-none text-espresso-900">
+                    Arc
+                  </span>
+                </SheetTitle>
+              </SheetHeader>
 
-            <nav className="mt-6 flex flex-col gap-1">
-              {NAV_LINKS.map(({ href, label }) => (
-                <SheetClose key={href} asChild>
-                  <Link
-                    href={href}
-                    className="rounded-xl px-3 py-2.5 text-body text-espresso-600 transition-colors hover:bg-ivory-200 hover:text-espresso-900"
-                  >
-                    {label}
-                  </Link>
-                </SheetClose>
-              ))}
-            </nav>
-
-            <div className="mt-6 flex flex-col gap-2">
-              {user ? (
-                <>
-                  <SheetClose asChild>
-                    <Button variant="outline" className="w-full" asChild>
-                      <Link href="/dashboard">Dashboard</Link>
-                    </Button>
+              <nav className="mt-6 flex flex-col gap-0.5">
+                {navLinks.map(({ href, label }) => (
+                  <SheetClose key={href} asChild>
+                    <Link
+                      href={href}
+                      className="px-3 py-2.5 text-[0.9375rem] text-espresso-600 transition-colors hover:bg-ivory-200 hover:text-espresso-900"
+                    >
+                      {label}
+                    </Link>
                   </SheetClose>
+                ))}
+              </nav>
+
+              <div className="mt-6 flex flex-col gap-2">
+                {user ? (
                   <SheetClose asChild>
                     <Button
-                      variant="ghost"
+                      variant="arc-outline"
                       className="w-full"
                       onClick={logout}
                     >
                       Sign Out
                     </Button>
                   </SheetClose>
-                </>
-              ) : (
-                <>
-                  <SheetClose asChild>
-                    <Button variant="outline" className="w-full" asChild>
-                      <Link href="/login">Log in</Link>
-                    </Button>
-                  </SheetClose>
-                  <SheetClose asChild>
-                    <Button className="w-full" asChild>
-                      <Link href="/register">Get Started</Link>
-                    </Button>
-                  </SheetClose>
-                </>
-              )}
-            </div>
-          </SheetContent>
-        </Sheet>
+                ) : (
+                  <>
+                    <SheetClose asChild>
+                      <Button variant="arc-outline" className="w-full" asChild>
+                        <Link href="/login">Sign in</Link>
+                      </Button>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Button variant="arc" className="w-full" asChild>
+                        <Link href="/register">Get Started</Link>
+                      </Button>
+                    </SheetClose>
+                  </>
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
     </header>
   );

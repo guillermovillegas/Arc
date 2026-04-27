@@ -19,9 +19,9 @@ describe("Input component", () => {
   it("applies base styling classes", () => {
     render(<Input data-testid="input" />);
     const input = screen.getByTestId("input");
-    expect(input.className).toContain("rounded-xl");
+    expect(input.className).toContain("rounded-md");
     expect(input.className).toContain("border");
-    expect(input.className).toContain("bg-white");
+    expect(input.className).toContain("bg-background");
   });
 
   /* ─── Label ──────────────────────────────────────────────────────────── */
@@ -43,7 +43,7 @@ describe("Input component", () => {
     render(<Input label="Name" id="name" />);
     const label = screen.getByText("Name");
     expect(label.className).toContain("font-medium");
-    expect(label.className).toContain("text-neutral-700");
+    expect(label.className).toContain("text-foreground");
   });
 
   /* ─── Error state ────────────────────────────────────────────────────── */
@@ -64,13 +64,13 @@ describe("Input component", () => {
   it("applies error border styling when error is set", () => {
     render(<Input error="Invalid" data-testid="input" />);
     const input = screen.getByTestId("input");
-    expect(input.className).toContain("border-red-400");
+    expect(input.className).toContain("border-red-500");
   });
 
   it("error message has red text styling", () => {
     render(<Input error="Something went wrong" />);
     const errorText = screen.getByText("Something went wrong");
-    expect(errorText.className).toContain("text-red-500");
+    expect(errorText.className).toContain("text-red-600");
   });
 
   it("shows both label and error simultaneously", () => {
@@ -141,7 +141,7 @@ describe("Input component", () => {
     render(<Input className="my-class" data-testid="input" />);
     const input = screen.getByTestId("input");
     expect(input.className).toContain("my-class");
-    expect(input.className).toContain("rounded-xl");
+    expect(input.className).toContain("rounded-md");
   });
 
   /* ─── Disabled state ─────────────────────────────────────────────────── */

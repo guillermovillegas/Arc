@@ -44,7 +44,7 @@ describe("ClientHomeScreen", () => {
     (apiClient.api.get as jest.Mock).mockResolvedValueOnce({ data: { items: [] } });
 
     const { getByPlaceholderText } = render(<ClientHomeScreen />);
-    expect(getByPlaceholderText("Search providers...")).toBeTruthy();
+    expect(getByPlaceholderText("Search by name, craft, or location\\u2026")).toBeTruthy();
   });
 
   it("loads and displays providers on mount", async () => {
@@ -54,7 +54,7 @@ describe("ClientHomeScreen", () => {
 
     await waitFor(() => {
       expect(getByText("Marcus Cuts")).toBeTruthy();
-      expect(getByText("★ 4.8 (42) • 2.3 mi")).toBeTruthy();
+      expect(getByText("★ 4.8 (42) · 2.3 mi")).toBeTruthy();
       expect(getByText("Premium barber services")).toBeTruthy();
     });
   });
@@ -85,7 +85,7 @@ describe("ClientHomeScreen", () => {
     const { getByText } = render(<ClientHomeScreen />);
 
     await waitFor(() => {
-      expect(getByText("No providers found")).toBeTruthy();
+      expect(getByText("No professionals found")).toBeTruthy();
     });
   });
 
@@ -100,8 +100,8 @@ describe("ClientHomeScreen", () => {
       expect(apiClient.api.get).toHaveBeenCalledWith("/search/providers");
     });
 
-    fireEvent.changeText(getByPlaceholderText("Search providers..."), "barber");
-    fireEvent(getByPlaceholderText("Search providers..."), "submitEditing");
+    fireEvent.changeText(getByPlaceholderText("Search by name, craft, or location\\u2026"), "barber");
+    fireEvent(getByPlaceholderText("Search by name, craft, or location\\u2026"), "submitEditing");
 
     await waitFor(() => {
       expect(apiClient.api.get).toHaveBeenCalledWith("/search/providers?q=barber");

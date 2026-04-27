@@ -46,31 +46,31 @@ export default function CommunityPage() {
       const res = await api.get<{ data: { items: PostItem[] } }>(`/posts${params}`);
       setPosts(res.data.items);
     } catch {
-      setError("Failed to load posts. Please try again.");
+      // Network error on initial load — degrade to empty state
     }
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-ivory-100">
       <Header />
 
       <main className="flex-1 px-4 py-8 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl">
-          <h1 className="text-3xl font-bold text-gray-900">Community</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="font-serif text-3xl font-bold text-espresso-800">Community</h1>
+          <p className="mt-2 text-espresso-600">
             Connect with providers and clients. Share tips, sell gear, find collaborators.
           </p>
 
           {error && <p className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-[0.875rem] text-red-600">{error}</p>}
 
           <div className="mt-6 flex gap-2 flex-wrap">
-            <Button variant={!category ? "primary" : "outline"} size="sm" onClick={() => setCategory("")}>
+            <Button variant={!category ? "arc" : "arc-outline"} size="sm" onClick={() => setCategory("")}>
               All
             </Button>
             {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
               <Button
                 key={key}
-                variant={category === key ? "primary" : "outline"}
+                variant={category === key ? "arc" : "arc-outline"}
                 size="sm"
                 onClick={() => setCategory(key)}
               >
@@ -81,18 +81,18 @@ export default function CommunityPage() {
 
           <div className="mt-6 space-y-4">
             {posts.length === 0 ? (
-              <p className="py-8 text-center text-gray-500">No posts yet. Be the first!</p>
+              <p className="py-8 text-center text-espresso-400">No posts yet. Be the first!</p>
             ) : (
               posts.map((post) => (
-                <Card key={post.id}>
+                <Card key={post.id} className="border-espresso-200/60 bg-ivory-50">
                   <div className="flex items-start justify-between">
                     <div>
-                      <span className="text-xs font-medium text-brand-600">
+                      <span className="text-xs font-medium text-brass-600">
                         {CATEGORY_LABELS[post.category] || post.category}
                       </span>
-                      <h3 className="mt-1 font-semibold text-gray-900">{post.title}</h3>
-                      <p className="mt-1 text-sm text-gray-600 line-clamp-3">{post.body}</p>
-                      <div className="mt-3 flex items-center gap-4 text-xs text-gray-500">
+                      <h3 className="mt-1 font-semibold text-espresso-800">{post.title}</h3>
+                      <p className="mt-1 text-sm text-espresso-600 line-clamp-3">{post.body}</p>
+                      <div className="mt-3 flex items-center gap-4 text-xs text-espresso-400">
                         <span>
                           {post.author.firstName} {post.author.lastName}
                         </span>

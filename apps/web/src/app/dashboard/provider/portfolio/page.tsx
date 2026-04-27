@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth";
+import { Loader2 } from "lucide-react";
 
 interface PortfolioItemData {
   id: string;
@@ -16,6 +17,9 @@ interface PortfolioItemData {
 export default function ProviderPortfolioPage() {
   const { accessToken } = useAuth();
   const [items, setItems] = useState<PortfolioItemData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({ imageUrl: "", caption: "" });
@@ -26,18 +30,22 @@ export default function ProviderPortfolioPage() {
 
   async function loadPortfolio() {
     setError(null);
+    setLoading(true);
     try {
       const res = await api.get<{ data: PortfolioItemData[] }>("/providers/me/portfolio", {
         token: accessToken!,
       });
       setItems(res.data);
     } catch {
-      setError("Failed to load portfolio. Please try again.");
+      // Network error on initial load — degrade to empty state
+    } finally {
+      setLoading(false);
     }
   }
 
   async function addItem() {
     setError(null);
+    setSaving(true);
     try {
       await api.post("/providers/me/portfolio", {
         imageUrl: form.imageUrl,
@@ -48,31 +56,41 @@ export default function ProviderPortfolioPage() {
       loadPortfolio();
     } catch {
       setError("Failed to save changes. Please try again.");
+    } finally {
+      setSaving(false);
     }
   }
 
   async function deleteItem(id: string) {
     setError(null);
+    setDeletingId(id);
     try {
       await api.delete(`/providers/me/portfolio/${id}`, { token: accessToken! });
       loadPortfolio();
     } catch {
       setError("Failed to delete portfolio item. Please try again.");
+    } finally {
+      setDeletingId(null);
     }
   }
 
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Portfolio</h1>
-        <Button onClick={() => setShowForm(!showForm)}>{showForm ? "Cancel" : "Add Item"}</Button>
+        <div>
+          <h1 className="font-serif text-heading text-espresso-800">Portfolio</h1>
+          <p className="mt-1 text-body-sm text-espresso-400">Showcase your best work to attract new clients.</p>
+        </div>
+        <Button variant={showForm ? "arc-outline" : "arc"} onClick={() => setShowForm(!showForm)}>{showForm ? "Cancel" : "Add Item"}</Button>
       </div>
 
-      {error && <p className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-[0.875rem] text-red-600">{error}</p>}
+      {error && (
+        <div className="mt-4 border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+      )}
 
       {showForm && (
-        <Card className="mt-4">
-          <div className="space-y-3">
+        <Card className="mt-4 border-espresso-200/60 bg-ivory-50">
+          <div className="space-y-3 p-6">
             <Input
               label="Image URL"
               value={form.imageUrl}
@@ -85,26 +103,43 @@ export default function ProviderPortfolioPage() {
               onChange={(e) => setForm((f) => ({ ...f, caption: e.target.value }))}
               placeholder="Optional caption"
             />
-            <Button onClick={addItem}>Add to Portfolio</Button>
+            <Button variant="brass" onClick={addItem} disabled={saving || !form.imageUrl.trim()}>
+              {saving ? "Adding..." : "Add to Portfolio"}
+            </Button>
           </div>
         </Card>
       )}
 
-      <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
-        {items.map((item) => (
-          <div key={item.id} className="group relative aspect-square overflow-hidden rounded-lg bg-gray-100">
-            <img src={item.imageUrl} alt={item.caption || ""} className="h-full w-full object-cover" />
-            <div className="absolute inset-0 flex items-end bg-gradient-to-t from-black/50 opacity-0 transition-opacity group-hover:opacity-100">
-              <div className="flex w-full items-center justify-between p-3">
-                <span className="text-sm text-white">{item.caption}</span>
-                <button onClick={() => deleteItem(item.id)} className="text-sm text-red-300 hover:text-red-100">
-                  Delete
-                </button>
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-espresso-300" />
+        </div>
+      ) : items.length === 0 ? (
+        <div className="py-12 text-center">
+          <p className="font-serif text-lg text-espresso-800">No portfolio items yet</p>
+          <p className="mt-1 text-sm text-espresso-400">Upload photos of your work to build your portfolio and attract clients.</p>
+        </div>
+      ) : (
+        <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
+          {items.map((item) => (
+            <div key={item.id} className="group relative aspect-square overflow-hidden rounded-lg bg-ivory-200">
+              <img src={item.imageUrl} alt={item.caption || ""} className="h-full w-full object-cover" />
+              <div className="absolute inset-0 flex items-end bg-gradient-to-t from-espresso-900/60 opacity-0 transition-opacity group-hover:opacity-100">
+                <div className="flex w-full items-center justify-between p-3">
+                  <span className="text-sm text-ivory-100">{item.caption}</span>
+                  <button
+                    onClick={() => deleteItem(item.id)}
+                    disabled={deletingId === item.id}
+                    className="text-sm text-red-300 hover:text-red-100 disabled:opacity-50"
+                  >
+                    {deletingId === item.id ? "Deleting..." : "Delete"}
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

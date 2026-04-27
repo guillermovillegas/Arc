@@ -1,8 +1,8 @@
-// Provider bookings screen - reuses similar pattern to client bookings
 import { useState, useEffect } from "react";
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { api } from "@/lib/api-client";
 import { getStoredTokens } from "@/lib/auth";
+import { colors, fonts, base } from "@/lib/theme";
 
 interface Booking {
   id: string;
@@ -44,12 +44,17 @@ export default function ProviderBookingsScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={base.screen}>
       <FlatList
         data={bookings}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
-        ListEmptyComponent={<Text style={styles.empty}>No bookings</Text>}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyTitle}>No bookings</Text>
+            <Text style={styles.emptyBody}>Reservations from clients will appear here.</Text>
+          </View>
+        }
         renderItem={({ item }) => (
           <View style={styles.card}>
             <View style={styles.cardTop}>
@@ -68,33 +73,37 @@ export default function ProviderBookingsScreen() {
               {item.status === "PENDING" && (
                 <>
                   <TouchableOpacity
-                    style={[styles.actionBtn, styles.confirmBtn]}
+                    style={styles.confirmBtn}
                     onPress={() => updateStatus(item.id, "CONFIRMED")}
+                    activeOpacity={0.8}
                   >
-                    <Text style={styles.actionBtnText}>Confirm</Text>
+                    <Text style={styles.confirmBtnText}>Confirm</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={[styles.actionBtn, styles.declineBtn]}
+                    style={styles.declineBtn}
                     onPress={() => updateStatus(item.id, "CANCELLED")}
+                    activeOpacity={0.8}
                   >
-                    <Text style={[styles.actionBtnText, { color: "#666" }]}>Decline</Text>
+                    <Text style={styles.declineBtnText}>Decline</Text>
                   </TouchableOpacity>
                 </>
               )}
               {item.status === "CONFIRMED" && (
                 <TouchableOpacity
-                  style={[styles.actionBtn, styles.confirmBtn]}
+                  style={styles.confirmBtn}
                   onPress={() => updateStatus(item.id, "IN_PROGRESS")}
+                  activeOpacity={0.8}
                 >
-                  <Text style={styles.actionBtnText}>Start</Text>
+                  <Text style={styles.confirmBtnText}>Start</Text>
                 </TouchableOpacity>
               )}
               {item.status === "IN_PROGRESS" && (
                 <TouchableOpacity
-                  style={[styles.actionBtn, styles.confirmBtn]}
+                  style={styles.confirmBtn}
                   onPress={() => updateStatus(item.id, "COMPLETED")}
+                  activeOpacity={0.8}
                 >
-                  <Text style={styles.actionBtnText}>Complete</Text>
+                  <Text style={styles.confirmBtnText}>Complete</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -106,18 +115,33 @@ export default function ProviderBookingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  list: { padding: 16 },
-  card: { borderWidth: 1, borderColor: "#eee", borderRadius: 12, padding: 16, marginBottom: 12 },
+  list: { padding: 20 },
+  card: {
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.espresso[200],
+    backgroundColor: colors.ivory[50],
+    padding: 16,
+    marginBottom: 12,
+  },
   cardTop: { flexDirection: "row", justifyContent: "space-between" },
-  serviceName: { fontSize: 16, fontWeight: "600", color: "#111" },
-  price: { fontSize: 16, fontWeight: "700", color: "#111" },
-  client: { fontSize: 14, color: "#666", marginTop: 4 },
-  date: { fontSize: 13, color: "#888", marginTop: 4 },
-  actions: { flexDirection: "row", gap: 8, marginTop: 12 },
-  actionBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8 },
-  confirmBtn: { backgroundColor: "#006fc9" },
-  declineBtn: { backgroundColor: "#f3f4f6" },
-  actionBtnText: { color: "#fff", fontWeight: "600", fontSize: 14 },
-  empty: { textAlign: "center", color: "#999", marginTop: 40 },
+  serviceName: { fontSize: 16, fontFamily: fonts.serif, color: colors.espresso[800] },
+  price: { fontSize: 16, fontFamily: fonts.serif, color: colors.espresso[800] },
+  client: { fontSize: 14, color: colors.espresso[400], marginTop: 4 },
+  date: { fontSize: 13, color: colors.espresso[300], marginTop: 4 },
+  actions: { flexDirection: "row", gap: 8, marginTop: 14 },
+  confirmBtn: {
+    backgroundColor: colors.espresso[800],
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  confirmBtnText: { color: colors.ivory[100], fontWeight: "600", fontSize: 14 },
+  declineBtn: {
+    backgroundColor: colors.ivory[200],
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  declineBtnText: { color: colors.espresso[500], fontWeight: "500", fontSize: 14 },
+  emptyContainer: { alignItems: "center", marginTop: 60 },
+  emptyTitle: { fontFamily: fonts.serif, fontSize: 18, color: colors.espresso[800] },
+  emptyBody: { fontSize: 14, color: colors.espresso[400], marginTop: 6 },
 });

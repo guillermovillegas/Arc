@@ -52,7 +52,7 @@ function CalendarSettingsPageInner() {
       );
       setConnections(res.data);
     } catch {
-      setError("Failed to load calendar connections.");
+      // Network error on initial load — degrade to empty state
     } finally {
       setLoading(false);
     }
@@ -135,52 +135,52 @@ function CalendarSettingsPageInner() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[1.875rem] font-semibold leading-[1.2] tracking-tight text-neutral-900">
+        <h1 className="font-serif text-heading text-espresso-800">
           Settings
         </h1>
-        <p className="mt-1 text-[0.875rem] text-neutral-500">
+        <p className="mt-1 text-body-sm text-espresso-400">
           Connect your existing calendars so bookings stay in sync.
         </p>
       </div>
 
       {/* Status messages */}
       {successMessage && (
-        <div className="flex items-center gap-2 rounded-xl bg-emerald-50 px-4 py-3 text-[0.875rem] text-emerald-700">
+        <div className="flex items-center gap-2 rounded-xl bg-[#3b7a57]/10 px-4 py-3 text-[0.875rem] text-[#3b7a57]">
           <CheckCircle2 className="h-4 w-4 shrink-0" />
           {successMessage}
         </div>
       )}
       {error && (
-        <div className="flex items-center gap-2 rounded-xl bg-red-50 px-4 py-3 text-[0.875rem] text-red-600">
+        <div className="flex items-center gap-2 border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           <AlertCircle className="h-4 w-4 shrink-0" />
           {error}
         </div>
       )}
 
       {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-6 w-6 animate-spin text-neutral-400" />
+        <div className="flex justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-espresso-300" />
         </div>
       ) : (
         <>
-          {/* ─── Google Calendar ─────────────────────────────────── */}
-          <Card>
+          {/* --- Google Calendar ---------------------------------------- */}
+          <Card className="border-espresso-200/60 bg-ivory-50">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50">
-                    <Calendar className="h-5 w-5 text-blue-600" />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brass-100">
+                    <Calendar className="h-5 w-5 text-brass-600" />
                   </div>
                   <div>
-                    <CardTitle>Google Calendar</CardTitle>
-                    <CardDescription>
+                    <CardTitle className="text-espresso-800">Google Calendar</CardTitle>
+                    <CardDescription className="text-espresso-400">
                       Two-way sync — external events block your ARC availability, and ARC bookings appear in Google Calendar.
                     </CardDescription>
                   </div>
                 </div>
                 {googleConnection && (
-                  <Badge variant="secondary" className="rounded-full gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  <Badge className="rounded-full gap-1.5 border-transparent bg-[#3b7a57]/10 text-[#3b7a57]">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#3b7a57]" />
                     Connected
                   </Badge>
                 )}
@@ -189,20 +189,20 @@ function CalendarSettingsPageInner() {
             <CardContent>
               {googleConnection ? (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between rounded-xl bg-neutral-50 px-4 py-3">
+                  <div className="flex items-center justify-between rounded-xl bg-ivory-100 px-4 py-3">
                     <div>
-                      <p className="text-[0.875rem] font-medium text-neutral-900">
+                      <p className="text-[0.875rem] font-medium text-espresso-800">
                         {googleConnection.externalId || "Primary calendar"}
                       </p>
-                      <p className="text-[0.75rem] text-neutral-500">
-                        {googleConnection._count.externalEvents} events synced
+                      <p className="text-[0.75rem] text-espresso-400">
+                        {googleConnection._count?.externalEvents ?? 0} events synced
                         {googleConnection.lastSyncedAt &&
                           ` · Last synced ${new Date(googleConnection.lastSyncedAt).toLocaleString()}`}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
                       <Button
-                        variant="outline"
+                        variant="arc-outline"
                         size="sm"
                         onClick={() => triggerSync(googleConnection.id)}
                         disabled={syncingId === googleConnection.id}
@@ -223,7 +223,7 @@ function CalendarSettingsPageInner() {
                   </div>
                 </div>
               ) : (
-                <Button onClick={connectGoogle} className="gap-2">
+                <Button variant="arc" onClick={connectGoogle} className="gap-2">
                   <Link2 className="h-4 w-4" />
                   Connect Google Calendar
                 </Button>
@@ -231,24 +231,24 @@ function CalendarSettingsPageInner() {
             </CardContent>
           </Card>
 
-          {/* ─── ICS Feed ───────────────────────────────────────── */}
-          <Card>
+          {/* --- ICS Feed ---------------------------------------------- */}
+          <Card className="border-espresso-200/60 bg-ivory-50">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50">
-                    <Rss className="h-5 w-5 text-amber-600" />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brass-100">
+                    <Rss className="h-5 w-5 text-brass-600" />
                   </div>
                   <div>
-                    <CardTitle>Calendar Feed (ICS)</CardTitle>
-                    <CardDescription>
+                    <CardTitle className="text-espresso-800">Calendar Feed (ICS)</CardTitle>
+                    <CardDescription className="text-espresso-400">
                       Import events from Booksy, Vagaro, Acuity, or any app that exports an ICS/iCal feed. One-way sync (read only).
                     </CardDescription>
                   </div>
                 </div>
                 {icsConnection && (
-                  <Badge variant="secondary" className="rounded-full gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  <Badge className="rounded-full gap-1.5 border-transparent bg-[#3b7a57]/10 text-[#3b7a57]">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#3b7a57]" />
                     Connected
                   </Badge>
                 )}
@@ -257,20 +257,20 @@ function CalendarSettingsPageInner() {
             <CardContent>
               {icsConnection ? (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between rounded-xl bg-neutral-50 px-4 py-3">
+                  <div className="flex items-center justify-between rounded-xl bg-ivory-100 px-4 py-3">
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-[0.875rem] font-medium text-neutral-900">
+                      <p className="truncate text-[0.875rem] font-medium text-espresso-800">
                         {icsConnection.feedUrl}
                       </p>
-                      <p className="text-[0.75rem] text-neutral-500">
-                        {icsConnection._count.externalEvents} events imported
+                      <p className="text-[0.75rem] text-espresso-400">
+                        {icsConnection._count?.externalEvents ?? 0} events imported
                         {icsConnection.lastSyncedAt &&
                           ` · Last synced ${new Date(icsConnection.lastSyncedAt).toLocaleString()}`}
                       </p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0 ml-4">
                       <Button
-                        variant="outline"
+                        variant="arc-outline"
                         size="sm"
                         onClick={() => triggerSync(icsConnection.id)}
                         disabled={syncingId === icsConnection.id}
@@ -292,7 +292,7 @@ function CalendarSettingsPageInner() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <p className="text-[0.75rem] text-neutral-500">
+                  <p className="text-[0.75rem] text-espresso-400">
                     Find your calendar feed URL in your booking app&apos;s settings — usually under &quot;Calendar Export,&quot; &quot;Sync,&quot; or &quot;iCal.&quot;
                   </p>
                   <div className="flex gap-2">
@@ -303,6 +303,7 @@ function CalendarSettingsPageInner() {
                       className="flex-1"
                     />
                     <Button
+                      variant="brass"
                       onClick={addIcsFeed}
                       disabled={icsLoading || !icsUrl.trim()}
                       className="gap-2 shrink-0"
@@ -320,11 +321,11 @@ function CalendarSettingsPageInner() {
             </CardContent>
           </Card>
 
-          {/* ─── How It Works ───────────────────────────────────── */}
-          <Separator />
+          {/* --- How It Works ------------------------------------------ */}
+          <Separator className="bg-espresso-200/60" />
 
           <div className="space-y-4">
-            <h3 className="text-[1rem] font-semibold text-neutral-900">
+            <h3 className="font-serif text-[1rem] font-semibold text-espresso-800">
               How calendar sync works
             </h3>
             <div className="grid gap-4 sm:grid-cols-3">
@@ -344,12 +345,12 @@ function CalendarSettingsPageInner() {
               ].map((item) => (
                 <div
                   key={item.title}
-                  className="rounded-xl border border-neutral-200 bg-neutral-50 p-4"
+                  className="rounded-xl border border-espresso-200/60 bg-ivory-100 p-4"
                 >
-                  <p className="text-[0.875rem] font-medium text-neutral-900">
+                  <p className="text-[0.875rem] font-medium text-espresso-800">
                     {item.title}
                   </p>
-                  <p className="mt-1 text-[0.75rem] text-neutral-500 leading-relaxed">
+                  <p className="mt-1 text-[0.75rem] text-espresso-400 leading-relaxed">
                     {item.desc}
                   </p>
                 </div>
@@ -364,7 +365,7 @@ function CalendarSettingsPageInner() {
 
 export default function CalendarSettingsPage() {
   return (
-    <Suspense fallback={<div className="p-6 text-neutral-500">Loading…</div>}>
+    <Suspense fallback={<div className="p-6 text-espresso-400">Loading...</div>}>
       <CalendarSettingsPageInner />
     </Suspense>
   );

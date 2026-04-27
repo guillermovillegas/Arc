@@ -21,18 +21,18 @@ describe("LoginScreen", () => {
   it("renders login form elements", () => {
     const { getByText, getByPlaceholderText } = render(<LoginScreen />);
 
-    expect(getByText("ARC")).toBeTruthy();
+    expect(getByText("Arc")).toBeTruthy();
     expect(getByText("Welcome back")).toBeTruthy();
-    expect(getByPlaceholderText("Email")).toBeTruthy();
-    expect(getByPlaceholderText("Password")).toBeTruthy();
+    expect(getByPlaceholderText("you@example.com")).toBeTruthy();
+    expect(getByPlaceholderText("Enter your password")).toBeTruthy();
     expect(getByText("Sign In")).toBeTruthy();
   });
 
   it("updates email and password fields on input", () => {
     const { getByPlaceholderText } = render(<LoginScreen />);
 
-    const emailInput = getByPlaceholderText("Email");
-    const passwordInput = getByPlaceholderText("Password");
+    const emailInput = getByPlaceholderText("you@example.com");
+    const passwordInput = getByPlaceholderText("Enter your password");
 
     fireEvent.changeText(emailInput, "user@test.com");
     fireEvent.changeText(passwordInput, "password123");
@@ -54,8 +54,8 @@ describe("LoginScreen", () => {
 
     const { getByPlaceholderText, getByText } = render(<LoginScreen />);
 
-    fireEvent.changeText(getByPlaceholderText("Email"), "user@test.com");
-    fireEvent.changeText(getByPlaceholderText("Password"), "password123");
+    fireEvent.changeText(getByPlaceholderText("you@example.com"), "user@test.com");
+    fireEvent.changeText(getByPlaceholderText("Enter your password"), "password123");
     fireEvent.press(getByText("Sign In"));
 
     await waitFor(() => {
@@ -84,8 +84,8 @@ describe("LoginScreen", () => {
 
     const { getByPlaceholderText, getByText } = render(<LoginScreen />);
 
-    fireEvent.changeText(getByPlaceholderText("Email"), "a@b.com");
-    fireEvent.changeText(getByPlaceholderText("Password"), "pass");
+    fireEvent.changeText(getByPlaceholderText("you@example.com"), "a@b.com");
+    fireEvent.changeText(getByPlaceholderText("Enter your password"), "pass");
     fireEvent.press(getByText("Sign In"));
 
     await waitFor(() => {
@@ -106,8 +106,8 @@ describe("LoginScreen", () => {
 
     const { getByPlaceholderText, getByText } = render(<LoginScreen />);
 
-    fireEvent.changeText(getByPlaceholderText("Email"), "a@b.com");
-    fireEvent.changeText(getByPlaceholderText("Password"), "pass");
+    fireEvent.changeText(getByPlaceholderText("you@example.com"), "a@b.com");
+    fireEvent.changeText(getByPlaceholderText("Enter your password"), "pass");
     fireEvent.press(getByText("Sign In"));
 
     await waitFor(() => {
@@ -123,11 +123,11 @@ describe("LoginScreen", () => {
 
     const { getByText, getByPlaceholderText } = render(<LoginScreen />);
 
-    fireEvent.changeText(getByPlaceholderText("Email"), "a@b.com");
-    fireEvent.changeText(getByPlaceholderText("Password"), "pass");
+    fireEvent.changeText(getByPlaceholderText("you@example.com"), "a@b.com");
+    fireEvent.changeText(getByPlaceholderText("Enter your password"), "pass");
     fireEvent.press(getByText("Sign In"));
 
-    expect(getByText("Signing in...")).toBeTruthy();
+    expect(getByText("Signing in\u2026")).toBeTruthy();
 
     resolvePost!({
       data: {
@@ -148,8 +148,8 @@ describe("LoginScreen", () => {
 
     const { getByPlaceholderText, getByText } = render(<LoginScreen />);
 
-    fireEvent.changeText(getByPlaceholderText("Email"), "bad@email.com");
-    fireEvent.changeText(getByPlaceholderText("Password"), "wrong");
+    fireEvent.changeText(getByPlaceholderText("you@example.com"), "bad@email.com");
+    fireEvent.changeText(getByPlaceholderText("Enter your password"), "wrong");
     fireEvent.press(getByText("Sign In"));
 
     await waitFor(() => {
@@ -163,8 +163,8 @@ describe("LoginScreen", () => {
 
     const { getByPlaceholderText, getByText } = render(<LoginScreen />);
 
-    fireEvent.changeText(getByPlaceholderText("Email"), "a@b.com");
-    fireEvent.changeText(getByPlaceholderText("Password"), "p");
+    fireEvent.changeText(getByPlaceholderText("you@example.com"), "a@b.com");
+    fireEvent.changeText(getByPlaceholderText("Enter your password"), "p");
     fireEvent.press(getByText("Sign In"));
 
     await waitFor(() => {

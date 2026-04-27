@@ -10,7 +10,7 @@ describe("Button component", () => {
     render(<Button>Click me</Button>);
     const btn = screen.getByRole("button", { name: /click me/i });
     expect(btn).toBeInTheDocument();
-    expect(btn.className).toContain("bg-neutral-900");
+    expect(btn.className).toContain("bg-primary");
     expect(btn.className).toContain("h-10");
   });
 
@@ -24,42 +24,42 @@ describe("Button component", () => {
   it("renders with variant=default", () => {
     render(<Button variant="default">Default</Button>);
     const btn = screen.getByRole("button");
-    expect(btn.className).toContain("bg-neutral-900");
-    expect(btn.className).toContain("hover:bg-neutral-800");
+    expect(btn.className).toContain("bg-primary");
+    expect(btn.className).toContain("hover:bg-primary/90");
   });
 
   it("renders with variant=primary", () => {
     render(<Button variant="primary">Primary</Button>);
     const btn = screen.getByRole("button");
-    expect(btn.className).toContain("bg-neutral-900");
-    expect(btn.className).toContain("hover:bg-neutral-800");
+    expect(btn.className).toContain("bg-primary");
+    expect(btn.className).toContain("hover:bg-primary/90");
   });
 
   it("renders with variant=secondary", () => {
     render(<Button variant="secondary">Secondary</Button>);
     const btn = screen.getByRole("button");
-    expect(btn.className).toContain("bg-neutral-100");
-    expect(btn.className).toContain("hover:bg-neutral-200");
+    expect(btn.className).toContain("bg-secondary");
+    expect(btn.className).toContain("hover:bg-secondary/80");
   });
 
   it("renders with variant=outline", () => {
     render(<Button variant="outline">Outline</Button>);
     const btn = screen.getByRole("button");
     expect(btn.className).toContain("border");
-    expect(btn.className).toContain("border-neutral-300");
+    expect(btn.className).toContain("border-input");
   });
 
   it("renders with variant=ghost", () => {
     render(<Button variant="ghost">Ghost</Button>);
     const btn = screen.getByRole("button");
-    expect(btn.className).toContain("hover:bg-neutral-100");
+    expect(btn.className).toContain("hover:bg-accent");
   });
 
   it("renders with variant=destructive", () => {
     render(<Button variant="destructive">Destructive</Button>);
     const btn = screen.getByRole("button");
-    expect(btn.className).toContain("bg-red-500");
-    expect(btn.className).toContain("hover:bg-red-600");
+    expect(btn.className).toContain("bg-destructive");
+    expect(btn.className).toContain("hover:bg-destructive/90");
   });
 
   it("renders with variant=link", () => {
@@ -76,14 +76,14 @@ describe("Button component", () => {
     expect(screen.getByRole("button").className).toContain("h-10");
   });
 
-  it("renders with size=sm (h-8)", () => {
+  it("renders with size=sm (h-9)", () => {
     render(<Button size="sm">Small</Button>);
-    expect(screen.getByRole("button").className).toContain("h-8");
+    expect(screen.getByRole("button").className).toContain("h-9");
   });
 
-  it("renders with size=lg (h-12)", () => {
+  it("renders with size=lg (h-11)", () => {
     render(<Button size="lg">Large</Button>);
-    expect(screen.getByRole("button").className).toContain("h-12");
+    expect(screen.getByRole("button").className).toContain("h-11");
   });
 
   it("renders with size=icon (h-10 w-10)", () => {
@@ -105,7 +105,7 @@ describe("Button component", () => {
     expect(link).toBeInTheDocument();
     expect(link.tagName).toBe("A");
     expect(link).toHaveAttribute("href", "/test");
-    expect(link.className).toContain("bg-neutral-900");
+    expect(link.className).toContain("bg-primary");
   });
 
   /* ─── Ref forwarding ─────────────────────────────────────────────────── */
@@ -145,7 +145,7 @@ describe("Button component", () => {
   it("has disabled styling class when disabled", () => {
     render(<Button disabled>Disabled</Button>);
     const btn = screen.getByRole("button");
-    expect(btn.className).toContain("disabled:opacity-40");
+    expect(btn.className).toContain("disabled:opacity-50");
     expect(btn.className).toContain("disabled:pointer-events-none");
   });
 

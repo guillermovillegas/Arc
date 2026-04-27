@@ -15,14 +15,14 @@ beforeEach(() => {
 });
 
 describe("SplashScreen", () => {
-  it("renders ARC logo text", () => {
+  it("renders Arc logo text", () => {
     (auth.getStoredTokens as jest.Mock).mockResolvedValue({
       accessToken: null,
       user: null,
     });
 
     const { getByText } = render(<SplashScreen />);
-    expect(getByText("ARC")).toBeTruthy();
+    expect(getByText("Arc")).toBeTruthy();
   });
 
   it("redirects to login when no stored tokens", async () => {
