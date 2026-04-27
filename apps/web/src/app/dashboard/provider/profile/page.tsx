@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import { api } from "@/lib/api-client";
@@ -88,12 +89,15 @@ export default function ProviderProfilePage() {
       ) : (
         <Card className="mt-6 max-w-lg border-espresso-200/60 bg-ivory-50">
           <div className="space-y-4 p-6">
-            <Input
-              label="Business Name"
-              value={form.businessName}
-              onChange={(e) => setForm((f) => ({ ...f, businessName: e.target.value }))}
-              placeholder="e.g. Marcus Cuts"
-            />
+            <div>
+              <Label htmlFor="businessName">Business Name</Label>
+              <Input
+                id="businessName"
+                value={form.businessName}
+                onChange={(e) => setForm((f) => ({ ...f, businessName: e.target.value }))}
+                placeholder="e.g. Marcus Cuts"
+              />
+            </div>
 
             <div>
               <label className="mb-1.5 block text-sm font-medium text-espresso-800">Bio</label>
@@ -106,19 +110,25 @@ export default function ProviderProfilePage() {
               />
             </div>
 
-            <Input
-              label="Address / Location"
-              value={form.address}
-              onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
-              placeholder="City, State"
-            />
+            <div>
+              <Label htmlFor="address">Address / Location</Label>
+              <Input
+                id="address"
+                value={form.address}
+                onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
+                placeholder="City, State"
+              />
+            </div>
 
-            <Input
-              label="Service Radius (miles)"
-              type="number"
-              value={form.serviceRadius}
-              onChange={(e) => setForm((f) => ({ ...f, serviceRadius: e.target.value }))}
-            />
+            <div>
+              <Label htmlFor="serviceRadius">Service Radius (miles)</Label>
+              <Input
+                id="serviceRadius"
+                type="number"
+                value={form.serviceRadius}
+                onChange={(e) => setForm((f) => ({ ...f, serviceRadius: e.target.value }))}
+              />
+            </div>
 
             {message && (
               <p className="text-sm text-[#3b7a57]">

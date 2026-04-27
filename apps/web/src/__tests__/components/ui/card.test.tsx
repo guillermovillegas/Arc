@@ -21,44 +21,9 @@ describe("Card component", () => {
   it("applies base styling classes", () => {
     render(<Card data-testid="card">Content</Card>);
     const card = screen.getByTestId("card");
-    expect(card.className).toContain("rounded-lg");
+    expect(card.className).toContain("rounded-none");
     expect(card.className).toContain("border");
     expect(card.className).toContain("bg-card");
-  });
-
-  it("applies padding=sm", () => {
-    render(
-      <Card padding="sm" data-testid="card">
-        Content
-      </Card>,
-    );
-    expect(screen.getByTestId("card").className).toContain("p-4");
-  });
-
-  it("applies padding=none", () => {
-    render(
-      <Card padding="none" data-testid="card">
-        Content
-      </Card>,
-    );
-    expect(screen.getByTestId("card").className).toContain("p-0");
-  });
-
-  it("applies padding=lg", () => {
-    render(
-      <Card padding="lg" data-testid="card">
-        Content
-      </Card>,
-    );
-    expect(screen.getByTestId("card").className).toContain("p-8");
-  });
-
-  it("does not add padding class when padding prop is omitted", () => {
-    render(<Card data-testid="card">Content</Card>);
-    const className = screen.getByTestId("card").className;
-    expect(className).not.toContain("p-4");
-    expect(className).not.toContain("p-0");
-    expect(className).not.toContain("p-8");
   });
 
   it("merges custom className", () => {
@@ -69,8 +34,7 @@ describe("Card component", () => {
     );
     const card = screen.getByTestId("card");
     expect(card.className).toContain("shadow-xl");
-    // Base classes still present
-    expect(card.className).toContain("rounded-lg");
+    expect(card.className).toContain("bg-card");
   });
 
   it("forwards ref", () => {
@@ -104,7 +68,7 @@ describe("CardHeader component", () => {
     const header = screen.getByTestId("header");
     expect(header.className).toContain("flex");
     expect(header.className).toContain("flex-col");
-    expect(header.className).toContain("p-6");
+    expect(header.className).toContain("p-8");
   });
 
   it("merges custom className", () => {
@@ -134,8 +98,13 @@ describe("CardTitle component", () => {
   it("applies font styling", () => {
     render(<CardTitle data-testid="title">Title</CardTitle>);
     const title = screen.getByTestId("title");
-    expect(title.className).toContain("font-semibold");
-    expect(title.className).toContain("tracking-tight");
+    expect(title.className).toContain("font-display");
+    expect(title.className).toContain("text-heading");
+  });
+
+  it("renders as an h3 element", () => {
+    render(<CardTitle data-testid="title">Title</CardTitle>);
+    expect(screen.getByTestId("title").tagName).toBe("H3");
   });
 
   it("merges custom className", () => {
@@ -148,9 +117,9 @@ describe("CardTitle component", () => {
   });
 
   it("forwards ref", () => {
-    const ref = React.createRef<HTMLDivElement>();
+    const ref = React.createRef<HTMLHeadingElement>();
     render(<CardTitle ref={ref}>Title</CardTitle>);
-    expect(ref.current).toBeInstanceOf(HTMLDivElement);
+    expect(ref.current).toBeInstanceOf(HTMLHeadingElement);
   });
 });
 
@@ -169,10 +138,15 @@ describe("CardDescription component", () => {
     expect(screen.getByTestId("desc").className).toContain("text-muted-foreground");
   });
 
+  it("renders as a p element", () => {
+    render(<CardDescription data-testid="desc">Description</CardDescription>);
+    expect(screen.getByTestId("desc").tagName).toBe("P");
+  });
+
   it("forwards ref", () => {
-    const ref = React.createRef<HTMLDivElement>();
+    const ref = React.createRef<HTMLParagraphElement>();
     render(<CardDescription ref={ref}>Description</CardDescription>);
-    expect(ref.current).toBeInstanceOf(HTMLDivElement);
+    expect(ref.current).toBeInstanceOf(HTMLParagraphElement);
   });
 });
 
@@ -184,10 +158,10 @@ describe("CardContent component", () => {
     expect(screen.getByText("Body text here")).toBeInTheDocument();
   });
 
-  it("applies padding with no top padding (p-6 pt-0)", () => {
+  it("applies padding with no top padding (p-8 pt-0)", () => {
     render(<CardContent data-testid="content">Content</CardContent>);
     const content = screen.getByTestId("content");
-    expect(content.className).toContain("p-6");
+    expect(content.className).toContain("p-8");
     expect(content.className).toContain("pt-0");
   });
 
@@ -220,8 +194,8 @@ describe("CardFooter component", () => {
     const footer = screen.getByTestId("footer");
     expect(footer.className).toContain("flex");
     expect(footer.className).toContain("items-center");
-    expect(footer.className).toContain("p-6");
-    expect(footer.className).toContain("pt-0");
+    expect(footer.className).toContain("p-8");
+    expect(footer.className).toContain("border-t");
   });
 
   it("merges custom className", () => {

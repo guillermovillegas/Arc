@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth";
@@ -91,18 +92,24 @@ export default function ProviderPortfolioPage() {
       {showForm && (
         <Card className="mt-4 border-espresso-200/60 bg-ivory-50">
           <div className="space-y-3 p-6">
-            <Input
-              label="Image URL"
-              value={form.imageUrl}
-              onChange={(e) => setForm((f) => ({ ...f, imageUrl: e.target.value }))}
-              placeholder="https://..."
-            />
-            <Input
-              label="Caption"
-              value={form.caption}
-              onChange={(e) => setForm((f) => ({ ...f, caption: e.target.value }))}
-              placeholder="Optional caption"
-            />
+            <div>
+              <Label htmlFor="imageUrl">Image URL</Label>
+              <Input
+                id="imageUrl"
+                value={form.imageUrl}
+                onChange={(e) => setForm((f) => ({ ...f, imageUrl: e.target.value }))}
+                placeholder="https://..."
+              />
+            </div>
+            <div>
+              <Label htmlFor="caption">Caption</Label>
+              <Input
+                id="caption"
+                value={form.caption}
+                onChange={(e) => setForm((f) => ({ ...f, caption: e.target.value }))}
+                placeholder="Optional caption"
+              />
+            </div>
             <Button variant="accent" onClick={addItem} disabled={saving || !form.imageUrl.trim()}>
               {saving ? "Adding..." : "Add to Portfolio"}
             </Button>

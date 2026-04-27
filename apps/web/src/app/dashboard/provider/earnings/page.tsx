@@ -99,7 +99,7 @@ export default function ProviderEarningsPage() {
               </div>
             ) : (
               earnings?.payments.map((payment) => (
-                <Card key={payment.id} padding="sm" className="border-espresso-200/60 bg-ivory-50">
+                <Card key={payment.id} className="p-4 border-espresso-200/60 bg-ivory-50">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-medium text-espresso-800">{payment.booking?.service?.name ?? "Unknown Service"}</p>

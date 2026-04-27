@@ -19,64 +19,9 @@ describe("Input component", () => {
   it("applies base styling classes", () => {
     render(<Input data-testid="input" />);
     const input = screen.getByTestId("input");
-    expect(input.className).toContain("rounded-md");
-    expect(input.className).toContain("border");
-    expect(input.className).toContain("bg-background");
-  });
-
-  /* ─── Label ──────────────────────────────────────────────────────────── */
-
-  it("renders a label when label prop is provided", () => {
-    render(<Input label="Email" id="email-input" />);
-    const label = screen.getByText("Email");
-    expect(label).toBeInTheDocument();
-    expect(label.tagName).toBe("LABEL");
-    expect(label).toHaveAttribute("for", "email-input");
-  });
-
-  it("does not render a label when label prop is omitted", () => {
-    render(<Input id="no-label" data-testid="input" />);
-    expect(screen.queryByRole("label")).not.toBeInTheDocument();
-  });
-
-  it("label has correct styling", () => {
-    render(<Input label="Name" id="name" />);
-    const label = screen.getByText("Name");
-    expect(label.className).toContain("font-medium");
-    expect(label.className).toContain("text-foreground");
-  });
-
-  /* ─── Error state ────────────────────────────────────────────────────── */
-
-  it("displays error message when error prop is provided", () => {
-    render(<Input error="This field is required" />);
-    expect(screen.getByText("This field is required")).toBeInTheDocument();
-  });
-
-  it("does not display error text when error prop is omitted", () => {
-    render(<Input data-testid="input" />);
-    // No <p> with error styling should exist
-    const wrapper = screen.getByTestId("input").parentElement;
-    const paragraphs = wrapper?.querySelectorAll("p");
-    expect(paragraphs?.length ?? 0).toBe(0);
-  });
-
-  it("applies error border styling when error is set", () => {
-    render(<Input error="Invalid" data-testid="input" />);
-    const input = screen.getByTestId("input");
-    expect(input.className).toContain("border-red-500");
-  });
-
-  it("error message has red text styling", () => {
-    render(<Input error="Something went wrong" />);
-    const errorText = screen.getByText("Something went wrong");
-    expect(errorText.className).toContain("text-red-600");
-  });
-
-  it("shows both label and error simultaneously", () => {
-    render(<Input label="Password" error="Too short" id="pw" />);
-    expect(screen.getByText("Password")).toBeInTheDocument();
-    expect(screen.getByText("Too short")).toBeInTheDocument();
+    expect(input.className).toContain("rounded-none");
+    expect(input.className).toContain("border-b");
+    expect(input.className).toContain("bg-transparent");
   });
 
   /* ─── Ref forwarding ─────────────────────────────────────────────────── */
@@ -87,7 +32,7 @@ describe("Input component", () => {
     expect(ref.current).toBeInstanceOf(HTMLInputElement);
   });
 
-  it("ref points to the input, not the wrapper div", () => {
+  it("ref points directly to the input element", () => {
     const ref = React.createRef<HTMLInputElement>();
     render(<Input ref={ref} />);
     expect(ref.current?.tagName).toBe("INPUT");
@@ -120,7 +65,6 @@ describe("Input component", () => {
 
   it("renders without explicit type attribute by default", () => {
     render(<Input data-testid="input" />);
-    // The component doesn't set type explicitly; browsers default to "text"
     const input = screen.getByTestId("input");
     expect(input.tagName).toBe("INPUT");
   });
@@ -141,7 +85,7 @@ describe("Input component", () => {
     render(<Input className="my-class" data-testid="input" />);
     const input = screen.getByTestId("input");
     expect(input.className).toContain("my-class");
-    expect(input.className).toContain("rounded-md");
+    expect(input.className).toContain("rounded-none");
   });
 
   /* ─── Disabled state ─────────────────────────────────────────────────── */

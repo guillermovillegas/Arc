@@ -102,7 +102,7 @@ export default async function ProviderProfilePage({ params }: Props) {
             <h2 className="font-serif text-xl font-bold text-espresso-800">Services</h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {provider.services.map((service: { id: string; name: string; category: string; description: string | null; durationMinutes: number; priceInCents: number }) => (
-                <Card key={service.id} padding="sm" className="border-espresso-200/60 bg-ivory-50">
+                <Card key={service.id} className="p-4 border-espresso-200/60 bg-ivory-50">
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="font-medium text-espresso-800">{service.name}</h3>
@@ -151,7 +151,7 @@ export default async function ProviderProfilePage({ params }: Props) {
               <h2 className="font-serif text-xl font-bold text-espresso-800">Reviews</h2>
               <div className="mt-4 space-y-4">
                 {provider.reviews.map((review: { id: string; rating: number; text: string | null; createdAt: string; client: { firstName: string; lastName: string } }) => (
-                  <Card key={review.id} padding="sm" className="border-espresso-200/60 bg-ivory-50">
+                  <Card key={review.id} className="p-4 border-espresso-200/60 bg-ivory-50">
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-espresso-800">
                         {review.client.firstName} {review.client.lastName[0]}.

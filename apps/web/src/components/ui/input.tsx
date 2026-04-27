@@ -1,42 +1,22 @@
-import * as React from "react"
+import * as React from "react";
+import { cn } from "@/lib/utils";
 
-import { cn } from "@/lib/utils"
+const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
+  ({ className, type, ...props }, ref) => (
+    <input
+      type={type}
+      ref={ref}
+      className={cn(
+        "flex h-12 w-full rounded-none bg-transparent border-0 border-b border-smoke-700 px-0 py-2 font-sans text-body-lg text-bone-100 placeholder:text-taupe-300 ring-offset-background transition-colors duration-[250ms] ease-fai-smooth",
+        "focus-visible:outline-none focus-visible:border-champagne-400",
+        "disabled:cursor-not-allowed disabled:opacity-50",
+        "file:bg-transparent file:border-0 file:text-bone-100 file:text-body-sm file:font-medium",
+        className
+      )}
+      {...props}
+    />
+  )
+);
+Input.displayName = "Input";
 
-interface InputProps extends React.ComponentProps<"input"> {
-  label?: string;
-  error?: string;
-}
-
-const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, label, error, id, ...props }, ref) => {
-    return (
-      <div className="w-full">
-        {label && (
-          <label
-            htmlFor={id}
-            className="mb-1.5 block text-sm font-medium text-foreground"
-          >
-            {label}
-          </label>
-        )}
-        <input
-          type={type}
-          id={id}
-          className={cn(
-            "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
-            error && "border-red-500",
-            className
-          )}
-          ref={ref}
-          {...props}
-        />
-        {error && (
-          <p className="mt-1 text-sm text-red-600">{error}</p>
-        )}
-      </div>
-    )
-  }
-)
-Input.displayName = "Input"
-
-export { Input }
+export { Input };

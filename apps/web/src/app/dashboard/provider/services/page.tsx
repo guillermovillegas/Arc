@@ -3,6 +3,7 @@
 import { useState, useEffect, FormEvent } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth";
@@ -96,19 +97,25 @@ export default function ProviderServicesPage() {
       {showForm && (
         <Card className="mt-4 border-espresso-200/60 bg-ivory-50">
           <form onSubmit={handleSubmit} className="space-y-4 p-6">
-            <Input
-              label="Service Name"
-              value={form.name}
-              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-              placeholder="e.g. Classic Fade"
-              required
-            />
-            <Input
-              label="Description"
-              value={form.description}
-              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-              placeholder="Optional description"
-            />
+            <div>
+              <Label htmlFor="serviceName">Service Name</Label>
+              <Input
+                id="serviceName"
+                value={form.name}
+                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                placeholder="e.g. Classic Fade"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="serviceDescription">Description</Label>
+              <Input
+                id="serviceDescription"
+                value={form.description}
+                onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                placeholder="Optional description"
+              />
+            </div>
             <div className="grid grid-cols-3 gap-3">
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-espresso-800">Category</label>
@@ -122,23 +129,29 @@ export default function ProviderServicesPage() {
                   ))}
                 </select>
               </div>
-              <Input
-                label="Duration (min)"
-                type="number"
-                value={form.durationMinutes}
-                onChange={(e) => setForm((f) => ({ ...f, durationMinutes: e.target.value }))}
-                min={15}
-                required
-              />
-              <Input
-                label="Price ($)"
-                type="number"
-                step="0.01"
-                value={form.priceInCents}
-                onChange={(e) => setForm((f) => ({ ...f, priceInCents: e.target.value }))}
-                placeholder="35.00"
-                required
-              />
+              <div>
+                <Label htmlFor="duration">Duration (min)</Label>
+                <Input
+                  id="duration"
+                  type="number"
+                  value={form.durationMinutes}
+                  onChange={(e) => setForm((f) => ({ ...f, durationMinutes: e.target.value }))}
+                  min={15}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="price">Price ($)</Label>
+                <Input
+                  id="price"
+                  type="number"
+                  step="0.01"
+                  value={form.priceInCents}
+                  onChange={(e) => setForm((f) => ({ ...f, priceInCents: e.target.value }))}
+                  placeholder="35.00"
+                  required
+                />
+              </div>
             </div>
             <Button variant="accent" type="submit" disabled={saving}>
               {saving ? "Adding..." : "Add Service"}
@@ -160,7 +173,7 @@ export default function ProviderServicesPage() {
             </div>
           ) : (
             services.map((service) => (
-              <Card key={service.id} padding="sm" className="border-espresso-200/60 bg-ivory-50">
+              <Card key={service.id} className="p-4 border-espresso-200/60 bg-ivory-50">
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="font-medium text-espresso-800">{service.name}</h3>
