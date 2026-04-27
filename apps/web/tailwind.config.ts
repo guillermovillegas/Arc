@@ -143,6 +143,14 @@ const config: Config = {
           "0%": { transform: "translateY(0)" },
           "100%": { transform: "translateY(100%)" },
         },
+        "sheet-in-top": {
+          "0%": { transform: "translateY(-100%)" },
+          "100%": { transform: "translateY(0)" },
+        },
+        "sheet-out-top": {
+          "0%": { transform: "translateY(0)" },
+          "100%": { transform: "translateY(-100%)" },
+        },
         "overlay-in": { "0%": { opacity: "0" }, "100%": { opacity: "1" } },
         "overlay-out": { "0%": { opacity: "1" }, "100%": { opacity: "0" } },
       },
@@ -155,6 +163,8 @@ const config: Config = {
         "sheet-out-left": "sheet-out-left 250ms ease-in forwards",
         "sheet-in-bottom": "sheet-in-bottom 400ms cubic-bezier(0.16, 1, 0.3, 1) forwards",
         "sheet-out-bottom": "sheet-out-bottom 250ms ease-in forwards",
+        "sheet-in-top": "sheet-in-top 400ms cubic-bezier(0.16, 1, 0.3, 1) forwards",
+        "sheet-out-top": "sheet-out-top 250ms ease-in forwards",
         "overlay-in": "overlay-in 400ms ease-out forwards",
         "overlay-out": "overlay-out 200ms ease-in forwards",
       },
