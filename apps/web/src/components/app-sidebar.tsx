@@ -17,7 +17,8 @@ import {
 import { NavMain } from "@/components/nav-main"
 import { NavProjects } from "@/components/nav-projects"
 import { NavUser } from "@/components/nav-user"
-import { TeamSwitcher } from "@/components/team-switcher"
+import Image from "next/image"
+import Link from "next/link"
 import {
   Sidebar,
   SidebarContent,
@@ -160,7 +161,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <Link href="/dashboard" className="flex items-center h-[18px] px-2 py-3 hover:opacity-80 transition-opacity duration-[250ms] ease-fai-smooth">
+          <Image
+            src="/brand/faineant-wordmark-white.png"
+            alt="FAINEANT"
+            width={128}
+            height={18}
+            className="h-[18px] w-auto"
+            priority
+          />
+        </Link>
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
