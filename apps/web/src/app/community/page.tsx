@@ -64,13 +64,13 @@ export default function CommunityPage() {
           {error && <p className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-[0.875rem] text-red-600">{error}</p>}
 
           <div className="mt-6 flex gap-2 flex-wrap">
-            <Button variant={!category ? "arc" : "arc-outline"} size="sm" onClick={() => setCategory("")}>
+            <Button variant={!category ? "primary" : "outline"} size="sm" onClick={() => setCategory("")}>
               All
             </Button>
             {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
               <Button
                 key={key}
-                variant={category === key ? "arc" : "arc-outline"}
+                variant={category === key ? "primary" : "outline"}
                 size="sm"
                 onClick={() => setCategory(key)}
               >

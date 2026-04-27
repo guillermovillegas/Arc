@@ -121,7 +121,7 @@ export default function PricingPage() {
                 ))}
               </ul>
 
-              <Button variant="arc" size="lg" className="mt-10 w-full group" asChild>
+              <Button variant="primary" size="lg" className="mt-10 w-full group" asChild>
                 <Link href="/register">
                   Create your account
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
@@ -158,7 +158,7 @@ export default function PricingPage() {
                   ))}
                 </ul>
 
-                <Button variant="brass" size="lg" className="mt-10 w-full group" asChild>
+                <Button variant="accent" size="lg" className="mt-10 w-full group" asChild>
                   <Link href="/register?role=provider">
                     Begin your practice
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />

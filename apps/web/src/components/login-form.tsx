@@ -95,7 +95,7 @@ export function LoginForm({
 
               <Button
                 type="submit"
-                variant="arc"
+                variant="primary"
                 className="w-full"
                 disabled={loading}
               >

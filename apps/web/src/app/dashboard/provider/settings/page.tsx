@@ -202,7 +202,7 @@ function CalendarSettingsPageInner() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Button
-                        variant="arc-outline"
+                        variant="outline"
                         size="sm"
                         onClick={() => triggerSync(googleConnection.id)}
                         disabled={syncingId === googleConnection.id}
@@ -223,7 +223,7 @@ function CalendarSettingsPageInner() {
                   </div>
                 </div>
               ) : (
-                <Button variant="arc" onClick={connectGoogle} className="gap-2">
+                <Button variant="primary" onClick={connectGoogle} className="gap-2">
                   <Link2 className="h-4 w-4" />
                   Connect Google Calendar
                 </Button>
@@ -270,7 +270,7 @@ function CalendarSettingsPageInner() {
                     </div>
                     <div className="flex items-center gap-2 shrink-0 ml-4">
                       <Button
-                        variant="arc-outline"
+                        variant="outline"
                         size="sm"
                         onClick={() => triggerSync(icsConnection.id)}
                         disabled={syncingId === icsConnection.id}
@@ -303,7 +303,7 @@ function CalendarSettingsPageInner() {
                       className="flex-1"
                     />
                     <Button
-                      variant="brass"
+                      variant="accent"
                       onClick={addIcsFeed}
                       disabled={icsLoading || !icsUrl.trim()}
                       className="gap-2 shrink-0"

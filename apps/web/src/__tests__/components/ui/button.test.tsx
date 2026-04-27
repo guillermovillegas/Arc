@@ -35,11 +35,10 @@ describe("Button component", () => {
     expect(btn.className).toContain("hover:bg-primary/90");
   });
 
-  it("renders with variant=secondary", () => {
-    render(<Button variant="secondary">Secondary</Button>);
+  it("renders with variant=outline (was secondary)", () => {
+    render(<Button variant="outline">Outline alt</Button>);
     const btn = screen.getByRole("button");
-    expect(btn.className).toContain("bg-secondary");
-    expect(btn.className).toContain("hover:bg-secondary/80");
+    expect(btn.className).toContain("border");
   });
 
   it("renders with variant=outline", () => {

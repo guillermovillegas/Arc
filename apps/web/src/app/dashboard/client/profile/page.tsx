@@ -71,7 +71,7 @@ export default function ClientProfilePage() {
             <p className="text-sm text-[#3b7a57]">{message}</p>
           )}
 
-          <Button variant="arc" onClick={handleSave} disabled={saving}>
+          <Button variant="primary" onClick={handleSave} disabled={saving}>
             {saving ? "Saving..." : "Save Changes"}
           </Button>
         </div>

@@ -325,7 +325,7 @@ export default function ClientMessagesPage() {
               <div className="px-4 py-12 text-center">
                 <p className="text-[0.875rem] text-red-600">{convoError}</p>
                 <Button
-                  variant="arc-outline"
+                  variant="outline"
                   size="sm"
                   className="mt-3"
                   onClick={loadConversations}
@@ -397,7 +397,7 @@ export default function ClientMessagesPage() {
                   <div className="py-12 text-center">
                     <p className="text-[0.875rem] text-red-600">{msgError}</p>
                     <Button
-                      variant="arc-outline"
+                      variant="outline"
                       size="sm"
                       className="mt-3"
                       onClick={() => loadMessages(activeId)}
@@ -469,7 +469,7 @@ export default function ClientMessagesPage() {
                 />
                 <Button
                   type="submit"
-                  variant="arc"
+                  variant="primary"
                   size="icon"
                   disabled={sending || !draft.trim()}
                   className="h-10 w-10 shrink-0"

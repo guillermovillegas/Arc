@@ -77,7 +77,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="fixed bottom-4 right-4 z-40 lg:hidden">
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
-              <Button variant="arc" size="icon" className="h-12 w-12 rounded-full shadow-lg">
+              <Button variant="primary" size="icon" className="h-12 w-12 rounded-full shadow-lg">
                 <Menu className="h-5 w-5" />
                 <span className="sr-only">Open navigation</span>
               </Button>

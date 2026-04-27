@@ -90,7 +90,7 @@ export default async function ProviderProfilePage({ params }: Props) {
                   </div>
                 </div>
                 <Link href={`/book/${provider.id}`}>
-                  <Button variant="brass" size="lg">Book Now</Button>
+                  <Button variant="accent" size="lg">Book Now</Button>
                 </Link>
               </div>
               {provider.bio && <p className="mt-4 text-espresso-600">{provider.bio}</p>}

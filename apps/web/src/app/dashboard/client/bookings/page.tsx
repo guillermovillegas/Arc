@@ -254,7 +254,7 @@ export default function ClientBookingsPage() {
 
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="arc-outline" size="sm" className="gap-1.5">
+            <Button variant="outline" size="sm" className="gap-1.5">
               <CalendarDays className="h-3.5 w-3.5" />
               {dateFilter
                 ? dateFilter.toLocaleDateString("en-US", {

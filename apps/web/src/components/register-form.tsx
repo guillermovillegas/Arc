@@ -177,7 +177,7 @@ export function RegisterForm({
 
               <Button
                 type="submit"
-                variant="arc"
+                variant="primary"
                 className="w-full"
                 disabled={loading}
               >

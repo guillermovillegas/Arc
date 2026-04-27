@@ -150,14 +150,14 @@ export default function IntegrationsPage() {
                       </p>
                     )}
                   </div>
-                  <Button variant="arc-outline" size="sm">
+                  <Button variant="outline" size="sm">
                     <Unlink className="h-3.5 w-3.5" />
                     Disconnect
                   </Button>
                 </div>
               ) : (
                 <Button
-                  variant="arc"
+                  variant="primary"
                   onClick={() => handleConnect(integration.id)}
                   disabled={connecting === integration.id}
                   className="gap-2"

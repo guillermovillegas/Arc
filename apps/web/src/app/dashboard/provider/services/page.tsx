@@ -84,7 +84,7 @@ export default function ProviderServicesPage() {
           <h1 className="font-serif text-heading text-espresso-800">My Services</h1>
           <p className="mt-1 text-body-sm text-espresso-400">Add and manage the services you offer to clients.</p>
         </div>
-        <Button variant={showForm ? "arc-outline" : "arc"} onClick={() => setShowForm(!showForm)}>
+        <Button variant={showForm ? "outline" : "primary"} onClick={() => setShowForm(!showForm)}>
           {showForm ? "Cancel" : "Add Service"}
         </Button>
       </div>
@@ -140,7 +140,7 @@ export default function ProviderServicesPage() {
                 required
               />
             </div>
-            <Button variant="brass" type="submit" disabled={saving}>
+            <Button variant="accent" type="submit" disabled={saving}>
               {saving ? "Adding..." : "Add Service"}
             </Button>
           </form>

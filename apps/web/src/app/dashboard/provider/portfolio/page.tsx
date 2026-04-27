@@ -81,7 +81,7 @@ export default function ProviderPortfolioPage() {
           <h1 className="font-serif text-heading text-espresso-800">Portfolio</h1>
           <p className="mt-1 text-body-sm text-espresso-400">Showcase your best work to attract new clients.</p>
         </div>
-        <Button variant={showForm ? "arc-outline" : "arc"} onClick={() => setShowForm(!showForm)}>{showForm ? "Cancel" : "Add Item"}</Button>
+        <Button variant={showForm ? "outline" : "primary"} onClick={() => setShowForm(!showForm)}>{showForm ? "Cancel" : "Add Item"}</Button>
       </div>
 
       {error && (
@@ -103,7 +103,7 @@ export default function ProviderPortfolioPage() {
               onChange={(e) => setForm((f) => ({ ...f, caption: e.target.value }))}
               placeholder="Optional caption"
             />
-            <Button variant="brass" onClick={addItem} disabled={saving || !form.imageUrl.trim()}>
+            <Button variant="accent" onClick={addItem} disabled={saving || !form.imageUrl.trim()}>
               {saving ? "Adding..." : "Add to Portfolio"}
             </Button>
           </div>

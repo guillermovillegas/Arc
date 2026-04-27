@@ -205,13 +205,13 @@ export default function HomePage() {
               </p>
 
               <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-                <Button variant="arc" size="lg" className="group" asChild>
+                <Button variant="primary" size="lg" className="group" asChild>
                   <Link href="/providers">
                     Find your artist
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                   </Link>
                 </Button>
-                <Button variant="arc-outline" size="lg" asChild>
+                <Button variant="outline" size="lg" asChild>
                   <Link href="/register?role=provider">Offer your craft</Link>
                 </Button>
               </div>
@@ -288,7 +288,7 @@ export default function HomePage() {
                     ))}
                   </div>
 
-                  <Button variant="arc" className="mt-6 w-full" asChild>
+                  <Button variant="primary" className="mt-6 w-full" asChild>
                     <Link href="/providers">Reserve</Link>
                   </Button>
                 </div>
@@ -499,7 +499,7 @@ export default function HomePage() {
               </p>
 
               <div className="mt-10">
-                <Button variant="brass" size="lg" className="group" asChild>
+                <Button variant="accent" size="lg" className="group" asChild>
                   <Link href="/register?role=provider">
                     Begin your practice
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -602,13 +602,13 @@ export default function HomePage() {
           </h2>
 
           <div className="mt-12 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Button variant="arc" size="lg" className="group" asChild>
+            <Button variant="primary" size="lg" className="group" asChild>
               <Link href="/register">
                 Create your account
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
             </Button>
-            <Button variant="arc-outline" size="lg" asChild>
+            <Button variant="outline" size="lg" asChild>
               <Link href="/providers">Explore professionals</Link>
             </Button>
           </div>

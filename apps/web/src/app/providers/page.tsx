@@ -81,7 +81,7 @@ export default function ProvidersPage() {
                 <option key={key} value={key}>{label}</option>
               ))}
             </select>
-            <Button variant="arc" onClick={loadProviders}>Search</Button>
+            <Button variant="primary" onClick={loadProviders}>Search</Button>
           </div>
 
           {/* Results */}

@@ -208,7 +208,7 @@ export default function ProviderBookingsPage() {
           <>
             <Button
               size="sm"
-              variant="brass"
+              variant="accent"
               className="text-[0.875rem]"
               onClick={(e) => {
                 e.stopPropagation();
@@ -241,7 +241,7 @@ export default function ProviderBookingsPage() {
           <>
             <Button
               size="sm"
-              variant="arc"
+              variant="primary"
               className="text-[0.875rem]"
               onClick={(e) => {
                 e.stopPropagation();
@@ -273,7 +273,7 @@ export default function ProviderBookingsPage() {
         {booking.status === "IN_PROGRESS" && (
           <Button
             size="sm"
-            variant="brass"
+            variant="accent"
             className="text-[0.875rem]"
             onClick={(e) => {
               e.stopPropagation();
@@ -601,7 +601,7 @@ export default function ProviderBookingsPage() {
                   {detailBooking.status === "PENDING" && (
                     <>
                       <Button
-                        variant="brass"
+                        variant="accent"
                         size="sm"
                         className="text-[0.875rem]"
                         disabled={updatingId === detailBooking.id}
@@ -630,7 +630,7 @@ export default function ProviderBookingsPage() {
                   {detailBooking.status === "CONFIRMED" && (
                     <>
                       <Button
-                        variant="arc"
+                        variant="primary"
                         size="sm"
                         className="text-[0.875rem]"
                         disabled={updatingId === detailBooking.id}
@@ -658,7 +658,7 @@ export default function ProviderBookingsPage() {
                   )}
                   {detailBooking.status === "IN_PROGRESS" && (
                     <Button
-                      variant="brass"
+                      variant="accent"
                       size="sm"
                       className="text-[0.875rem]"
                       disabled={updatingId === detailBooking.id}

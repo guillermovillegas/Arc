@@ -126,7 +126,7 @@ export default function ProviderProfilePage() {
               </p>
             )}
 
-            <Button variant="arc" onClick={handleSave} disabled={loading || saving}>
+            <Button variant="primary" onClick={handleSave} disabled={loading || saving}>
               {saving ? "Saving..." : "Save Profile"}
             </Button>
           </div>

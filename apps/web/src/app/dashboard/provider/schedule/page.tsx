@@ -183,7 +183,7 @@ export default function ProviderSchedulePage() {
                 {slots.length} of 7 days active
               </p>
               <Button
-                variant="arc"
+                variant="primary"
                 onClick={handleSave}
                 disabled={loading || saving}
               >

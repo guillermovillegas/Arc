@@ -79,7 +79,7 @@ export function Header() {
         {/* Desktop Actions — right */}
         <div className="hidden items-center gap-2 md:flex">
           {user ? (
-            <Button variant="arc-outline" size="sm" onClick={logout}>
+            <Button variant="outline" size="sm" onClick={logout}>
               Sign Out
             </Button>
           ) : (
@@ -90,7 +90,7 @@ export function Header() {
               >
                 Sign in
               </Link>
-              <Button variant="arc" size="sm" asChild>
+              <Button variant="primary" size="sm" asChild>
                 <Link href="/register">Get Started</Link>
               </Button>
             </>
@@ -138,7 +138,7 @@ export function Header() {
                 {user ? (
                   <SheetClose asChild>
                     <Button
-                      variant="arc-outline"
+                      variant="outline"
                       className="w-full"
                       onClick={logout}
                     >
@@ -148,12 +148,12 @@ export function Header() {
                 ) : (
                   <>
                     <SheetClose asChild>
-                      <Button variant="arc-outline" className="w-full" asChild>
+                      <Button variant="outline" className="w-full" asChild>
                         <Link href="/login">Sign in</Link>
                       </Button>
                     </SheetClose>
                     <SheetClose asChild>
-                      <Button variant="arc" className="w-full" asChild>
+                      <Button variant="primary" className="w-full" asChild>
                         <Link href="/register">Get Started</Link>
                       </Button>
                     </SheetClose>

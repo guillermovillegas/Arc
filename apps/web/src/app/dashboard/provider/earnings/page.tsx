@@ -79,7 +79,7 @@ export default function ProviderEarningsPage() {
             <Card className="border-espresso-200/60 bg-ivory-50 p-6">
               <p className="text-sm text-espresso-400">Stripe Payments</p>
               <Button
-                variant="arc-outline"
+                variant="outline"
                 size="sm"
                 className="mt-2"
                 onClick={setupStripe}
