@@ -10,8 +10,8 @@ describe("Badge component", () => {
     render(<Badge>New</Badge>);
     const badge = screen.getByText("New");
     expect(badge).toBeInTheDocument();
-    expect(badge.className).toContain("bg-neutral-900");
-    expect(badge.className).toContain("text-white");
+    expect(badge.className).toContain("bg-bone-100");
+    expect(badge.className).toContain("text-smoke-900");
   });
 
   it("renders text content", () => {
@@ -24,50 +24,50 @@ describe("Badge component", () => {
   it("renders with variant=default", () => {
     render(<Badge variant="default">Default</Badge>);
     const badge = screen.getByText("Default");
-    expect(badge.className).toContain("bg-neutral-900");
-    expect(badge.className).toContain("text-white");
+    expect(badge.className).toContain("bg-bone-100");
+    expect(badge.className).toContain("text-smoke-900");
     expect(badge.className).toContain("border-transparent");
   });
 
-  it("renders with variant=secondary", () => {
-    render(<Badge variant="secondary">Secondary</Badge>);
-    const badge = screen.getByText("Secondary");
-    expect(badge.className).toContain("bg-neutral-100");
-    expect(badge.className).toContain("text-neutral-900");
+  it("renders with variant=muted", () => {
+    render(<Badge variant="muted">Muted</Badge>);
+    const badge = screen.getByText("Muted");
+    expect(badge.className).toContain("bg-smoke-800");
+    expect(badge.className).toContain("text-taupe-300");
     expect(badge.className).toContain("border-transparent");
   });
 
   it("renders with variant=outline", () => {
     render(<Badge variant="outline">Outline</Badge>);
     const badge = screen.getByText("Outline");
-    expect(badge.className).toContain("border-neutral-300");
-    expect(badge.className).toContain("text-neutral-700");
+    expect(badge.className).toContain("border-smoke-700");
+    expect(badge.className).toContain("text-bone-200");
   });
 
-  it("renders with variant=destructive", () => {
-    render(<Badge variant="destructive">Error</Badge>);
-    const badge = screen.getByText("Error");
-    expect(badge.className).toContain("bg-red-500");
-    expect(badge.className).toContain("text-white");
+  it("renders with variant=accent", () => {
+    render(<Badge variant="accent">Accent</Badge>);
+    const badge = screen.getByText("Accent");
+    expect(badge.className).toContain("bg-champagne-400");
+    expect(badge.className).toContain("text-smoke-900");
     expect(badge.className).toContain("border-transparent");
   });
 
   /* ─── Base classes ───────────────────────────────────────────────────── */
 
-  it("always renders with base inline-flex and rounded-lg classes", () => {
+  it("always renders with base inline-flex and rounded-sm classes", () => {
     render(<Badge>Base</Badge>);
     const badge = screen.getByText("Base");
     expect(badge.className).toContain("inline-flex");
     expect(badge.className).toContain("items-center");
-    expect(badge.className).toContain("rounded-lg");
+    expect(badge.className).toContain("rounded-sm");
     expect(badge.className).toContain("font-medium");
   });
 
-  it("includes focus ring classes for accessibility", () => {
+  it("includes uppercase tracking classes for label style", () => {
     render(<Badge>Accessible</Badge>);
     const badge = screen.getByText("Accessible");
-    expect(badge.className).toContain("focus:outline-none");
-    expect(badge.className).toContain("focus:ring-2");
+    expect(badge.className).toContain("uppercase");
+    expect(badge.className).toContain("tracking-[0.28em]");
   });
 
   /* ─── Custom className merging ───────────────────────────────────────── */
@@ -84,9 +84,9 @@ describe("Badge component", () => {
   it("allows custom className to override conflicting base classes via tailwind-merge", () => {
     render(<Badge className="rounded-full">Pill</Badge>);
     const badge = screen.getByText("Pill");
-    // rounded-full should win over rounded-lg via tailwind-merge
+    // rounded-full should win over rounded-sm via tailwind-merge
     expect(badge.className).toContain("rounded-full");
-    expect(badge.className).not.toContain("rounded-lg");
+    expect(badge.className).not.toContain("rounded-sm");
   });
 
   /* ─── Pass-through HTML attributes ───────────────────────────────────── */

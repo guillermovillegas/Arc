@@ -4,24 +4,18 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-lg border px-2.5 py-0.5 text-caption font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:ring-offset-2",
+  "inline-flex items-center rounded-sm border px-2.5 py-0.5 text-label uppercase tracking-[0.28em] font-medium",
   {
     variants: {
       variant: {
-        default:
-          "border-transparent bg-neutral-900 text-white",
-        secondary:
-          "border-transparent bg-neutral-100 text-neutral-900",
-        outline:
-          "border-neutral-300 text-neutral-700",
-        destructive:
-          "border-transparent bg-red-500 text-white",
+        default: "border-transparent bg-bone-100 text-smoke-900",
+        accent: "border-transparent bg-champagne-400 text-smoke-900",
+        outline: "border-smoke-700 text-bone-200",
+        muted: "border-transparent bg-smoke-800 text-taupe-300",
       },
     },
-    defaultVariants: {
-      variant: "default",
-    },
-  },
+    defaultVariants: { variant: "default" },
+  }
 );
 
 export interface BadgeProps
