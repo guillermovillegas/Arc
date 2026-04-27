@@ -2,121 +2,152 @@ import { describe, it, expect, vi } from "vitest";
 import React from "react";
 import { render, screen } from "@testing-library/react";
 
-vi.mock("@/components/layout/header", () => ({
-  Header: () =>
-    React.createElement("header", { "data-testid": "header" }, "Header"),
+vi.mock("@/components/layout/topbar", () => ({
+  Topbar: () =>
+    React.createElement("div", { "data-testid": "topbar" }, "Topbar"),
 }));
-vi.mock("@/components/layout/footer", () => ({
-  Footer: () =>
-    React.createElement("footer", { "data-testid": "footer" }, "Footer"),
+vi.mock("@/components/layout/site-header", () => ({
+  SiteHeader: () =>
+    React.createElement("header", { "data-testid": "site-header" }, "SiteHeader"),
+}));
+vi.mock("@/components/layout/site-footer", () => ({
+  SiteFooter: () =>
+    React.createElement("footer", { "data-testid": "site-footer" }, "SiteFooter"),
+}));
+vi.mock("@/app/_components/hero-section", () => ({
+  HeroSection: () =>
+    React.createElement(
+      "section",
+      { "data-testid": "hero-section" },
+      React.createElement("h1", null, "She arrives at two."),
+      React.createElement("span", null, "Idle Collection"),
+    ),
+}));
+vi.mock("@/app/_components/how-it-works-section", () => ({
+  HowItWorksSection: () =>
+    React.createElement(
+      "section",
+      { "data-testid": "how-it-works-section" },
+      React.createElement("h3", null, "Three taps. One nap."),
+    ),
+}));
+vi.mock("@/app/_components/idle-collection-section", () => ({
+  IdleCollectionSection: () =>
+    React.createElement(
+      "section",
+      { "data-testid": "idle-collection-section" },
+      React.createElement("h3", null, "The Idle Collection."),
+      React.createElement("span", null, "hour of nothing"),
+      React.createElement("span", null, "quiet manicure"),
+      React.createElement("span", null, "lymphatic facial"),
+    ),
+}));
+vi.mock("@/app/_components/manifesto-section", () => ({
+  ManifestoSection: () =>
+    React.createElement(
+      "section",
+      { "data-testid": "manifesto-section" },
+      React.createElement("blockquote", null, "only luxury we still believe in is not having to leave"),
+      React.createElement("div", null, "FAINEANT, IDLE COLLECTION №01"),
+    ),
+}));
+vi.mock("@/app/_components/practitioner-spotlight-section", () => ({
+  PractitionerSpotlightSection: () =>
+    React.createElement(
+      "section",
+      { "data-testid": "practitioner-spotlight-section" },
+      React.createElement("h3", null, "The Salon at home."),
+      React.createElement("h3", null, "Maeve Le Gal."),
+    ),
 }));
 
 import HomePage from "@/app/page";
 
-describe("HomePage (Arc editorial)", () => {
-  describe("Hero", () => {
-    it("renders editorial headline", () => {
-      render(React.createElement(HomePage));
-      expect(screen.getAllByText(/exceptional/i).length).toBeGreaterThan(0);
-      expect(screen.getAllByText(/anywhere\./i).length).toBeGreaterThan(0);
-    });
-
-    it("renders primary CTAs with correct hrefs", () => {
-      render(React.createElement(HomePage));
-      expect(
-        screen.getByRole("link", { name: /find your artist/i }),
-      ).toHaveAttribute("href", "/providers");
-      expect(
-        screen.getByRole("link", { name: /offer your craft/i }),
-      ).toHaveAttribute("href", "/register?role=provider");
-    });
-
-    it("lists the crafts", () => {
-      render(React.createElement(HomePage));
-      expect(screen.getByText("Barbering")).toBeInTheDocument();
-      expect(screen.getByText("Nails")).toBeInTheDocument();
-      expect(screen.getByText("Lashes")).toBeInTheDocument();
-    });
-  });
-
-  describe("Stats", () => {
-    it("renders all 4 stats", () => {
-      render(React.createElement(HomePage));
-      expect(screen.getByText("2.9%")).toBeInTheDocument();
-      expect(screen.getByText("< 30s")).toBeInTheDocument();
-      expect(screen.getByText("24 / 7")).toBeInTheDocument();
-      expect(screen.getByText("$0")).toBeInTheDocument();
-    });
-  });
-
-  describe("Chapter I — The Journey", () => {
-    it("renders 4 chapters", () => {
-      render(React.createElement(HomePage));
-      // "Discover" appears in Chapter I and Chapter II instrument grid
-      expect(screen.getAllByText("Discover").length).toBeGreaterThanOrEqual(1);
-      expect(screen.getAllByText("Reserve").length).toBeGreaterThanOrEqual(1);
-      expect(screen.getByText("Pay with ease")).toBeInTheDocument();
-      expect(screen.getByText("Enjoy the craft")).toBeInTheDocument();
-    });
-  });
-
-  describe("Chapter II — The Instrument", () => {
-    it("renders the mobile showcase heading", () => {
-      render(React.createElement(HomePage));
-      expect(screen.getByText(/the craft, in/i)).toBeInTheDocument();
-      expect(screen.getByText(/your pocket\./i)).toBeInTheDocument();
-    });
-  });
-
-  describe("Chapter III — For Professionals", () => {
-    it("renders provider heading and CTA", () => {
-      render(React.createElement(HomePage));
-      // "your craft" appears in hero subhead and provider headline
-      expect(screen.getAllByText(/your craft,/i).length).toBeGreaterThan(0);
-      expect(screen.getByText(/amplified\./i)).toBeInTheDocument();
-      expect(
-        screen.getByRole("link", { name: /begin your practice/i }),
-      ).toHaveAttribute("href", "/register?role=provider");
-    });
-
-    it("renders provider features", () => {
-      render(React.createElement(HomePage));
-      expect(screen.getByText("Zero monthly fees")).toBeInTheDocument();
-      expect(screen.getByText("Instant payouts")).toBeInTheDocument();
-      expect(screen.getByText("Deposit protection")).toBeInTheDocument();
-    });
-  });
-
-  describe("Chapter IV — Voices", () => {
-    it("renders testimonials", () => {
-      render(React.createElement(HomePage));
-      expect(
-        screen.getByText(/deposits ended my no-show problem/i),
-      ).toBeInTheDocument();
-      expect(screen.getByText("Marcus J.")).toBeInTheDocument();
-      expect(screen.getByText("Keisha T.")).toBeInTheDocument();
-      expect(screen.getByText("Aisha M.")).toBeInTheDocument();
-    });
-  });
-
-  describe("Final CTA", () => {
-    it("renders colophon and primary actions", () => {
-      render(React.createElement(HomePage));
-      expect(screen.getByText(/anytime\./i)).toBeInTheDocument();
-      expect(
-        screen.getByRole("link", { name: /create your account/i }),
-      ).toHaveAttribute("href", "/register");
-      expect(
-        screen.getByRole("link", { name: /explore professionals/i }),
-      ).toHaveAttribute("href", "/providers");
-    });
-  });
-
+describe("HomePage (FAINEANT editorial)", () => {
   describe("Layout", () => {
-    it("renders header and footer", () => {
+    it("renders topbar, header, and footer", () => {
       render(React.createElement(HomePage));
-      expect(screen.getByTestId("header")).toBeInTheDocument();
-      expect(screen.getByTestId("footer")).toBeInTheDocument();
+      expect(screen.getByTestId("topbar")).toBeInTheDocument();
+      expect(screen.getByTestId("site-header")).toBeInTheDocument();
+      expect(screen.getByTestId("site-footer")).toBeInTheDocument();
+    });
+
+    it("renders main element wrapping all sections", () => {
+      render(React.createElement(HomePage));
+      const main = document.querySelector("main");
+      expect(main).toBeInTheDocument();
+    });
+  });
+
+  describe("Hero section", () => {
+    it("renders the hero section", () => {
+      render(React.createElement(HomePage));
+      expect(screen.getByTestId("hero-section")).toBeInTheDocument();
+    });
+
+    it("contains brand headline copy", () => {
+      render(React.createElement(HomePage));
+      expect(screen.getByText(/she arrives at two\./i)).toBeInTheDocument();
+    });
+
+    it("contains Idle Collection reference", () => {
+      render(React.createElement(HomePage));
+      expect(screen.getAllByText(/idle collection/i).length).toBeGreaterThan(0);
+    });
+  });
+
+  describe("How It Works section", () => {
+    it("renders the how-it-works section", () => {
+      render(React.createElement(HomePage));
+      expect(screen.getByTestId("how-it-works-section")).toBeInTheDocument();
+    });
+
+    it("contains three-step headline", () => {
+      render(React.createElement(HomePage));
+      expect(screen.getByText(/three taps\. one nap\./i)).toBeInTheDocument();
+    });
+  });
+
+  describe("Idle Collection section", () => {
+    it("renders the idle-collection section", () => {
+      render(React.createElement(HomePage));
+      expect(screen.getByTestId("idle-collection-section")).toBeInTheDocument();
+    });
+
+    it("contains service ritual names", () => {
+      render(React.createElement(HomePage));
+      expect(screen.getByText(/hour of nothing/i)).toBeInTheDocument();
+      expect(screen.getByText(/quiet manicure/i)).toBeInTheDocument();
+      expect(screen.getByText(/lymphatic facial/i)).toBeInTheDocument();
+    });
+  });
+
+  describe("Manifesto section", () => {
+    it("renders the manifesto section", () => {
+      render(React.createElement(HomePage));
+      expect(screen.getByTestId("manifesto-section")).toBeInTheDocument();
+    });
+
+    it("contains FAINEANT brand attribution", () => {
+      render(React.createElement(HomePage));
+      expect(screen.getByText(/FAINEANT, IDLE COLLECTION/i)).toBeInTheDocument();
+    });
+  });
+
+  describe("Practitioner Spotlight section", () => {
+    it("renders the practitioner-spotlight section", () => {
+      render(React.createElement(HomePage));
+      expect(screen.getByTestId("practitioner-spotlight-section")).toBeInTheDocument();
+    });
+
+    it("features Maeve Le Gal", () => {
+      render(React.createElement(HomePage));
+      expect(screen.getByText(/maeve le gal\./i)).toBeInTheDocument();
+    });
+
+    it("contains salon heading", () => {
+      render(React.createElement(HomePage));
+      expect(screen.getByText(/the salon at home\./i)).toBeInTheDocument();
     });
   });
 });
