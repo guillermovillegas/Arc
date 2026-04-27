@@ -99,7 +99,7 @@ describe("CardTitle component", () => {
     render(<CardTitle data-testid="title">Title</CardTitle>);
     const title = screen.getByTestId("title");
     expect(title.className).toContain("font-display");
-    expect(title.className).toContain("text-heading");
+    expect(title.className).toContain("display-compressed");
   });
 
   it("renders as an h3 element", () => {

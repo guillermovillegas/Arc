@@ -10,8 +10,8 @@ describe("Button component", () => {
     render(<Button>Click me</Button>);
     const btn = screen.getByRole("button", { name: /click me/i });
     expect(btn).toBeInTheDocument();
-    expect(btn.className).toContain("bg-primary");
-    expect(btn.className).toContain("h-10");
+    expect(btn.className).toContain("bg-bone-100");
+    expect(btn.className).toContain("px-6");
   });
 
   it("renders as a <button> element by default", () => {
@@ -24,15 +24,15 @@ describe("Button component", () => {
   it("renders with variant=default", () => {
     render(<Button variant="default">Default</Button>);
     const btn = screen.getByRole("button");
-    expect(btn.className).toContain("bg-primary");
-    expect(btn.className).toContain("hover:bg-primary/90");
+    expect(btn.className).toContain("bg-bone-100");
+    expect(btn.className).toContain("hover:bg-champagne-400");
   });
 
   it("renders with variant=primary", () => {
     render(<Button variant="primary">Primary</Button>);
     const btn = screen.getByRole("button");
-    expect(btn.className).toContain("bg-primary");
-    expect(btn.className).toContain("hover:bg-primary/90");
+    expect(btn.className).toContain("bg-bone-100");
+    expect(btn.className).toContain("hover:bg-champagne-400");
   });
 
   it("renders with variant=outline (was secondary)", () => {
@@ -45,20 +45,20 @@ describe("Button component", () => {
     render(<Button variant="outline">Outline</Button>);
     const btn = screen.getByRole("button");
     expect(btn.className).toContain("border");
-    expect(btn.className).toContain("border-input");
+    expect(btn.className).toContain("border-smoke-700");
   });
 
   it("renders with variant=ghost", () => {
     render(<Button variant="ghost">Ghost</Button>);
     const btn = screen.getByRole("button");
-    expect(btn.className).toContain("hover:bg-accent");
+    expect(btn.className).toContain("hover:border-bone-100");
   });
 
   it("renders with variant=destructive", () => {
     render(<Button variant="destructive">Destructive</Button>);
     const btn = screen.getByRole("button");
-    expect(btn.className).toContain("bg-destructive");
-    expect(btn.className).toContain("hover:bg-destructive/90");
+    expect(btn.className).toContain("bg-oxblood-500");
+    expect(btn.className).toContain("hover:bg-oxblood-500/90");
   });
 
   it("renders with variant=link", () => {
@@ -70,19 +70,19 @@ describe("Button component", () => {
 
   /* ─── Sizes ──────────────────────────────────────────────────────────── */
 
-  it("renders with size=default (h-10)", () => {
+  it("renders with size=default (px-6 py-4)", () => {
     render(<Button size="default">Default size</Button>);
-    expect(screen.getByRole("button").className).toContain("h-10");
+    expect(screen.getByRole("button").className).toContain("px-6");
   });
 
-  it("renders with size=sm (h-9)", () => {
+  it("renders with size=sm (px-4 py-2)", () => {
     render(<Button size="sm">Small</Button>);
-    expect(screen.getByRole("button").className).toContain("h-9");
+    expect(screen.getByRole("button").className).toContain("px-4");
   });
 
-  it("renders with size=lg (h-11)", () => {
+  it("renders with size=lg (px-8 py-5)", () => {
     render(<Button size="lg">Large</Button>);
-    expect(screen.getByRole("button").className).toContain("h-11");
+    expect(screen.getByRole("button").className).toContain("px-8");
   });
 
   it("renders with size=icon (h-10 w-10)", () => {
@@ -104,7 +104,7 @@ describe("Button component", () => {
     expect(link).toBeInTheDocument();
     expect(link.tagName).toBe("A");
     expect(link).toHaveAttribute("href", "/test");
-    expect(link.className).toContain("bg-primary");
+    expect(link.className).toContain("bg-bone-100");
   });
 
   /* ─── Ref forwarding ─────────────────────────────────────────────────── */
