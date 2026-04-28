@@ -1,8 +1,15 @@
 import { useState, useEffect } from "react";
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+} from "react-native";
 import { api } from "@/lib/api-client";
 import { getStoredTokens } from "@/lib/auth";
-import { colors, fonts, base } from "@/lib/theme";
+import { colors, fonts, sizes, spacing } from "@/theme";
 
 interface Booking {
   id: string;
@@ -25,7 +32,9 @@ export default function ProviderBookingsScreen() {
     const { accessToken } = await getStoredTokens();
     if (!accessToken) return;
     try {
-      const res = await api.get<{ data: Booking[] }>("/bookings/provider", { token: accessToken });
+      const res = await api.get<{ data: Booking[] }>("/bookings/provider", {
+        token: accessToken,
+      });
       setBookings(res.data);
     } catch {
       // Handle error
@@ -36,112 +45,221 @@ export default function ProviderBookingsScreen() {
     const { accessToken } = await getStoredTokens();
     if (!accessToken) return;
     try {
-      await api.patch(`/bookings/${bookingId}/status`, { status }, { token: accessToken });
+      await api.patch(
+        `/bookings/${bookingId}/status`,
+        { status },
+        { token: accessToken },
+      );
       loadBookings();
     } catch (err) {
       Alert.alert("Error", err instanceof Error ? err.message : "Failed to update");
     }
   }
 
-  return (
-    <View style={base.screen}>
-      <FlatList
-        data={bookings}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.list}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyTitle}>No bookings</Text>
-            <Text style={styles.emptyBody}>Reservations from clients will appear here.</Text>
-          </View>
-        }
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <View style={styles.cardTop}>
-              <Text style={styles.serviceName}>{item.service.name}</Text>
-              <Text style={styles.price}>${(item.totalPriceInCents / 100).toFixed(2)}</Text>
-            </View>
-            <Text style={styles.client}>
-              {item.client.firstName} {item.client.lastName}
-            </Text>
-            <Text style={styles.date}>
-              {new Date(item.startTime).toLocaleDateString()} at{" "}
-              {new Date(item.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-            </Text>
+  const now = Date.now();
+  const upcoming = bookings.filter((b) => new Date(b.startTime).getTime() >= now);
+  const past = bookings.filter((b) => new Date(b.startTime).getTime() < now);
 
-            <View style={styles.actions}>
-              {item.status === "PENDING" && (
-                <>
-                  <TouchableOpacity
-                    style={styles.confirmBtn}
-                    onPress={() => updateStatus(item.id, "CONFIRMED")}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={styles.confirmBtnText}>Confirm</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.declineBtn}
-                    onPress={() => updateStatus(item.id, "CANCELLED")}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={styles.declineBtnText}>Decline</Text>
-                  </TouchableOpacity>
-                </>
-              )}
-              {item.status === "CONFIRMED" && (
-                <TouchableOpacity
-                  style={styles.confirmBtn}
-                  onPress={() => updateStatus(item.id, "IN_PROGRESS")}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.confirmBtnText}>Start</Text>
-                </TouchableOpacity>
-              )}
-              {item.status === "IN_PROGRESS" && (
-                <TouchableOpacity
-                  style={styles.confirmBtn}
-                  onPress={() => updateStatus(item.id, "COMPLETED")}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.confirmBtnText}>Complete</Text>
-                </TouchableOpacity>
-              )}
-            </View>
+  function renderCard(item: Booking) {
+    return (
+      <View key={item.id} style={styles.card}>
+        <View style={styles.cardTop}>
+          <Text style={styles.service}>{item.service.name}</Text>
+          <Text style={styles.price}>
+            ${(item.totalPriceInCents / 100).toFixed(2)}
+          </Text>
+        </View>
+        <Text style={styles.client}>
+          {item.client.firstName} {item.client.lastName}
+        </Text>
+        <Text style={styles.date}>
+          {new Date(item.startTime).toLocaleDateString()} at{" "}
+          {new Date(item.startTime).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </Text>
+
+        {item.status === "PENDING" && (
+          <View style={styles.actions}>
+            <TouchableOpacity
+              style={styles.confirmBtn}
+              onPress={() => updateStatus(item.id, "CONFIRMED")}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.confirmText}>Confirm</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.declineBtn}
+              onPress={() => updateStatus(item.id, "CANCELLED")}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.declineText}>Decline</Text>
+            </TouchableOpacity>
           </View>
         )}
-      />
-    </View>
+        {item.status === "CONFIRMED" && (
+          <View style={styles.actions}>
+            <TouchableOpacity
+              style={styles.confirmBtn}
+              onPress={() => updateStatus(item.id, "IN_PROGRESS")}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.confirmText}>Start</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+        {item.status === "IN_PROGRESS" && (
+          <View style={styles.actions}>
+            <TouchableOpacity
+              style={styles.confirmBtn}
+              onPress={() => updateStatus(item.id, "COMPLETED")}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.confirmText}>Complete</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+    );
+  }
+
+  return (
+    <ScrollView
+      style={{ flex: 1, backgroundColor: colors.background }}
+      contentContainerStyle={{ padding: spacing.lg, gap: spacing.xl }}
+    >
+      <View style={{ paddingTop: 64 }}>
+        <Text style={styles.eyebrow}>BOOKINGS</Text>
+        <Text style={styles.headline}>
+          All <Text style={styles.headlineEm}>windows.</Text>
+        </Text>
+      </View>
+
+      {bookings.length === 0 ? (
+        <View style={styles.empty}>
+          <Text style={styles.emptyTitle}>Quiet so far.</Text>
+          <Text style={styles.emptyBody}>
+            Reservations from clients will appear here.
+          </Text>
+        </View>
+      ) : (
+        <View style={{ gap: spacing.lg }}>
+          {upcoming.length > 0 && (
+            <View style={{ gap: spacing.md }}>
+              <Text style={styles.section}>UPCOMING</Text>
+              {upcoming.map(renderCard)}
+            </View>
+          )}
+          {past.length > 0 && (
+            <View style={{ gap: spacing.md }}>
+              <Text style={styles.section}>PAST</Text>
+              {past.map(renderCard)}
+            </View>
+          )}
+        </View>
+      )}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  list: { padding: 20 },
+  eyebrow: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: sizes.label,
+    color: colors.taupe[300],
+    letterSpacing: 3.5,
+    textTransform: "uppercase",
+  },
+  headline: {
+    fontFamily: fonts.displayBlack,
+    fontSize: 40,
+    color: colors.primaryFg,
+    letterSpacing: -1.2,
+    marginTop: spacing.sm,
+    lineHeight: 44,
+  },
+  headlineEm: {
+    fontFamily: fonts.editorialLight,
+    color: colors.accent,
+    fontStyle: "italic",
+  },
+  section: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: sizes.label,
+    color: colors.taupe[400],
+    letterSpacing: 3,
+  },
   card: {
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.espresso[200],
-    backgroundColor: colors.ivory[50],
-    padding: 16,
-    marginBottom: 12,
+    borderColor: colors.smoke[700],
+    backgroundColor: colors.smoke[800],
+    padding: spacing.md,
+    gap: 4,
   },
-  cardTop: { flexDirection: "row", justifyContent: "space-between" },
-  serviceName: { fontSize: 16, fontFamily: fonts.serif, color: colors.espresso[800] },
-  price: { fontSize: 16, fontFamily: fonts.serif, color: colors.espresso[800] },
-  client: { fontSize: 14, color: colors.espresso[400], marginTop: 4 },
-  date: { fontSize: 13, color: colors.espresso[300], marginTop: 4 },
-  actions: { flexDirection: "row", gap: 8, marginTop: 14 },
+  cardTop: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "baseline",
+  },
+  service: {
+    fontFamily: fonts.displayMedium,
+    fontSize: sizes.bodyLg,
+    color: colors.primaryFg,
+  },
+  price: {
+    fontFamily: fonts.mono,
+    fontSize: sizes.body,
+    color: colors.accent,
+  },
+  client: {
+    fontFamily: fonts.body,
+    fontSize: sizes.bodySm,
+    color: colors.taupe[300],
+  },
+  date: {
+    fontFamily: fonts.mono,
+    fontSize: sizes.mono,
+    color: colors.taupe[400],
+    marginTop: 2,
+  },
+  actions: { flexDirection: "row", gap: spacing.sm, marginTop: spacing.md },
   confirmBtn: {
-    backgroundColor: colors.espresso[800],
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    backgroundColor: colors.champagne[400],
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm + 2,
   },
-  confirmBtnText: { color: colors.ivory[100], fontWeight: "600", fontSize: 14 },
+  confirmText: {
+    color: colors.smoke[950],
+    fontFamily: fonts.bodyMedium,
+    fontSize: sizes.bodySm,
+    letterSpacing: 1,
+    textTransform: "uppercase",
+  },
   declineBtn: {
-    backgroundColor: colors.ivory[200],
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.taupe[500],
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm + 2,
   },
-  declineBtnText: { color: colors.espresso[500], fontWeight: "500", fontSize: 14 },
-  emptyContainer: { alignItems: "center", marginTop: 60 },
-  emptyTitle: { fontFamily: fonts.serif, fontSize: 18, color: colors.espresso[800] },
-  emptyBody: { fontSize: 14, color: colors.espresso[400], marginTop: 6 },
+  declineText: {
+    color: colors.taupe[300],
+    fontFamily: fonts.bodyMedium,
+    fontSize: sizes.bodySm,
+    letterSpacing: 1,
+    textTransform: "uppercase",
+  },
+  empty: { paddingVertical: spacing.xl, gap: spacing.sm },
+  emptyTitle: {
+    fontFamily: fonts.editorialLight,
+    fontSize: sizes.heading,
+    color: colors.primaryFg,
+    fontStyle: "italic",
+  },
+  emptyBody: {
+    fontFamily: fonts.body,
+    fontSize: sizes.body,
+    color: colors.taupe[300],
+    lineHeight: 22,
+  },
 });

@@ -1,8 +1,14 @@
 import { useState, useEffect } from "react";
-import { View, Text, FlatList, StyleSheet, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  ActivityIndicator,
+} from "react-native";
 import { api } from "@/lib/api-client";
 import { getStoredTokens } from "@/lib/auth";
-import { colors, fonts, base } from "@/lib/theme";
+import { colors, fonts, sizes, spacing } from "@/theme";
 
 interface EarningsData {
   totalEarnings: number;
@@ -32,7 +38,9 @@ export default function EarningsScreen() {
       return;
     }
     try {
-      const res = await api.get<{ data: EarningsData }>("/payments/earnings", { token: accessToken });
+      const res = await api.get<{ data: EarningsData }>("/payments/earnings", {
+        token: accessToken,
+      });
       setEarnings(res.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load earnings");
@@ -41,115 +49,143 @@ export default function EarningsScreen() {
     }
   }
 
+  const total = earnings ? (earnings.totalEarnings / 100).toFixed(2) : "0.00";
+
   return (
-    <View style={base.screen}>
-      <View style={styles.totalCard}>
-        <Text style={styles.totalLabel}>Total Earnings</Text>
-        <Text style={styles.totalAmount}>
-          ${earnings ? (earnings.totalEarnings / 100).toFixed(2) : "0.00"}
+    <ScrollView
+      style={{ flex: 1, backgroundColor: colors.background }}
+      contentContainerStyle={{ padding: spacing.lg, gap: spacing.xl }}
+    >
+      <View style={{ paddingTop: 64 }}>
+        <Text style={styles.eyebrow}>EARNINGS</Text>
+        <Text style={styles.headline}>
+          What you've <Text style={styles.headlineEm}>earned.</Text>
         </Text>
       </View>
 
-      <Text style={styles.sectionTitle}>Payment History</Text>
+      <View style={styles.totalBlock}>
+        <Text style={styles.totalLabel}>TO DATE</Text>
+        <Text style={styles.totalAmount}>${total}</Text>
+      </View>
 
-      {loading ? (
-        <ActivityIndicator size="large" color={colors.brass[500]} style={styles.loader} />
-      ) : error ? (
-        <Text style={styles.error}>{error}</Text>
-      ) : (
-        <FlatList
-          data={earnings?.payments || []}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.list}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyTitle}>No payments yet</Text>
-              <Text style={styles.emptyBody}>Earnings will appear here after your first service.</Text>
-            </View>
-          }
-          renderItem={({ item }) => (
-            <View style={styles.paymentCard}>
-              <View>
-                <Text style={styles.serviceName}>{item.booking.service.name}</Text>
+      <View style={{ gap: spacing.md }}>
+        <Text style={styles.section}>HISTORY</Text>
+        {loading ? (
+          <ActivityIndicator size="large" color={colors.accent} />
+        ) : error ? (
+          <Text style={styles.error}>{error}</Text>
+        ) : !earnings || earnings.payments.length === 0 ? (
+          <View style={styles.empty}>
+            <Text style={styles.emptyTitle}>No payments yet.</Text>
+            <Text style={styles.emptyBody}>
+              Earnings will appear here after your first service.
+            </Text>
+          </View>
+        ) : (
+          earnings.payments.map((p) => (
+            <View key={p.id} style={styles.row}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.service}>{p.booking.service.name}</Text>
                 <Text style={styles.date}>
-                  {new Date(item.booking.startTime).toLocaleDateString()}
+                  {new Date(p.booking.startTime).toLocaleDateString()}
                 </Text>
               </View>
               <Text style={styles.amount}>
-                +${(item.providerPayoutInCents / 100).toFixed(2)}
+                +${(p.providerPayoutInCents / 100).toFixed(2)}
               </Text>
             </View>
-          )}
-        />
-      )}
-    </View>
+          ))
+        )}
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  totalCard: {
-    margin: 20,
-    padding: 28,
-    backgroundColor: colors.espresso[800],
-    alignItems: "center",
+  eyebrow: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: sizes.label,
+    color: colors.taupe[300],
+    letterSpacing: 3.5,
+    textTransform: "uppercase",
+  },
+  headline: {
+    fontFamily: fonts.displayBlack,
+    fontSize: 40,
+    color: colors.primaryFg,
+    letterSpacing: -1.2,
+    marginTop: spacing.sm,
+    lineHeight: 44,
+  },
+  headlineEm: {
+    fontFamily: fonts.editorialLight,
+    color: colors.accent,
+    fontStyle: "italic",
+  },
+  totalBlock: {
+    paddingVertical: spacing.lg,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.smoke[700],
+    gap: spacing.xs,
   },
   totalLabel: {
-    ...base.label,
-    color: colors.brass[400],
+    fontFamily: fonts.bodyMedium,
+    fontSize: sizes.label,
+    color: colors.taupe[400],
+    letterSpacing: 3,
   },
   totalAmount: {
-    fontFamily: fonts.serif,
-    color: colors.ivory[100],
-    fontSize: 40,
-    marginTop: 6,
+    fontFamily: fonts.displayBlack,
+    fontSize: 56,
+    color: colors.accent,
+    letterSpacing: -2,
   },
-  sectionTitle: {
-    ...base.label,
-    paddingHorizontal: 20,
-    marginTop: 8,
+  section: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: sizes.label,
+    color: colors.taupe[400],
+    letterSpacing: 3,
   },
-  list: { padding: 20 },
-  paymentCard: {
+  row: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 14,
+    paddingVertical: spacing.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.espresso[200],
+    borderBottomColor: colors.smoke[700],
   },
-  serviceName: {
-    fontSize: 15,
-    fontFamily: fonts.serif,
-    color: colors.espresso[800],
+  service: {
+    fontFamily: fonts.displayMedium,
+    fontSize: sizes.body,
+    color: colors.primaryFg,
   },
   date: {
-    fontSize: 13,
-    color: colors.espresso[400],
+    fontFamily: fonts.mono,
+    fontSize: sizes.mono,
+    color: colors.taupe[400],
     marginTop: 2,
   },
   amount: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: colors.status.confirmed,
-    fontFamily: fonts.sans,
+    fontFamily: fonts.mono,
+    fontSize: sizes.bodyLg,
+    color: colors.accent,
   },
-  emptyContainer: { alignItems: "center", marginTop: 40 },
+  empty: { paddingVertical: spacing.xl, gap: spacing.sm },
   emptyTitle: {
-    fontFamily: fonts.serif,
-    fontSize: 18,
-    color: colors.espresso[800],
+    fontFamily: fonts.editorialLight,
+    fontSize: sizes.heading,
+    color: colors.primaryFg,
+    fontStyle: "italic",
   },
   emptyBody: {
-    fontSize: 14,
-    color: colors.espresso[400],
-    marginTop: 6,
+    fontFamily: fonts.body,
+    fontSize: sizes.body,
+    color: colors.taupe[300],
+    lineHeight: 22,
   },
-  loader: { marginTop: 40 },
   error: {
-    textAlign: "center",
-    color: colors.status.error,
-    marginTop: 40,
-    paddingHorizontal: 20,
-    fontSize: 14,
+    fontFamily: fonts.body,
+    fontSize: sizes.body,
+    color: colors.oxblood[500],
   },
 });

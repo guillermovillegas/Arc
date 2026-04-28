@@ -1,8 +1,14 @@
 import { useState, useEffect } from "react";
-import { View, Text, FlatList, StyleSheet, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  ActivityIndicator,
+} from "react-native";
 import { api } from "@/lib/api-client";
 import { getStoredTokens } from "@/lib/auth";
-import { colors, fonts, base } from "@/lib/theme";
+import { colors, fonts, sizes, spacing } from "@/theme";
 
 interface Booking {
   id: string;
@@ -31,126 +37,141 @@ export default function ProviderHomeScreen() {
       return;
     }
     try {
-      const res = await api.get<{ data: Booking[] }>("/bookings/provider", { token: accessToken });
+      const res = await api.get<{ data: Booking[] }>("/bookings/provider", {
+        token: accessToken,
+      });
       const today = new Date().toDateString();
-      setTodayBookings(res.data.filter((b) => new Date(b.startTime).toDateString() === today));
+      setTodayBookings(
+        res.data.filter((b) => new Date(b.startTime).toDateString() === today),
+      );
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load today's bookings");
+      setError(
+        err instanceof Error ? err.message : "Failed to load today's bookings",
+      );
     } finally {
       setLoading(false);
     }
   }
 
-  function statusColor(status: string) {
-    switch (status) {
-      case "CONFIRMED": return colors.status.confirmed;
-      case "IN_PROGRESS": return colors.status.active;
-      case "COMPLETED": return colors.status.completed;
-      case "CANCELLED": return colors.status.cancelled;
-      default: return colors.status.pending;
-    }
-  }
-
   return (
-    <View style={base.screen}>
-      <Text style={styles.header}>Today&apos;s Schedule</Text>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: colors.background }}
+      contentContainerStyle={{ padding: spacing.lg, gap: spacing.xl }}
+    >
+      <View style={{ paddingTop: 64 }}>
+        <Text style={styles.eyebrow}>TODAY</Text>
+        <Text style={styles.headline}>
+          Your <Text style={styles.headlineEm}>calendar.</Text>
+        </Text>
+      </View>
+
       {loading ? (
-        <ActivityIndicator size="large" color={colors.brass[500]} style={styles.loader} />
+        <ActivityIndicator size="large" color={colors.accent} />
       ) : error ? (
         <Text style={styles.error}>{error}</Text>
+      ) : todayBookings.length === 0 ? (
+        <View style={styles.empty}>
+          <Text style={styles.emptyTitle}>Nothing on the books.</Text>
+          <Text style={styles.emptyBody}>
+            The day is yours. Sit with it.
+          </Text>
+        </View>
       ) : (
-        <FlatList
-          data={todayBookings}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.list}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyTitle}>No bookings today</Text>
-              <Text style={styles.emptyBody}>Your schedule is clear.</Text>
-            </View>
-          }
-          renderItem={({ item }) => (
-            <View style={styles.card}>
-              <View style={styles.timeCol}>
-                <Text style={styles.time}>
-                  {new Date(item.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                </Text>
-              </View>
-              <View style={styles.dividerVert} />
+        <View style={{ gap: spacing.md }}>
+          {todayBookings.map((b) => (
+            <View key={b.id} style={styles.row}>
+              <Text style={styles.time}>
+                {new Date(b.startTime).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </Text>
               <View style={styles.details}>
-                <Text style={styles.serviceName}>{item.service.name}</Text>
-                <Text style={styles.clientName}>
-                  {item.client.firstName} {item.client.lastName}
+                <Text style={styles.service}>{b.service.name}</Text>
+                <Text style={styles.client}>
+                  {b.client.firstName} {b.client.lastName}
                 </Text>
               </View>
-              <View style={[styles.statusDot, { backgroundColor: statusColor(item.status) }]} />
+              <Text style={styles.status}>{b.status.toLowerCase()}</Text>
             </View>
-          )}
-        />
+          ))}
+        </View>
       )}
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
-    fontFamily: fonts.serif,
-    fontSize: 20,
-    color: colors.espresso[800],
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 12,
+  eyebrow: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: sizes.label,
+    color: colors.taupe[300],
+    letterSpacing: 3.5,
+    textTransform: "uppercase",
   },
-  list: { paddingHorizontal: 20 },
-  card: {
+  headline: {
+    fontFamily: fonts.displayBlack,
+    fontSize: 40,
+    color: colors.primaryFg,
+    letterSpacing: -1.2,
+    marginTop: spacing.sm,
+    lineHeight: 44,
+  },
+  headlineEm: {
+    fontFamily: fonts.editorialLight,
+    color: colors.accent,
+    fontStyle: "italic",
+  },
+  row: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 14,
+    paddingVertical: spacing.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.espresso[200],
+    borderBottomColor: colors.smoke[700],
+    gap: spacing.md,
   },
-  timeCol: { width: 56 },
   time: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: colors.brass[600],
-    fontFamily: fonts.sans,
-  },
-  dividerVert: {
-    width: StyleSheet.hairlineWidth,
-    height: 28,
-    backgroundColor: colors.espresso[200],
-    marginRight: 14,
+    fontFamily: fonts.mono,
+    fontSize: sizes.mono,
+    color: colors.accent,
+    width: 64,
+    letterSpacing: 1,
   },
   details: { flex: 1 },
-  serviceName: {
-    fontSize: 15,
-    fontFamily: fonts.serif,
-    color: colors.espresso[800],
+  service: {
+    fontFamily: fonts.displayMedium,
+    fontSize: sizes.bodyLg,
+    color: colors.primaryFg,
   },
-  clientName: {
-    fontSize: 13,
-    color: colors.espresso[400],
+  client: {
+    fontFamily: fonts.body,
+    fontSize: sizes.bodySm,
+    color: colors.taupe[300],
     marginTop: 2,
   },
-  statusDot: { width: 8, height: 8, borderRadius: 4 },
-  emptyContainer: { alignItems: "center", marginTop: 60 },
+  status: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: sizes.label,
+    color: colors.taupe[400],
+    letterSpacing: 2,
+    textTransform: "uppercase",
+  },
+  empty: { paddingVertical: spacing.xl, gap: spacing.sm },
   emptyTitle: {
-    fontFamily: fonts.serif,
-    fontSize: 18,
-    color: colors.espresso[800],
+    fontFamily: fonts.editorialLight,
+    fontSize: sizes.heading,
+    color: colors.primaryFg,
+    fontStyle: "italic",
   },
   emptyBody: {
-    fontSize: 14,
-    color: colors.espresso[400],
-    marginTop: 6,
+    fontFamily: fonts.body,
+    fontSize: sizes.body,
+    color: colors.taupe[300],
+    lineHeight: 22,
   },
-  loader: { marginTop: 60 },
   error: {
-    textAlign: "center",
-    color: colors.status.error,
-    marginTop: 40,
-    paddingHorizontal: 20,
-    fontSize: 14,
+    fontFamily: fonts.body,
+    fontSize: sizes.body,
+    color: colors.oxblood[500],
   },
 });
