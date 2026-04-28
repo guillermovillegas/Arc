@@ -1,218 +1,172 @@
-import Link from "next/link";
-import { ArrowRight, Check } from "lucide-react";
-import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
-import { Button } from "@/components/ui/button";
+import { Topbar } from "@/components/layout/topbar";
+import { SiteHeader } from "@/components/layout/site-header";
+import { SiteFooter } from "@/components/layout/site-footer";
+import { SERVICE_CATEGORIES } from "@arc/shared";
 
 export const metadata = {
-  title: "Pricing — Arc",
+  title: "How it works — FAINEANT",
   description:
-    "Transparent pricing for clients and professionals. No subscriptions. No hidden fees. Just a small transaction fee when you're paid.",
+    "You pay the practitioner directly through us. We take 5%. Cancellation is free until midnight the day before.",
 };
 
-const CLIENT_FEATURES = [
-  "Unlimited reservations",
-  "Direct messaging with your professional",
-  "Secure in-app payments",
-  "Automatic receipts and reminders",
-  "Review and rate the craft",
-  "Favorite the artists you trust",
+const RULES = [
+  {
+    number: "№ 01",
+    title: "You pay the practitioner",
+    accent: "directly through us.",
+    body: "The practitioner sets the price. The practitioner keeps the price. We hold the card on file, charge it after the appointment, and pass the money along the same day.",
+  },
+  {
+    number: "№ 02",
+    title: "We take",
+    accent: "five per cent.",
+    body: "That is the whole arrangement. No subscription, no listing fee, no boosted placements. Five per cent of the service total covers the calendar, the messaging, the payments and the small office that runs them.",
+  },
+  {
+    number: "№ 03",
+    title: "Cancellation is free",
+    accent: "until midnight the day before.",
+    body: "Cancel before midnight, the night before. Nothing charged. After that the practitioner has already turned down other work, and the full fee applies. We do not negotiate, and neither should you.",
+  },
 ];
 
-const PROFESSIONAL_FEATURES = [
-  "Unlimited listings and services",
-  "One calendar — studio, chair, or on the road",
-  "Automatic deposits and no-show protection",
-  "Instant payouts after every service",
-  "Portfolio, reviews, and verified badge",
-  "Client messaging and direct broadcasts",
-  "Real-time earnings and analytics",
-  "Access to the Arc professional community",
-];
+type Row = {
+  category: string;
+  service: string;
+  duration: string;
+  price: string;
+};
 
-const FAQS = [
-  {
-    q: "Does Arc charge a monthly subscription?",
-    a: "Never. Arc is free to use for both clients and professionals. We only make money when you do — a single transaction fee per completed booking.",
-  },
-  {
-    q: "How does the 2.9% transaction fee work?",
-    a: "When a client pays for a service, Arc takes a 2.9% fee from the transaction. You receive the rest instantly. No hidden costs, no surprises, no invoicing on your part.",
-  },
-  {
-    q: "Are there any setup fees?",
-    a: "None. You can list your craft, build your portfolio, and accept your first reservation without paying anything up front.",
-  },
-  {
-    q: "What about payment processing?",
-    a: "Payment processing is included in the transaction fee. Arc handles PCI compliance, chargebacks, and payouts — you focus on the craft.",
-  },
-  {
-    q: "Can I enforce a cancellation or no-show policy?",
-    a: "Yes. You set the policy: grace period, cancellation window, and the fee (flat, percentage, or held deposit). Arc charges the client automatically per your terms.",
-  },
-];
+const SAMPLE_PRICES: Record<string, Row[]> = {
+  hair: [
+    { category: "Hair", service: "Cut, dry style", duration: "75 min", price: "$160" },
+    { category: "Hair", service: "Single-process colour", duration: "120 min", price: "$240" },
+    { category: "Hair", service: "Balayage", duration: "180 min", price: "$420" },
+  ],
+  nails: [
+    { category: "Nails", service: "Manicure, classic", duration: "45 min", price: "$70" },
+    { category: "Nails", service: "Gel manicure", duration: "60 min", price: "$95" },
+    { category: "Nails", service: "Pedicure", duration: "60 min", price: "$110" },
+  ],
+  face: [
+    { category: "Face", service: "Signature facial", duration: "75 min", price: "$185" },
+    { category: "Face", service: "Dermaplane facial", duration: "90 min", price: "$235" },
+  ],
+  lash: [
+    { category: "Lash", service: "Classic full set", duration: "120 min", price: "$220" },
+    { category: "Lash", service: "Volume fill", duration: "75 min", price: "$130" },
+  ],
+  barber: [
+    { category: "Barber", service: "Cut and beard", duration: "60 min", price: "$110" },
+    { category: "Barber", service: "Hot-towel shave", duration: "45 min", price: "$85" },
+  ],
+  makeup: [
+    { category: "Makeup", service: "Day makeup", duration: "60 min", price: "$160" },
+    { category: "Makeup", service: "Evening / event", duration: "75 min", price: "$210" },
+  ],
+};
+
+const ALL_ROWS: Row[] = SERVICE_CATEGORIES.flatMap(
+  (c) => SAMPLE_PRICES[c.slug] ?? [],
+);
 
 export default function PricingPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-ivory-100 text-espresso-800">
-      <Header />
+    <>
+      <Topbar />
+      <SiteHeader />
+      <main className="bg-smoke-900 text-bone-100">
+        <section className="max-w-[1480px] mx-auto px-14 py-24 border-b border-smoke-700">
+          <span className="text-label uppercase tracking-[0.32em] text-taupe-300 font-medium">
+            № 03 · The Arrangement
+          </span>
+          <h1 className="font-display display-compressed text-[5rem] leading-[0.94] text-bone-100 mt-4">
+            How it{" "}
+            <em className="font-editorial italic font-light text-champagne-400">
+              works.
+            </em>
+          </h1>
+          <p className="font-editorial italic font-light text-[28px] leading-snug text-bone-200 mt-10 max-w-[760px]">
+            Three rules. Written down once. Easy to remember.
+          </p>
+        </section>
 
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-ivory-100">
-        <div className="absolute inset-0 bg-paper-grain opacity-60" />
-        <div className="absolute left-1/2 top-0 h-[600px] w-[800px] -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(184,147,90,0.12)_0%,transparent_60%)] blur-3xl" />
-
-        <div className="relative mx-auto max-w-7xl px-6 pb-16 pt-28 sm:px-10 sm:pt-36 lg:px-16">
-          <div className="mb-16 flex items-center justify-between border-b border-espresso-200/40 pb-6 sm:mb-24">
-            <div className="flex items-center gap-3 text-label text-espresso-500">
-              <span className="tabular-nums text-brass-600">Volume I</span>
-              <span className="h-px w-8 bg-espresso-300" />
-              <span>Pricing</span>
+        {RULES.map((r, idx) => (
+          <section
+            key={r.number}
+            className={`max-w-[1480px] mx-auto px-14 py-20 ${
+              idx < RULES.length - 1 ? "border-b border-smoke-700" : "border-b border-smoke-700"
+            }`}
+          >
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-baseline">
+              <div className="lg:col-span-3 font-mono text-mono uppercase tracking-[0.3em] text-taupe-300">
+                {r.number}
+              </div>
+              <div className="lg:col-span-6">
+                <h2 className="font-display display-compressed text-[3rem] leading-[0.98] text-bone-100">
+                  {r.title}{" "}
+                  <em className="font-editorial italic font-light text-champagne-400">
+                    {r.accent}
+                  </em>
+                </h2>
+              </div>
+              <div className="lg:col-span-3">
+                <p className="font-editorial italic font-light text-[18px] leading-relaxed text-bone-200">
+                  {r.body}
+                </p>
+              </div>
             </div>
-            <span className="hidden text-label text-espresso-400 sm:inline">
-              Transparent · Fair · Free to join
-            </span>
-          </div>
+          </section>
+        ))}
 
-          <div className="max-w-4xl">
-            <h1 className="font-serif text-[3rem] leading-[0.95] tracking-[-0.03em] text-espresso-900 sm:text-[4.5rem] lg:text-[5.5rem]">
-              No subscriptions.
-              <br />
-              <span className="italic text-brass-600">One small fee.</span>
-            </h1>
-            <p className="mt-10 max-w-2xl text-body-lg text-espresso-600">
-              Arc is free for clients and free to join for professionals. We
-              only make money when you do — a single 2.9% transaction fee when
-              a service is paid.
+        <section className="max-w-[1480px] mx-auto px-14 py-24">
+          <div className="flex justify-between items-end mb-12 pb-6 border-b border-taupe-500 gap-12 flex-col md:flex-row">
+            <h2 className="font-display display-compressed text-[3.75rem] leading-[0.95] text-bone-100">
+              An{" "}
+              <em className="font-editorial italic font-light text-champagne-400">
+                honest
+              </em>{" "}
+              menu.
+            </h2>
+            <p className="font-mono text-mono uppercase tracking-[0.3em] text-taupe-300 text-right">
+              Sample pricing · Practitioners set their own
             </p>
           </div>
-        </div>
-      </section>
-
-      {/* Pricing cards */}
-      <section className="border-t border-espresso-200/40 bg-ivory-50">
-        <div className="mx-auto max-w-7xl px-6 py-24 sm:px-10 sm:py-32 lg:px-16">
-          <div className="grid gap-px border border-espresso-200/50 bg-espresso-200/50 lg:grid-cols-2">
-            {/* Client card */}
-            <div className="bg-ivory-50 p-10 sm:p-14">
-              <div className="flex items-center gap-3 text-label text-espresso-500">
-                <span className="tabular-nums text-brass-600">For Clients</span>
-                <span className="h-px w-8 bg-espresso-300" />
-              </div>
-              <h2 className="mt-6 font-serif text-[3rem] leading-none text-espresso-900">
-                Free
-              </h2>
-              <p className="mt-3 text-body text-espresso-500">
-                Forever. For every client. No card required to join.
-              </p>
-
-              <div className="my-10 h-px bg-espresso-200/60" />
-
-              <ul className="space-y-4">
-                {CLIENT_FEATURES.map((f) => (
-                  <li key={f} className="flex items-start gap-3">
-                    <Check
-                      className="mt-0.5 h-4 w-4 shrink-0 text-brass-600"
-                      strokeWidth={2}
-                    />
-                    <span className="text-body text-espresso-700">{f}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <Button variant="primary" size="lg" className="mt-10 w-full group" asChild>
-                <Link href="/register">
-                  Create your account
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                </Link>
-              </Button>
+          <div className="border border-smoke-700">
+            <div className="grid grid-cols-[1fr_2fr_1fr_1fr] font-mono text-mono uppercase tracking-[0.3em] text-taupe-300 px-6 py-4 border-b border-smoke-700 bg-smoke-950">
+              <span>Category</span>
+              <span>Service</span>
+              <span>Duration</span>
+              <span className="text-right">From</span>
             </div>
-
-            {/* Professional card — featured */}
-            <div className="relative bg-espresso-900 p-10 text-ivory-200 sm:p-14">
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(184,147,90,0.15)_0%,transparent_55%)]" />
-              <div className="relative">
-                <div className="flex items-center gap-3 text-label text-brass-400">
-                  <span className="tabular-nums">For Professionals</span>
-                  <span className="h-px w-8 bg-brass-400/60" />
-                </div>
-                <h2 className="mt-6 font-serif text-[3rem] leading-none text-ivory-100">
-                  2.9%
-                </h2>
-                <p className="mt-3 text-body text-ivory-300">
-                  Per transaction. Nothing else. No monthly fees, ever.
-                </p>
-
-                <div className="my-10 h-px bg-ivory-100/20" />
-
-                <ul className="space-y-4">
-                  {PROFESSIONAL_FEATURES.map((f) => (
-                    <li key={f} className="flex items-start gap-3">
-                      <Check
-                        className="mt-0.5 h-4 w-4 shrink-0 text-brass-400"
-                        strokeWidth={2}
-                      />
-                      <span className="text-body text-ivory-200">{f}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <Button variant="accent" size="lg" className="mt-10 w-full group" asChild>
-                  <Link href="/register?role=provider">
-                    Begin your practice
-                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                  </Link>
-                </Button>
+            {ALL_ROWS.map((row, i) => (
+              <div
+                key={`${row.category}-${row.service}`}
+                className={`grid grid-cols-[1fr_2fr_1fr_1fr] px-6 py-5 items-baseline ${
+                  i < ALL_ROWS.length - 1 ? "border-b border-smoke-700" : ""
+                }`}
+              >
+                <span className="font-mono text-mono uppercase tracking-[0.3em] text-taupe-300">
+                  {row.category}
+                </span>
+                <span className="font-editorial italic text-body-lg text-bone-100">
+                  {row.service}
+                </span>
+                <span className="text-body-sm text-taupe-300">{row.duration}</span>
+                <span className="font-display text-[1.5rem] leading-none text-bone-100 text-right">
+                  {row.price}
+                </span>
               </div>
-            </div>
+            ))}
           </div>
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <section className="border-t border-espresso-200/40 bg-ivory-100">
-        <div className="mx-auto max-w-7xl px-6 py-24 sm:px-10 sm:py-32 lg:px-16">
-          <div className="grid gap-16 lg:grid-cols-12">
-            <div className="lg:col-span-4">
-              <div className="flex items-center gap-3 text-label text-espresso-500">
-                <span className="tabular-nums text-brass-600">Chapter I</span>
-                <span className="h-px w-8 bg-espresso-300" />
-                <span>The Fine Print</span>
-              </div>
-              <h2 className="mt-6 font-serif text-[2.5rem] leading-[1] tracking-[-0.025em] text-espresso-900 sm:text-[3.25rem]">
-                Questions,
-                <br />
-                <span className="italic text-brass-600">answered plainly.</span>
-              </h2>
-            </div>
-
-            <div className="lg:col-span-8">
-              <div className="divide-y divide-espresso-200/50 border-y border-espresso-200/50">
-                {FAQS.map((faq, i) => (
-                  <div key={faq.q} className="grid gap-6 py-8 sm:grid-cols-12 sm:gap-10">
-                    <div className="sm:col-span-2">
-                      <span className="font-serif text-xl text-brass-600">
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                    </div>
-                    <div className="sm:col-span-10">
-                      <h3 className="font-serif text-xl text-espresso-900">
-                        {faq.q}
-                      </h3>
-                      <p className="mt-3 max-w-2xl text-body text-espresso-600">
-                        {faq.a}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <Footer />
-    </div>
+          <p className="mt-6 font-editorial italic font-light text-[18px] text-taupe-300 max-w-[760px]">
+            These are starting prices we have seen on the platform. Practitioners
+            set their own rates; many charge more for longer hair, evening hours,
+            or travel beyond their usual neighbourhood.
+          </p>
+        </section>
+      </main>
+      <SiteFooter />
+    </>
   );
 }
