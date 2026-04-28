@@ -2,15 +2,17 @@ import { useState, useEffect } from "react";
 import {
   View,
   Text,
-  TextInput,
-  FlatList,
-  TouchableOpacity,
+  ScrollView,
+  Pressable,
+  Image,
   StyleSheet,
   ActivityIndicator,
+  type ImageSourcePropType,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { SERVICE_CATEGORIES, type ServiceCategorySlug } from "@arc/shared";
 import { api } from "@/lib/api-client";
-import { colors, fonts, base } from "@/lib/theme";
+import { colors, fonts, sizes, spacing } from "@/theme";
 
 interface Provider {
   id: string;
@@ -24,10 +26,18 @@ interface Provider {
   services: { name: string; priceInCents: number }[];
 }
 
+const tileImages: Record<ServiceCategorySlug, ImageSourcePropType> = {
+  hair: require("../../../assets/brand/photography/tile-hair.png"),
+  nails: require("../../../assets/brand/photography/tile-nails.png"),
+  face: require("../../../assets/brand/photography/tile-face.png"),
+  lash: require("../../../assets/brand/photography/tile-lash.png"),
+  barber: require("../../../assets/brand/photography/tile-barber.png"),
+  makeup: require("../../../assets/brand/photography/tile-makeup.png"),
+};
+
 export default function ClientHomeScreen() {
   const router = useRouter();
-  const [providers, setProviders] = useState<Provider[]>([]);
-  const [search, setSearch] = useState("");
+  const [, setProviders] = useState<Provider[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,8 +49,7 @@ export default function ClientHomeScreen() {
     setLoading(true);
     setError(null);
     try {
-      const params = search ? `?q=${encodeURIComponent(search)}` : "";
-      const res = await api.get<{ data: { items: Provider[] } }>(`/search/providers${params}`);
+      const res = await api.get<{ data: { items: Provider[] } }>("/search/providers");
       setProviders(res.data.items);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load providers");
@@ -49,133 +58,95 @@ export default function ClientHomeScreen() {
     }
   }
 
-  function renderProvider({ item }: { item: Provider }) {
-    const name = item.businessName || `${item.user.firstName} ${item.user.lastName}`;
-    return (
-      <TouchableOpacity
-        style={styles.card}
-        onPress={() => router.push(`/provider/${item.id}`)}
-        activeOpacity={0.7}
-      >
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>
-            {item.user.firstName[0]}{item.user.lastName[0]}
-          </Text>
-        </View>
-        <View style={styles.cardContent}>
-          <Text style={styles.providerName}>{name}</Text>
-          <Text style={styles.rating}>
-            {"\u2605"} {item.averageRating.toFixed(1)} ({item.totalReviews})
-            {item.distance !== null ? ` \u00B7 ${item.distance.toFixed(1)} mi` : ""}
-          </Text>
-          {item.bio && <Text style={styles.bio} numberOfLines={2}>{item.bio}</Text>}
-        </View>
-      </TouchableOpacity>
-    );
-  }
-
   return (
-    <View style={base.screen}>
-      <View style={styles.searchRow}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search by name, craft, or location\u2026"
-          placeholderTextColor={colors.espresso[300]}
-          value={search}
-          onChangeText={setSearch}
-          onSubmitEditing={loadProviders}
-          returnKeyType="search"
-        />
+    <ScrollView
+      style={{ flex: 1, backgroundColor: colors.background }}
+      contentContainerStyle={{ padding: spacing.lg, gap: spacing.xl, paddingBottom: spacing.xxxl }}
+    >
+      <View style={{ paddingTop: 64 }}>
+        <Text style={styles.eyebrow}>TODAY</Text>
+        <Text style={styles.headline}>
+          What <Text style={styles.headlineEm}>nothing</Text> are we doing?
+        </Text>
       </View>
 
       {loading ? (
-        <ActivityIndicator size="large" color={colors.brass[500]} style={styles.loader} />
+        <ActivityIndicator size="large" color={colors.accent} />
       ) : error ? (
         <Text style={styles.error}>{error}</Text>
       ) : (
-        <FlatList
-          data={providers}
-          renderItem={renderProvider}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.list}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyTitle}>No professionals found</Text>
-              <Text style={styles.emptyBody}>Try a different search or check back later.</Text>
-            </View>
-          }
-        />
+        <View style={{ gap: spacing.md }}>
+          {SERVICE_CATEGORIES.map((cat) => (
+            <Pressable
+              key={cat.slug}
+              style={styles.tile}
+              onPress={() => router.push(`/services/${cat.slug}`)}
+            >
+              <Image source={tileImages[cat.slug]} style={styles.tileImage} resizeMode="cover" />
+              <View style={styles.tileBody}>
+                <Text style={styles.tileNumber}>{cat.numberLabel}</Text>
+                <Text style={styles.tileLabel}>{cat.label}</Text>
+              </View>
+            </Pressable>
+          ))}
+        </View>
       )}
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  searchRow: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.espresso[200],
+  eyebrow: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: sizes.label,
+    color: colors.taupe[300],
+    letterSpacing: 3.5,
+    textTransform: "uppercase",
+    marginBottom: spacing.md,
   },
-  searchInput: {
-    ...base.input,
+  headline: {
+    fontFamily: fonts.displayBlack,
+    fontSize: 40,
+    color: colors.primaryFg,
+    letterSpacing: -1.2,
+    lineHeight: 40,
   },
-  list: { padding: 20 },
-  card: {
+  headlineEm: {
+    fontFamily: fonts.editorialLight,
+    color: colors.accent,
+    fontStyle: "italic",
+  },
+  tile: {
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    overflow: "hidden",
+  },
+  tileImage: {
+    width: "100%",
+    height: 180,
+    backgroundColor: colors.smoke[800],
+  },
+  tileBody: {
+    padding: spacing.md,
     flexDirection: "row",
-    padding: 16,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.espresso[200],
-    backgroundColor: colors.ivory[50],
-    marginBottom: 12,
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    backgroundColor: colors.ivory[300],
-    justifyContent: "center",
+    justifyContent: "space-between",
     alignItems: "center",
-    marginRight: 14,
   },
-  avatarText: {
-    fontSize: 15,
-    fontFamily: fonts.serif,
-    color: colors.espresso[700],
+  tileNumber: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: sizes.label,
+    color: colors.taupe[300],
+    letterSpacing: 2.4,
   },
-  cardContent: { flex: 1 },
-  providerName: {
-    fontSize: 16,
-    fontFamily: fonts.serif,
-    color: colors.espresso[800],
+  tileLabel: {
+    fontFamily: fonts.displayMedium,
+    fontSize: sizes.subheading,
+    color: colors.primaryFg,
   },
-  rating: {
-    fontSize: 13,
-    color: colors.brass[600],
-    marginTop: 2,
-  },
-  bio: {
-    fontSize: 13,
-    color: colors.espresso[400],
-    marginTop: 4,
-    lineHeight: 18,
-  },
-  emptyContainer: { alignItems: "center", marginTop: 60 },
-  emptyTitle: {
-    fontFamily: fonts.serif,
-    fontSize: 18,
-    color: colors.espresso[800],
-  },
-  emptyBody: {
-    fontSize: 14,
-    color: colors.espresso[400],
-    marginTop: 6,
-  },
-  loader: { marginTop: 60 },
   error: {
-    textAlign: "center",
-    color: colors.status.error,
-    marginTop: 40,
-    paddingHorizontal: 20,
-    fontSize: 14,
+    color: colors.taupe[300],
+    fontFamily: fonts.body,
+    fontSize: sizes.body,
   },
 });

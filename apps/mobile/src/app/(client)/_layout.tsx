@@ -1,37 +1,32 @@
 import { Tabs } from "expo-router";
-import { colors, fonts } from "@/lib/theme";
+import { colors, fonts } from "@/theme";
 
 export default function ClientTabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: colors.espresso[800],
-        tabBarInactiveTintColor: colors.espresso[300],
+        headerShown: false,
         tabBarStyle: {
-          backgroundColor: colors.ivory[100],
-          borderTopColor: colors.espresso[200],
-          borderTopWidth: 0.5,
+          backgroundColor: colors.smoke[950],
+          borderTopColor: colors.smoke[700],
+          borderTopWidth: 1,
+          height: 64,
         },
+        tabBarActiveTintColor: colors.accent,
+        tabBarInactiveTintColor: colors.taupe[400],
         tabBarLabelStyle: {
-          fontSize: 10,
-          letterSpacing: 0.5,
-          fontFamily: fonts.sans,
+          fontFamily: fonts.bodyMedium,
+          fontSize: 9,
+          letterSpacing: 2.4,
+          textTransform: "uppercase",
         },
-        headerStyle: { backgroundColor: colors.ivory[100] },
-        headerTitleStyle: {
-          fontFamily: fonts.serif,
-          fontSize: 18,
-          color: colors.espresso[800],
-        },
-        headerShadowVisible: false,
-        headerTintColor: colors.espresso[800],
       }}
     >
-      <Tabs.Screen name="home" options={{ title: "Discover" }} />
-      <Tabs.Screen name="bookings" options={{ title: "Bookings" }} />
+      <Tabs.Screen name="home" options={{ title: "Today" }} />
+      <Tabs.Screen name="bookings" options={{ title: "Visits" }} />
       <Tabs.Screen name="messages" options={{ title: "Messages" }} />
-      <Tabs.Screen name="community" options={{ title: "Journal" }} />
-      <Tabs.Screen name="profile" options={{ title: "Profile" }} />
+      <Tabs.Screen name="community" options={{ title: "Voices" }} />
+      <Tabs.Screen name="profile" options={{ title: "Account" }} />
     </Tabs>
   );
 }

@@ -1,82 +1,99 @@
-import { useState, useEffect } from "react";
-import { View, Text, FlatList, StyleSheet } from "react-native";
-import { api } from "@/lib/api-client";
-import { colors, fonts, base } from "@/lib/theme";
+import { View, Text, ScrollView, StyleSheet } from "react-native";
+import { colors, fonts, sizes, spacing } from "@/theme";
 
-interface Post {
-  id: string;
-  title: string;
-  body: string;
-  category: string;
-  commentsCount: number;
-  createdAt: string;
-  author: { firstName: string; lastName: string };
+interface PullQuote {
+  quote: string;
+  attribution: string;
 }
 
+const QUOTES: PullQuote[] = [
+  {
+    quote: "I haven't left my apartment for a haircut in seven months. I don't intend to.",
+    attribution: "Maeve, Logan Square",
+  },
+  {
+    quote: "It used to be an errand. Now it's the part of the week I look forward to.",
+    attribution: "Jules, West Loop",
+  },
+  {
+    quote: "The provider arrived three minutes early and asked if she could take her shoes off. We have been friends since.",
+    attribution: "Theo, Lincoln Park",
+  },
+];
+
 export default function CommunityScreen() {
-  const [posts, setPosts] = useState<Post[]>([]);
-
-  useEffect(() => {
-    loadPosts();
-  }, []);
-
-  async function loadPosts() {
-    try {
-      const res = await api.get<{ data: { items: Post[] } }>("/posts");
-      setPosts(res.data.items);
-    } catch {
-      // Handle error
-    }
-  }
-
   return (
-    <View style={base.screen}>
-      <FlatList
-        data={posts}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.list}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyTitle}>No posts yet</Text>
-            <Text style={styles.emptyBody}>The journal is waiting for its first entry.</Text>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: colors.background }}
+      contentContainerStyle={{ padding: spacing.lg, gap: spacing.xl, paddingBottom: spacing.xxxl }}
+    >
+      <View style={{ paddingTop: 64 }}>
+        <Text style={styles.eyebrow}>COMMUNITY</Text>
+        <Text style={styles.headline}>
+          What others <Text style={styles.headlineEm}>say.</Text>
+        </Text>
+      </View>
+
+      <View style={{ gap: spacing.xl }}>
+        {QUOTES.map((q, i) => (
+          <View key={i} style={styles.quoteBlock}>
+            <Text style={styles.quoteMark}>&ldquo;</Text>
+            <Text style={styles.quoteText}>{q.quote}</Text>
+            <Text style={styles.attribution}>— {q.attribution}</Text>
           </View>
-        }
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Text style={styles.category}>{item.category}</Text>
-            <Text style={styles.title}>{item.title}</Text>
-            <Text style={styles.body} numberOfLines={3}>{item.body}</Text>
-            <View style={styles.meta}>
-              <Text style={styles.metaText}>
-                {item.author.firstName} {item.author.lastName}
-              </Text>
-              <Text style={styles.metaText}>{item.commentsCount} comments</Text>
-            </View>
-          </View>
-        )}
-      />
-    </View>
+        ))}
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  list: { padding: 20 },
-  card: {
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.espresso[200],
-    backgroundColor: colors.ivory[50],
-    padding: 16,
-    marginBottom: 12,
+  eyebrow: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: sizes.label,
+    color: colors.taupe[300],
+    letterSpacing: 3.5,
+    textTransform: "uppercase",
+    marginBottom: spacing.md,
   },
-  category: {
-    ...base.label,
-    color: colors.brass[600],
+  headline: {
+    fontFamily: fonts.displayBlack,
+    fontSize: 40,
+    color: colors.primaryFg,
+    letterSpacing: -1.2,
+    lineHeight: 40,
   },
-  title: { fontSize: 16, fontFamily: fonts.serif, color: colors.espresso[800], marginTop: 4 },
-  body: { fontSize: 14, color: colors.espresso[500], marginTop: 4, lineHeight: 20 },
-  meta: { flexDirection: "row", justifyContent: "space-between", marginTop: 10 },
-  metaText: { fontSize: 12, color: colors.espresso[300] },
-  emptyContainer: { alignItems: "center", marginTop: 60 },
-  emptyTitle: { fontFamily: fonts.serif, fontSize: 18, color: colors.espresso[800] },
-  emptyBody: { fontSize: 14, color: colors.espresso[400], marginTop: 6 },
+  headlineEm: {
+    fontFamily: fonts.editorialLight,
+    color: colors.accent,
+    fontStyle: "italic",
+  },
+  quoteBlock: {
+    paddingLeft: spacing.md,
+    borderLeftWidth: 1,
+    borderLeftColor: colors.accent,
+  },
+  quoteMark: {
+    fontFamily: fonts.editorialLight,
+    fontSize: 56,
+    color: colors.accent,
+    lineHeight: 56,
+    height: 32,
+  },
+  quoteText: {
+    fontFamily: fonts.editorialLight,
+    fontSize: sizes.heading,
+    color: colors.primaryFg,
+    lineHeight: 34,
+    fontStyle: "italic",
+    marginTop: spacing.sm,
+  },
+  attribution: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: sizes.label,
+    color: colors.taupe[300],
+    letterSpacing: 2.4,
+    textTransform: "uppercase",
+    marginTop: spacing.md,
+  },
 });

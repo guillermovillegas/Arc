@@ -1,12 +1,14 @@
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { useState, useEffect } from "react";
+import { View, Text, ScrollView, Pressable, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { clearTokens, getStoredTokens } from "@/lib/auth";
-import { useState, useEffect } from "react";
-import { colors, fonts, base } from "@/lib/theme";
+import { colors, fonts, sizes, spacing } from "@/theme";
 
 export default function ClientProfileScreen() {
   const router = useRouter();
-  const [user, setUser] = useState<{ firstName: string; lastName: string; email: string } | null>(null);
+  const [user, setUser] = useState<{ firstName: string; lastName: string; email: string } | null>(
+    null,
+  );
 
   useEffect(() => {
     getStoredTokens().then(({ user: u }) => setUser(u));
@@ -18,66 +20,95 @@ export default function ClientProfileScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.avatar}>
-        <Text style={styles.avatarText}>
-          {user ? `${user.firstName[0]}${user.lastName[0]}` : "?"}
+    <ScrollView
+      style={{ flex: 1, backgroundColor: colors.background }}
+      contentContainerStyle={{ padding: spacing.lg, gap: spacing.xl, paddingBottom: spacing.xxxl }}
+    >
+      <View style={{ paddingTop: 64 }}>
+        <Text style={styles.eyebrow}>ACCOUNT</Text>
+        <Text style={styles.headline}>
+          You and <Text style={styles.headlineEm}>your address.</Text>
         </Text>
       </View>
-      <Text style={styles.name}>{user ? `${user.firstName} ${user.lastName}` : ""}</Text>
-      <Text style={styles.email}>{user?.email}</Text>
 
-      <TouchableOpacity
-        style={styles.logoutButton}
-        onPress={handleLogout}
-        activeOpacity={0.7}
-      >
-        <Text style={styles.logoutText}>Sign Out</Text>
-      </TouchableOpacity>
+      <View style={{ gap: spacing.lg }}>
+        <Field
+          label="Name"
+          value={user ? `${user.firstName} ${user.lastName}` : "—"}
+        />
+        <Field label="Email" value={user?.email ?? "—"} />
+        <Field label="Address" value="On file" />
+        <Field label="Card on file" value="•••• 4242" />
+      </View>
+
+      <Pressable style={styles.signOut} onPress={handleLogout}>
+        <Text style={styles.signOutText}>Sign out</Text>
+      </Pressable>
+    </ScrollView>
+  );
+}
+
+function Field({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={styles.field}>
+      <Text style={styles.fieldLabel}>{label}</Text>
+      <Text style={styles.fieldValue}>{value}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.ivory[100],
-    alignItems: "center",
-    paddingTop: 60,
+  eyebrow: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: sizes.label,
+    color: colors.taupe[300],
+    letterSpacing: 3.5,
+    textTransform: "uppercase",
+    marginBottom: spacing.md,
   },
-  avatar: {
-    width: 80,
-    height: 80,
-    backgroundColor: colors.ivory[300],
-    justifyContent: "center",
-    alignItems: "center",
+  headline: {
+    fontFamily: fonts.displayBlack,
+    fontSize: 40,
+    color: colors.primaryFg,
+    letterSpacing: -1.2,
+    lineHeight: 40,
   },
-  avatarText: {
-    fontSize: 28,
-    fontFamily: fonts.serif,
-    color: colors.espresso[700],
+  headlineEm: {
+    fontFamily: fonts.editorialLight,
+    color: colors.accent,
+    fontStyle: "italic",
   },
-  name: {
-    fontSize: 22,
-    fontFamily: fonts.serif,
-    marginTop: 16,
-    color: colors.espresso[800],
+  field: {
+    paddingBottom: spacing.md,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.border,
+    gap: spacing.xs,
   },
-  email: {
-    fontSize: 14,
-    color: colors.espresso[400],
-    marginTop: 4,
+  fieldLabel: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: sizes.label,
+    color: colors.taupe[300],
+    letterSpacing: 2.4,
+    textTransform: "uppercase",
   },
-  logoutButton: {
-    marginTop: 40,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.espresso[200],
-    paddingHorizontal: 32,
-    paddingVertical: 12,
+  fieldValue: {
+    fontFamily: fonts.displayMedium,
+    fontSize: sizes.bodyLg,
+    color: colors.primaryFg,
   },
-  logoutText: {
-    color: colors.espresso[500],
-    fontSize: 14,
-    letterSpacing: 0.5,
+  signOut: {
+    alignSelf: "flex-start",
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    marginTop: spacing.md,
+  },
+  signOutText: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: sizes.label,
+    color: colors.secondaryFg,
+    letterSpacing: 2.4,
+    textTransform: "uppercase",
   },
 });
