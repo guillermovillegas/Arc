@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -10,7 +9,7 @@ import { api } from "@/lib/api-client";
 import { Loader2 } from "lucide-react";
 
 export default function ProviderProfilePage() {
-  const { user, accessToken } = useAuth();
+  const { accessToken } = useAuth();
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({
     bio: "",
@@ -33,9 +32,14 @@ export default function ProviderProfilePage() {
   async function loadProfile() {
     setError(null);
     try {
-      const res = await api.get<{ data: { bio?: string; businessName?: string; address?: string; serviceRadius?: number } }>("/providers/me", {
-        token: accessToken!,
-      });
+      const res = await api.get<{
+        data: {
+          bio?: string;
+          businessName?: string;
+          address?: string;
+          serviceRadius?: number;
+        };
+      }>("/providers/me", { token: accessToken! });
       const data = res.data;
       setForm({
         bio: data?.bio ?? "",
@@ -65,7 +69,7 @@ export default function ProviderProfilePage() {
         },
         { token: accessToken! },
       );
-      setMessage("Profile updated!");
+      setMessage("Saved.");
     } catch {
       setError("Failed to update profile. Please try again.");
     } finally {
@@ -74,73 +78,119 @@ export default function ProviderProfilePage() {
   }
 
   return (
-    <div>
-      <h1 className="font-serif text-heading text-espresso-800">Provider Profile</h1>
-      <p className="mt-1 text-body-sm text-espresso-400">Update your business details and let clients know who you are.</p>
+    <div className="p-12 px-14 flex flex-col gap-12">
+      <header className="flex justify-between items-end pb-5 border-b border-smoke-700">
+        <h2 className="font-display display-compressed text-[2.625rem] leading-none text-bone-100">
+          Your{" "}
+          <em className="font-editorial italic font-light text-champagne-400">
+            profile.
+          </em>
+        </h2>
+        <p className="font-editorial italic text-body-lg text-bone-200 max-w-[340px] text-right leading-snug">
+          How clients see you in the directory. Edit slowly.
+        </p>
+      </header>
 
       {error && (
-        <div className="mt-4 border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+        <div className="border border-smoke-700 bg-smoke-800 px-4 py-3 text-label uppercase tracking-[0.18em] text-bone-200">
+          {error}
+        </div>
       )}
 
       {loading ? (
         <div className="flex justify-center py-12">
-          <Loader2 className="h-6 w-6 animate-spin text-espresso-300" />
+          <Loader2 className="h-6 w-6 animate-spin text-taupe-300" />
         </div>
       ) : (
-        <Card className="mt-6 max-w-lg border-espresso-200/60 bg-ivory-50">
-          <div className="space-y-4 p-6">
-            <div>
-              <Label htmlFor="businessName">Business Name</Label>
+        <section className="max-w-2xl">
+          <div className="bg-smoke-900 border border-smoke-700 p-9 flex flex-col gap-6">
+            <div className="flex flex-col gap-2">
+              <Label
+                htmlFor="businessName"
+                className="text-label uppercase tracking-[0.28em] text-taupe-300 font-medium"
+              >
+                Practice name
+              </Label>
               <Input
                 id="businessName"
                 value={form.businessName}
-                onChange={(e) => setForm((f) => ({ ...f, businessName: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, businessName: e.target.value }))
+                }
                 placeholder="e.g. Marcus Cuts"
               />
             </div>
 
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-espresso-800">Bio</label>
+            <div className="flex flex-col gap-2">
+              <Label
+                htmlFor="bio"
+                className="text-label uppercase tracking-[0.28em] text-taupe-300 font-medium"
+              >
+                Bio
+              </Label>
               <textarea
+                id="bio"
                 value={form.bio}
-                onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))}
-                rows={4}
-                className="mt-1 block w-full rounded-md border border-espresso-200 bg-ivory-50 px-3 py-2 text-sm text-espresso-800 placeholder:text-espresso-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass-500 focus-visible:ring-offset-2"
-                placeholder="Tell clients about yourself and your experience..."
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, bio: e.target.value }))
+                }
+                rows={5}
+                className="w-full bg-smoke-900 border border-smoke-700 px-4 py-3 font-editorial italic text-body-md text-bone-100 placeholder:text-taupe-300 focus-visible:outline-none focus-visible:border-champagne-400"
+                placeholder="A few honest sentences. Where you trained, what you care about."
               />
             </div>
 
-            <div>
-              <Label htmlFor="address">Address / Location</Label>
+            <div className="flex flex-col gap-2">
+              <Label
+                htmlFor="address"
+                className="text-label uppercase tracking-[0.28em] text-taupe-300 font-medium"
+              >
+                Address
+              </Label>
               <Input
                 id="address"
                 value={form.address}
-                onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
-                placeholder="City, State"
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, address: e.target.value }))
+                }
+                placeholder="City, state"
               />
             </div>
 
-            <div>
-              <Label htmlFor="serviceRadius">Service Radius (miles)</Label>
+            <div className="flex flex-col gap-2">
+              <Label
+                htmlFor="serviceRadius"
+                className="text-label uppercase tracking-[0.28em] text-taupe-300 font-medium"
+              >
+                Service radius (miles)
+              </Label>
               <Input
                 id="serviceRadius"
                 type="number"
                 value={form.serviceRadius}
-                onChange={(e) => setForm((f) => ({ ...f, serviceRadius: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, serviceRadius: e.target.value }))
+                }
               />
             </div>
 
             {message && (
-              <p className="text-sm text-[#3b7a57]">
+              <p className="font-mono text-mono text-champagne-400">
                 {message}
               </p>
             )}
 
-            <Button variant="primary" onClick={handleSave} disabled={loading || saving}>
-              {saving ? "Saving..." : "Save Profile"}
-            </Button>
+            <div className="flex justify-end pt-2 border-t border-smoke-700">
+              <Button
+                variant="primary"
+                onClick={handleSave}
+                disabled={loading || saving}
+              >
+                {saving ? "Saving…" : "Save profile"}
+              </Button>
+            </div>
           </div>
-        </Card>
+        </section>
       )}
     </div>
   );

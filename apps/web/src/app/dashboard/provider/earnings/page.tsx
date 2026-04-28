@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth";
@@ -32,7 +31,10 @@ export default function ProviderEarningsPage() {
     setError(null);
     setLoading(true);
     try {
-      const res = await api.get<{ data: EarningsData }>("/payments/earnings", { token: accessToken! });
+      const res = await api.get<{ data: EarningsData }>(
+        "/payments/earnings",
+        { token: accessToken! },
+      );
       setEarnings(res.data);
     } catch {
       // Network error on initial load — degrade to empty state
@@ -45,7 +47,11 @@ export default function ProviderEarningsPage() {
     setError(null);
     setConnectingStripe(true);
     try {
-      const res = await api.post<{ data: { url: string } }>("/payments/connect", {}, { token: accessToken! });
+      const res = await api.post<{ data: { url: string } }>(
+        "/payments/connect",
+        {},
+        { token: accessToken! },
+      );
       window.location.href = res.data.url;
     } catch {
       setError("Failed to connect to Stripe. Please try again.");
@@ -54,69 +60,113 @@ export default function ProviderEarningsPage() {
     }
   }
 
+  const total = earnings ? (earnings.totalEarnings / 100).toFixed(2) : "0.00";
+
   return (
-    <div>
-      <h1 className="font-serif text-heading text-espresso-800">Earnings</h1>
-      <p className="mt-1 text-body-sm text-espresso-400">Track your revenue and manage your Stripe payout account.</p>
+    <div className="p-12 px-14 flex flex-col gap-12">
+      <header className="flex justify-between items-end pb-5 border-b border-smoke-700">
+        <h2 className="font-display display-compressed text-[2.625rem] leading-none text-bone-100">
+          What you{" "}
+          <em className="font-editorial italic font-light text-champagne-400">
+            earned.
+          </em>
+        </h2>
+        <p className="font-editorial italic text-body-lg text-bone-200 max-w-[340px] text-right leading-snug">
+          Faineant takes 5%. Stripe takes the usual fees. The rest is yours.
+        </p>
+      </header>
 
       {error && (
-        <div className="mt-4 border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+        <div className="border border-smoke-700 bg-smoke-800 px-4 py-3 text-label uppercase tracking-[0.18em] text-bone-200">
+          {error}
+        </div>
       )}
 
       {loading ? (
         <div className="flex justify-center py-12">
-          <Loader2 className="h-6 w-6 animate-spin text-espresso-300" />
+          <Loader2 className="h-6 w-6 animate-spin text-taupe-300" />
         </div>
       ) : (
         <>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
-            <Card className="border-espresso-200/60 bg-ivory-50 p-6">
-              <p className="text-sm text-espresso-400">Total Earnings</p>
-              <p className="mt-1 text-3xl font-bold text-espresso-800">
-                ${earnings ? (earnings.totalEarnings / 100).toFixed(2) : "0.00"}
+          <section className="grid gap-px sm:grid-cols-2 bg-smoke-700">
+            <div className="bg-smoke-900 p-9 flex flex-col gap-3">
+              <p className="text-label uppercase tracking-[0.32em] text-taupe-300 font-medium">
+                Total, to date
               </p>
-            </Card>
-            <Card className="border-espresso-200/60 bg-ivory-50 p-6">
-              <p className="text-sm text-espresso-400">Stripe Payments</p>
-              <Button
-                variant="outline"
-                size="sm"
-                className="mt-2"
-                onClick={setupStripe}
-                disabled={connectingStripe}
-              >
-                {connectingStripe ? "Connecting..." : "Manage Stripe Account"}
-              </Button>
-            </Card>
-          </div>
+              <p className="font-display display-compressed text-[3rem] leading-none text-bone-100">
+                ${total}
+              </p>
+              <p className="font-editorial italic text-body-md text-bone-200">
+                After Faineant. Before tax.
+              </p>
+            </div>
+            <div className="bg-smoke-900 p-9 flex flex-col gap-3">
+              <p className="text-label uppercase tracking-[0.32em] text-taupe-300 font-medium">
+                Payouts
+              </p>
+              <p className="font-editorial italic text-body-md text-bone-200">
+                Stripe handles the transfers. Manage your account there.
+              </p>
+              <div className="pt-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={setupStripe}
+                  disabled={connectingStripe}
+                >
+                  {connectingStripe ? "Opening…" : "Manage Stripe"}
+                </Button>
+              </div>
+            </div>
+          </section>
 
-          <h2 className="mt-8 font-serif text-subheading text-espresso-800">Payment History</h2>
-          <div className="mt-4 space-y-3">
-            {earnings?.payments.length === 0 ? (
-              <div className="py-12 text-center">
-                <p className="font-serif text-lg text-espresso-800">No payments yet</p>
-                <p className="mt-1 text-sm text-espresso-400">Completed bookings and their payouts will appear here.</p>
+          <section>
+            <h4 className="text-label uppercase tracking-[0.32em] text-taupe-300 mb-5 flex justify-between items-center font-medium">
+              Ledger
+              <span className="font-mono text-champagne-400">
+                {(earnings?.payments.length ?? 0).toString().padStart(2, "0")} /
+                ENTRIES
+              </span>
+            </h4>
+
+            {!earnings?.payments.length ? (
+              <div className="bg-smoke-900 border border-smoke-700 p-9 text-center">
+                <p className="font-editorial italic text-body-lg text-bone-200">
+                  Nothing here yet. Completed visits will leave a mark.
+                </p>
               </div>
             ) : (
-              earnings?.payments.map((payment) => (
-                <Card key={payment.id} className="p-4 border-espresso-200/60 bg-ivory-50">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-espresso-800">{payment.booking?.service?.name ?? "Unknown Service"}</p>
-                      <p className="text-sm text-espresso-400">
+              <div>
+                {earnings.payments.map((payment) => (
+                  <div
+                    key={payment.id}
+                    className="bg-smoke-900 border border-smoke-700 p-5 px-6 grid grid-cols-[1fr_auto_auto] gap-6 items-center mb-px"
+                  >
+                    <div className="font-display font-medium text-[15px] text-bone-100 tracking-[-0.01em]">
+                      {payment.booking?.service?.name ?? "Unknown service"}
+                      <small className="block font-editorial italic font-normal text-[13px] text-bone-200 mt-0.5">
                         {payment.booking?.startTime
-                          ? new Date(payment.booking.startTime).toLocaleDateString()
-                          : "Unknown date"}
-                      </p>
+                          ? new Date(
+                              payment.booking.startTime,
+                            ).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })
+                          : "—"}
+                      </small>
                     </div>
-                    <span className="font-semibold text-[#3b7a57]">
+                    <div className="text-label uppercase tracking-[0.18em] text-taupe-300 font-medium text-[11px]">
+                      Payout
+                    </div>
+                    <div className="font-mono text-mono text-champagne-400 text-[13px] text-right">
                       +${(payment.providerPayoutInCents / 100).toFixed(2)}
-                    </span>
+                    </div>
                   </div>
-                </Card>
-              ))
+                ))}
+              </div>
             )}
-          </div>
+          </section>
         </>
       )}
     </div>

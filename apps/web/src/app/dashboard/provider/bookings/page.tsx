@@ -3,25 +3,11 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   Loader2,
-  Clock,
-  User,
-  FileText,
-  DollarSign,
-  CalendarDays,
   CheckCircle2,
   PlayCircle,
   XCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
@@ -39,7 +25,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth";
 
@@ -72,14 +57,41 @@ const TAB_TO_API_STATUS: Record<ProviderTab, string> = {
   all: "",
 };
 
-const STATUS_BADGE_CLASSES: Record<string, string> = {
-  PENDING: "border-brass-300 bg-brass-100 text-brass-700",
-  CONFIRMED: "border-[#3b7a57]/30 bg-[#3b7a57]/10 text-[#3b7a57]",
-  IN_PROGRESS: "border-[#2f6e9e]/30 bg-[#2f6e9e]/10 text-[#2f6e9e]",
-  COMPLETED: "border-espresso-300 bg-espresso-100 text-espresso-600",
-  CANCELLED: "border-espresso-300 bg-espresso-100 text-espresso-500",
-  NO_SHOW: "border-espresso-300 bg-espresso-100 text-espresso-500",
-};
+const TABS: { value: ProviderTab; label: string }[] = [
+  { value: "pending", label: "Pending" },
+  { value: "confirmed", label: "Confirmed" },
+  { value: "in_progress", label: "In progress" },
+  { value: "completed", label: "Completed" },
+  { value: "all", label: "All" },
+];
+
+const MONTHS = [
+  "JAN",
+  "FEB",
+  "MAR",
+  "APR",
+  "MAY",
+  "JUN",
+  "JUL",
+  "AUG",
+  "SEP",
+  "OCT",
+  "NOV",
+  "DEC",
+];
+const WEEKDAYS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+
+function shortDate(iso: string): string {
+  const d = new Date(iso);
+  return `${d.getDate().toString().padStart(2, "0")} ${MONTHS[d.getMonth()]}`;
+}
+
+function shortWeekdayTime(iso: string): string {
+  const d = new Date(iso);
+  const hh = d.getHours().toString().padStart(2, "0");
+  const mm = d.getMinutes().toString().padStart(2, "0");
+  return `${WEEKDAYS[d.getDay()]} · ${hh}:${mm}`;
+}
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("en-US", {
@@ -101,15 +113,15 @@ function formatPrice(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
 }
 
-function statusLabel(status: string): string {
-  return status.replace(/_/g, " ");
-}
-
 function clientName(booking: BookingItem): string {
   const first = booking.client?.firstName ?? "";
   const last = booking.client?.lastName ?? "";
   const full = `${first} ${last}`.trim();
-  return full || "Unknown Client";
+  return full || "Unknown";
+}
+
+function statusLabel(status: string): string {
+  return status.replace(/_/g, " ").toLowerCase();
 }
 
 export default function ProviderBookingsPage() {
@@ -120,10 +132,7 @@ export default function ProviderBookingsPage() {
   const [activeTab, setActiveTab] = useState<ProviderTab>("pending");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
-  // Detail dialog
   const [detailBooking, setDetailBooking] = useState<BookingItem | null>(null);
-
-  // Cancel / decline dialog
   const [declineBooking, setDeclineBooking] = useState<BookingItem | null>(null);
   const [declineReason, setDeclineReason] = useState("");
   const [declining, setDeclining] = useState(false);
@@ -137,7 +146,7 @@ export default function ProviderBookingsPage() {
       const params = apiStatus ? `?status=${apiStatus}` : "";
       const res = await api.get<{ data: BookingItem[] }>(
         `/bookings/provider${params}`,
-        { token: accessToken }
+        { token: accessToken },
       );
       setBookings(res.data);
     } catch {
@@ -153,7 +162,6 @@ export default function ProviderBookingsPage() {
 
   const sortedBookings = useMemo(() => {
     return [...bookings].sort((a, b) => {
-      // Pending first (nearest time first), rest by start time ascending
       return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
     });
   }, [bookings]);
@@ -166,7 +174,7 @@ export default function ProviderBookingsPage() {
       await api.patch(
         `/bookings/${bookingId}/status`,
         { status },
-        { token: accessToken }
+        { token: accessToken },
       );
       await loadBookings();
     } catch {
@@ -183,7 +191,7 @@ export default function ProviderBookingsPage() {
       await api.patch(
         `/bookings/${declineBooking.id}/status`,
         { status: "CANCELLED", reason: declineReason || undefined },
-        { token: accessToken }
+        { token: accessToken },
       );
       setDeclineBooking(null);
       setDeclineReason("");
@@ -195,270 +203,201 @@ export default function ProviderBookingsPage() {
     }
   }
 
-  function handleTabChange(value: string) {
-    setActiveTab(value as ProviderTab);
-  }
-
   function renderActionButtons(booking: BookingItem) {
     const isUpdating = updatingId === booking.id;
 
-    return (
-      <div className="flex items-center gap-1">
-        {booking.status === "PENDING" && (
-          <>
-            <Button
-              size="sm"
-              variant="accent"
-              className="text-[0.875rem]"
-              onClick={(e) => {
-                e.stopPropagation();
-                updateStatus(booking.id, "CONFIRMED");
-              }}
-              disabled={isUpdating}
-            >
-              {isUpdating ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <CheckCircle2 className="mr-1 h-3.5 w-3.5" />
-              )}
-              Confirm
-            </Button>
-            <Button
-              size="sm"
-              variant="destructive"
-              className="text-[0.875rem]"
-              onClick={(e) => {
-                e.stopPropagation();
-                setDeclineBooking(booking);
-              }}
-              disabled={isUpdating}
-            >
-              Decline
-            </Button>
-          </>
-        )}
-        {booking.status === "CONFIRMED" && (
-          <>
-            <Button
-              size="sm"
-              variant="primary"
-              className="text-[0.875rem]"
-              onClick={(e) => {
-                e.stopPropagation();
-                updateStatus(booking.id, "IN_PROGRESS");
-              }}
-              disabled={isUpdating}
-            >
-              {isUpdating ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <PlayCircle className="mr-1 h-3.5 w-3.5" />
-              )}
-              Start
-            </Button>
-            <Button
-              size="sm"
-              variant="destructive"
-              className="text-[0.875rem]"
-              onClick={(e) => {
-                e.stopPropagation();
-                setDeclineBooking(booking);
-              }}
-              disabled={isUpdating}
-            >
-              Cancel
-            </Button>
-          </>
-        )}
-        {booking.status === "IN_PROGRESS" && (
-          <Button
-            size="sm"
-            variant="accent"
-            className="text-[0.875rem]"
+    if (booking.status === "PENDING") {
+      return (
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
             onClick={(e) => {
               e.stopPropagation();
-              updateStatus(booking.id, "COMPLETED");
+              updateStatus(booking.id, "CONFIRMED");
             }}
             disabled={isUpdating}
+            className="px-3.5 py-2 border border-champagne-400 text-label uppercase tracking-[0.28em] text-champagne-400 font-medium text-[10px] hover:bg-champagne-400 hover:text-smoke-900 disabled:opacity-50"
           >
-            {isUpdating ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <CheckCircle2 className="mr-1 h-3.5 w-3.5" />
-            )}
-            Complete
-          </Button>
-        )}
-      </div>
+            {isUpdating ? "…" : "Confirm"}
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setDeclineBooking(booking);
+            }}
+            disabled={isUpdating}
+            className="px-3.5 py-2 border border-smoke-700 text-label uppercase tracking-[0.28em] text-bone-200 font-medium text-[10px] hover:text-champagne-400"
+          >
+            Decline
+          </button>
+        </div>
+      );
+    }
+    if (booking.status === "CONFIRMED") {
+      return (
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              updateStatus(booking.id, "IN_PROGRESS");
+            }}
+            disabled={isUpdating}
+            className="px-3.5 py-2 border border-champagne-400 text-label uppercase tracking-[0.28em] text-champagne-400 font-medium text-[10px] hover:bg-champagne-400 hover:text-smoke-900 disabled:opacity-50"
+          >
+            {isUpdating ? "…" : "Start"}
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setDeclineBooking(booking);
+            }}
+            disabled={isUpdating}
+            className="px-3.5 py-2 border border-smoke-700 text-label uppercase tracking-[0.28em] text-bone-200 font-medium text-[10px] hover:text-champagne-400"
+          >
+            Cancel
+          </button>
+        </div>
+      );
+    }
+    if (booking.status === "IN_PROGRESS") {
+      return (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            updateStatus(booking.id, "COMPLETED");
+          }}
+          disabled={isUpdating}
+          className="px-3.5 py-2 border border-champagne-400 text-label uppercase tracking-[0.28em] text-champagne-400 font-medium text-[10px] hover:bg-champagne-400 hover:text-smoke-900 disabled:opacity-50"
+        >
+          {isUpdating ? "…" : "Complete"}
+        </button>
+      );
+    }
+    return (
+      <span className="px-3.5 py-2 text-label uppercase tracking-[0.28em] text-taupe-300 font-medium text-[10px]">
+        &mdash;
+      </span>
     );
   }
 
   return (
-    <div>
-      <h1 className="font-serif text-heading text-espresso-800">Bookings</h1>
-      <p className="mt-1 text-body-sm text-espresso-400">
-        View and manage your upcoming and past appointments.
-      </p>
+    <div className="p-12 px-14 flex flex-col gap-12">
+      <header className="flex justify-between items-end pb-5 border-b border-smoke-700">
+        <h2 className="font-display display-compressed text-[2.625rem] leading-none text-bone-100">
+          Today&rsquo;s{" "}
+          <em className="font-editorial italic font-light text-champagne-400">
+            calendar.
+          </em>
+        </h2>
+        <p className="font-editorial italic text-body-lg text-bone-200 max-w-[340px] text-right leading-snug">
+          Three windows tomorrow, two open Friday.
+        </p>
+      </header>
 
       {error && (
-        <div className="mt-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
+        <div className="border border-smoke-700 bg-smoke-800 px-4 py-3 text-label uppercase tracking-[0.18em] text-bone-200 flex items-center justify-between">
+          <span>{error}</span>
           <button
             onClick={() => setError(null)}
-            className="ml-2 font-medium underline"
+            className="font-mono text-mono text-champagne-400"
           >
-            Dismiss
+            DISMISS
           </button>
         </div>
       )}
 
-      <Tabs
-        value={activeTab}
-        onValueChange={handleTabChange}
-        className="mt-6"
-      >
-        <TabsList className="bg-ivory-100 border border-espresso-200/40 flex-wrap h-auto gap-0.5 p-1">
-          <TabsTrigger
-            value="pending"
-            className="data-[state=active]:bg-espresso-800 data-[state=active]:text-ivory-100"
-          >
-            Pending
-          </TabsTrigger>
-          <TabsTrigger
-            value="confirmed"
-            className="data-[state=active]:bg-espresso-800 data-[state=active]:text-ivory-100"
-          >
-            Confirmed
-          </TabsTrigger>
-          <TabsTrigger
-            value="in_progress"
-            className="data-[state=active]:bg-espresso-800 data-[state=active]:text-ivory-100"
-          >
-            In Progress
-          </TabsTrigger>
-          <TabsTrigger
-            value="completed"
-            className="data-[state=active]:bg-espresso-800 data-[state=active]:text-ivory-100"
-          >
-            Completed
-          </TabsTrigger>
-          <TabsTrigger
-            value="all"
-            className="data-[state=active]:bg-espresso-800 data-[state=active]:text-ivory-100"
-          >
-            All
-          </TabsTrigger>
-        </TabsList>
+      {/* Tab nav */}
+      <nav className="flex gap-1 border-b border-smoke-700 -mt-4">
+        {TABS.map((tab) => {
+          const isActive = activeTab === tab.value;
+          return (
+            <button
+              key={tab.value}
+              type="button"
+              onClick={() => setActiveTab(tab.value)}
+              className={`px-4 py-3 text-label uppercase tracking-[0.28em] font-medium text-[10px] border-b-2 -mb-px transition-colors ${
+                isActive
+                  ? "border-champagne-400 text-champagne-400"
+                  : "border-transparent text-taupe-300 hover:text-bone-200"
+              }`}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
+      </nav>
 
-        {/* All tab contents share the same table, so we use a single content area */}
-        {(["pending", "confirmed", "in_progress", "completed", "all"] as const).map(
-          (tab) => (
-            <TabsContent key={tab} value={tab}>
-              {loading ? (
-                <div className="flex justify-center py-12">
-                  <Loader2 className="h-6 w-6 animate-spin text-espresso-300" />
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-taupe-300" />
+        </div>
+      ) : sortedBookings.length === 0 ? (
+        <div className="bg-smoke-900 border border-smoke-700 p-9 text-center">
+          <p className="font-editorial italic text-body-lg text-bone-200">
+            {activeTab === "pending"
+              ? "No requests waiting. The calm is yours."
+              : activeTab === "confirmed"
+                ? "Nothing confirmed. The week is open."
+                : activeTab === "in_progress"
+                  ? "Nothing in motion right now."
+                  : activeTab === "completed"
+                    ? "No completed visits yet."
+                    : "No bookings of any kind. Yet."}
+          </p>
+        </div>
+      ) : (
+        <section>
+          <h4 className="text-label uppercase tracking-[0.32em] text-taupe-300 mb-5 flex justify-between items-center font-medium">
+            {TABS.find((t) => t.value === activeTab)?.label}
+            <span className="font-mono text-champagne-400">
+              {sortedBookings.length.toString().padStart(2, "0")} / VISITS
+            </span>
+          </h4>
+          <div>
+            {sortedBookings.map((booking) => (
+              <div
+                key={booking.id}
+                onClick={() => setDetailBooking(booking)}
+                className="bg-smoke-900 border border-smoke-700 p-5 px-6 grid grid-cols-[80px_1fr_1fr_auto_auto] gap-6 items-center mb-px hover:bg-smoke-800 transition-colors cursor-pointer"
+              >
+                <div className="font-mono text-mono text-taupe-300">
+                  {shortDate(booking.startTime)}
+                  <strong className="block text-bone-100 font-medium text-[13px]">
+                    {shortWeekdayTime(booking.startTime)}
+                  </strong>
                 </div>
-              ) : sortedBookings.length === 0 ? (
-                <div className="py-12 text-center">
-                  <CalendarDays className="mx-auto h-10 w-10 text-espresso-300" />
-                  <h3 className="mt-3 font-serif text-lg text-espresso-800">
-                    No bookings found
-                  </h3>
-                  <p className="mt-1 text-sm text-espresso-400">
-                    {tab === "pending"
-                      ? "No pending requests right now."
-                      : tab === "confirmed"
-                        ? "No confirmed appointments."
-                        : tab === "in_progress"
-                          ? "No appointments in progress."
-                          : tab === "completed"
-                            ? "No completed appointments yet."
-                            : "When clients book your services, their appointments will appear here."}
-                  </p>
+                <div className="font-display font-medium text-[15px] text-bone-100 tracking-[-0.01em]">
+                  {clientName(booking).toUpperCase()}
+                  <small className="block font-editorial italic font-normal text-[13px] text-bone-200 mt-0.5 normal-case">
+                    {booking.service?.name ?? "Unknown service"}
+                    {booking.service?.durationMinutes
+                      ? ` · ${booking.service.durationMinutes} min`
+                      : ""}
+                  </small>
                 </div>
-              ) : (
-                <div className="overflow-hidden rounded-lg border border-espresso-200/60 bg-ivory-50">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="border-espresso-200/40 hover:bg-transparent">
-                        <TableHead className="text-espresso-600 font-medium">
-                          Time
-                        </TableHead>
-                        <TableHead className="text-espresso-600 font-medium">
-                          Client
-                        </TableHead>
-                        <TableHead className="text-espresso-600 font-medium hidden sm:table-cell">
-                          Service
-                        </TableHead>
-                        <TableHead className="text-espresso-600 font-medium text-right hidden md:table-cell">
-                          Price
-                        </TableHead>
-                        <TableHead className="text-espresso-600 font-medium">
-                          Status
-                        </TableHead>
-                        <TableHead className="text-espresso-600 font-medium text-right">
-                          Actions
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {sortedBookings.map((booking) => (
-                        <TableRow
-                          key={booking.id}
-                          className="border-espresso-200/30 cursor-pointer hover:bg-ivory-100/80"
-                          onClick={() => setDetailBooking(booking)}
-                        >
-                          <TableCell className="text-espresso-800">
-                            <div className="font-medium">
-                              {formatDate(booking.startTime)}
-                            </div>
-                            <div className="text-xs text-espresso-400">
-                              {formatTime(booking.startTime)} &ndash;{" "}
-                              {formatTime(booking.endTime)}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="font-medium text-espresso-800">
-                              {clientName(booking)}
-                            </div>
-                            {booking.client?.email && (
-                              <div className="text-xs text-espresso-400">
-                                {booking.client.email}
-                              </div>
-                            )}
-                          </TableCell>
-                          <TableCell className="hidden sm:table-cell text-espresso-700">
-                            {booking.service?.name ?? "Unknown Service"}
-                          </TableCell>
-                          <TableCell className="text-right font-semibold text-espresso-800 hidden md:table-cell">
-                            {formatPrice(booking.totalPriceInCents)}
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              className={
-                                STATUS_BADGE_CLASSES[booking.status] ??
-                                "bg-espresso-100 text-espresso-500"
-                              }
-                            >
-                              {statusLabel(booking.status)}
-                            </Badge>
-                          </TableCell>
-                          <TableCell
-                            className="text-right"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            {renderActionButtons(booking)}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                <div className="text-label uppercase tracking-[0.18em] text-taupe-300 font-medium text-[11px]">
+                  {statusLabel(booking.status)}
+                  {booking.client?.email && (
+                    <small className="block font-editorial italic font-light text-[12px] tracking-normal normal-case text-bone-200 mt-0.5">
+                      {booking.client.email}
+                    </small>
+                  )}
                 </div>
-              )}
-            </TabsContent>
-          )
-        )}
-      </Tabs>
+                <div className="font-mono text-mono text-champagne-400 text-[13px] text-right">
+                  {formatPrice(booking.totalPriceInCents)}
+                </div>
+                <div onClick={(e) => e.stopPropagation()}>
+                  {renderActionButtons(booking)}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Detail Dialog */}
       <Dialog
@@ -467,143 +406,100 @@ export default function ProviderBookingsPage() {
           if (!open) setDetailBooking(null);
         }}
       >
-        <DialogContent className="border-espresso-200/60 bg-ivory-50 sm:max-w-md">
+        <DialogContent className="border-smoke-700 bg-smoke-900 sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="font-serif text-espresso-800">
-              Booking Details
+            <DialogTitle className="font-display text-bone-100">
+              Visit details
             </DialogTitle>
-            <DialogDescription className="text-espresso-400">
+            <DialogDescription className="font-editorial italic text-body-md text-bone-200">
               {detailBooking?.service?.name ?? "Appointment"} &mdash;{" "}
               {detailBooking ? formatDate(detailBooking.startTime) : ""}
             </DialogDescription>
           </DialogHeader>
           {detailBooking && (
-            <div className="space-y-4 pt-2">
-              <div className="flex items-start gap-3">
-                <User className="mt-0.5 h-4 w-4 text-espresso-400" />
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-espresso-400">
-                    Client
+            <div className="flex flex-col gap-5 pt-2">
+              <DetailRow label="Client">
+                <p className="font-display font-medium text-bone-100 tracking-[-0.01em]">
+                  {clientName(detailBooking)}
+                </p>
+                {detailBooking.client?.email && (
+                  <p className="font-mono text-mono text-taupe-300 mt-1">
+                    {detailBooking.client.email}
                   </p>
-                  <p className="font-medium text-espresso-800">
-                    {clientName(detailBooking)}
+                )}
+                {detailBooking.client?.phone && (
+                  <p className="font-mono text-mono text-taupe-300">
+                    {detailBooking.client.phone}
                   </p>
-                  {detailBooking.client?.email && (
-                    <p className="text-sm text-espresso-500">
-                      {detailBooking.client.email}
-                    </p>
-                  )}
-                  {detailBooking.client?.phone && (
-                    <p className="text-sm text-espresso-500">
-                      {detailBooking.client.phone}
-                    </p>
-                  )}
-                </div>
-              </div>
+                )}
+              </DetailRow>
 
-              <div className="flex items-start gap-3">
-                <FileText className="mt-0.5 h-4 w-4 text-espresso-400" />
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-espresso-400">
-                    Service
+              <DetailRow label="Service">
+                <p className="font-display font-medium text-bone-100 tracking-[-0.01em]">
+                  {detailBooking.service?.name ?? "Unknown service"}
+                </p>
+                {(detailBooking.service?.category ||
+                  detailBooking.service?.durationMinutes) && (
+                  <p className="font-editorial italic text-body-sm text-bone-200 mt-1">
+                    {[
+                      detailBooking.service?.category,
+                      detailBooking.service?.durationMinutes
+                        ? `${detailBooking.service.durationMinutes} min`
+                        : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
                   </p>
-                  <p className="font-medium text-espresso-800">
-                    {detailBooking.service?.name ?? "Unknown Service"}
-                  </p>
-                  {(detailBooking.service?.category ||
-                    detailBooking.service?.durationMinutes) && (
-                    <p className="text-sm text-espresso-500">
-                      {[
-                        detailBooking.service.category,
-                        detailBooking.service.durationMinutes
-                          ? `${detailBooking.service.durationMinutes} min`
-                          : null,
-                      ]
-                        .filter(Boolean)
-                        .join(" \u00b7 ")}
-                    </p>
-                  )}
-                </div>
-              </div>
+                )}
+              </DetailRow>
 
-              <div className="flex items-start gap-3">
-                <Clock className="mt-0.5 h-4 w-4 text-espresso-400" />
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-espresso-400">
-                    Date & Time
-                  </p>
-                  <p className="font-medium text-espresso-800">
-                    {formatDate(detailBooking.startTime)}
-                  </p>
-                  <p className="text-sm text-espresso-500">
-                    {formatTime(detailBooking.startTime)} &ndash;{" "}
-                    {formatTime(detailBooking.endTime)}
-                  </p>
-                </div>
-              </div>
+              <DetailRow label="When">
+                <p className="font-display font-medium text-bone-100 tracking-[-0.01em]">
+                  {formatDate(detailBooking.startTime)}
+                </p>
+                <p className="font-mono text-mono text-taupe-300 mt-1">
+                  {formatTime(detailBooking.startTime)} &mdash;{" "}
+                  {formatTime(detailBooking.endTime)}
+                </p>
+              </DetailRow>
 
               {detailBooking.location && (
-                <div className="flex items-start gap-3">
-                  <CalendarDays className="mt-0.5 h-4 w-4 text-espresso-400" />
-                  <div>
-                    <p className="text-xs font-medium uppercase tracking-wide text-espresso-400">
-                      Location
-                    </p>
-                    <p className="font-medium text-espresso-800">
-                      {detailBooking.location}
-                    </p>
-                  </div>
-                </div>
+                <DetailRow label="Where">
+                  <p className="font-display font-medium text-bone-100 tracking-[-0.01em]">
+                    {detailBooking.location}
+                  </p>
+                </DetailRow>
               )}
 
-              <div className="flex items-start gap-3">
-                <DollarSign className="mt-0.5 h-4 w-4 text-espresso-400" />
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-espresso-400">
-                    Price
-                  </p>
-                  <p className="font-medium text-espresso-800">
-                    {formatPrice(detailBooking.totalPriceInCents)}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 rounded-md bg-ivory-100 px-3 py-2">
-                <p className="text-xs font-medium uppercase tracking-wide text-espresso-400">
-                  Status
+              <DetailRow label="Price">
+                <p className="font-mono text-mono text-champagne-400">
+                  {formatPrice(detailBooking.totalPriceInCents)}
                 </p>
-                <Badge
-                  className={
-                    STATUS_BADGE_CLASSES[detailBooking.status] ??
-                    "bg-espresso-100 text-espresso-500"
-                  }
-                >
+              </DetailRow>
+
+              <DetailRow label="Status">
+                <p className="font-mono text-mono text-bone-100">
                   {statusLabel(detailBooking.status)}
-                </Badge>
-              </div>
+                </p>
+              </DetailRow>
 
               {detailBooking.notes && (
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-espresso-400">
-                    Client Notes
-                  </p>
-                  <p className="mt-1 rounded-md bg-ivory-100 px-3 py-2 text-sm italic text-espresso-700">
+                <DetailRow label="Notes">
+                  <p className="font-editorial italic text-body-md text-bone-200 leading-relaxed">
                     {detailBooking.notes}
                   </p>
-                </div>
+                </DetailRow>
               )}
 
-              {/* Actions in detail dialog */}
               {(detailBooking.status === "PENDING" ||
                 detailBooking.status === "CONFIRMED" ||
                 detailBooking.status === "IN_PROGRESS") && (
-                <div className="flex flex-wrap justify-end gap-2 border-t border-espresso-200/40 pt-4">
+                <div className="flex flex-wrap justify-end gap-2 border-t border-smoke-700 pt-4">
                   {detailBooking.status === "PENDING" && (
                     <>
                       <Button
-                        variant="accent"
+                        variant="primary"
                         size="sm"
-                        className="text-[0.875rem]"
                         disabled={updatingId === detailBooking.id}
                         onClick={() => {
                           updateStatus(detailBooking.id, "CONFIRMED");
@@ -614,9 +510,8 @@ export default function ProviderBookingsPage() {
                         Confirm
                       </Button>
                       <Button
-                        variant="destructive"
+                        variant="outline"
                         size="sm"
-                        className="text-[0.875rem]"
                         onClick={() => {
                           setDetailBooking(null);
                           setDeclineBooking(detailBooking);
@@ -632,7 +527,6 @@ export default function ProviderBookingsPage() {
                       <Button
                         variant="primary"
                         size="sm"
-                        className="text-[0.875rem]"
                         disabled={updatingId === detailBooking.id}
                         onClick={() => {
                           updateStatus(detailBooking.id, "IN_PROGRESS");
@@ -643,9 +537,8 @@ export default function ProviderBookingsPage() {
                         Start
                       </Button>
                       <Button
-                        variant="destructive"
+                        variant="outline"
                         size="sm"
-                        className="text-[0.875rem]"
                         onClick={() => {
                           setDetailBooking(null);
                           setDeclineBooking(detailBooking);
@@ -658,9 +551,8 @@ export default function ProviderBookingsPage() {
                   )}
                   {detailBooking.status === "IN_PROGRESS" && (
                     <Button
-                      variant="accent"
+                      variant="primary"
                       size="sm"
-                      className="text-[0.875rem]"
                       disabled={updatingId === detailBooking.id}
                       onClick={() => {
                         updateStatus(detailBooking.id, "COMPLETED");
@@ -678,7 +570,7 @@ export default function ProviderBookingsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Decline / Cancel AlertDialog */}
+      {/* Decline / Cancel dialog */}
       <AlertDialog
         open={declineBooking !== null}
         onOpenChange={(open) => {
@@ -688,33 +580,27 @@ export default function ProviderBookingsPage() {
           }
         }}
       >
-        <AlertDialogContent className="border-espresso-200/60 bg-ivory-50">
+        <AlertDialogContent className="border-smoke-700 bg-smoke-900">
           <AlertDialogHeader>
-            <AlertDialogTitle className="font-serif text-espresso-800">
+            <AlertDialogTitle className="font-display text-bone-100">
               {declineBooking?.status === "PENDING"
-                ? "Decline Booking"
-                : "Cancel Booking"}
+                ? "Decline visit"
+                : "Cancel visit"}
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-espresso-500">
-              Are you sure you want to{" "}
-              {declineBooking?.status === "PENDING" ? "decline" : "cancel"} the{" "}
-              <span className="font-medium text-espresso-700">
-                {declineBooking?.service?.name ?? ""}
-              </span>{" "}
-              appointment with{" "}
-              <span className="font-medium text-espresso-700">
-                {declineBooking ? clientName(declineBooking) : ""}
-              </span>
+            <AlertDialogDescription className="font-editorial italic text-body-md text-bone-200">
+              {declineBooking?.status === "PENDING" ? "Decline" : "Cancel"} the{" "}
+              {declineBooking?.service?.name ?? "appointment"} with{" "}
+              {declineBooking ? clientName(declineBooking) : ""}
               {declineBooking
                 ? ` on ${formatDate(declineBooking.startTime)}`
                 : ""}
               ?
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <div className="space-y-2">
+          <div className="flex flex-col gap-2">
             <label
               htmlFor="decline-reason"
-              className="text-sm font-medium text-espresso-700"
+              className="text-label uppercase tracking-[0.28em] text-taupe-300 font-medium"
             >
               Reason (optional)
             </label>
@@ -722,17 +608,14 @@ export default function ProviderBookingsPage() {
               id="decline-reason"
               value={declineReason}
               onChange={(e) => setDeclineReason(e.target.value)}
-              placeholder="Let the client know why..."
+              placeholder="A short note. Honest is fine."
               rows={3}
-              className="flex w-full rounded-md border border-espresso-300 bg-ivory-50 px-3 py-2 text-sm text-espresso-800 placeholder:text-espresso-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-espresso-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-full bg-smoke-900 border border-smoke-700 px-3 py-2 font-editorial italic text-body-md text-bone-100 placeholder:text-taupe-300 focus-visible:outline-none focus-visible:border-champagne-400 disabled:opacity-50"
             />
           </div>
           <AlertDialogFooter>
-            <AlertDialogCancel
-              disabled={declining}
-              className="border-espresso-300 text-espresso-700"
-            >
-              Go Back
+            <AlertDialogCancel disabled={declining}>
+              Go back
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={(e) => {
@@ -740,22 +623,33 @@ export default function ProviderBookingsPage() {
                 handleDecline();
               }}
               disabled={declining}
-              className="bg-red-600 text-white hover:bg-red-700"
             >
-              {declining ? (
-                <>
-                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                  Processing...
-                </>
-              ) : declineBooking?.status === "PENDING" ? (
-                "Decline"
-              ) : (
-                "Cancel Booking"
-              )}
+              {declining
+                ? "Processing…"
+                : declineBooking?.status === "PENDING"
+                  ? "Decline"
+                  : "Cancel visit"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+    </div>
+  );
+}
+
+function DetailRow({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      <p className="text-label uppercase tracking-[0.28em] text-taupe-300 font-medium text-[10px]">
+        {label}
+      </p>
+      <div>{children}</div>
     </div>
   );
 }

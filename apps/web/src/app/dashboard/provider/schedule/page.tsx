@@ -1,12 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { api } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth";
-import { Loader2, Clock, CalendarDays } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 const DAYS = [
   { short: "Sun", full: "Sunday" },
@@ -89,88 +88,91 @@ export default function ProviderSchedulePage() {
   }
 
   return (
-    <div>
-      <h1 className="font-serif text-heading text-espresso-800">Schedule</h1>
-      <p className="mt-1 text-body-sm text-espresso-400">
-        Set your weekly availability so clients know when to book.
-      </p>
+    <div className="p-12 px-14 flex flex-col gap-12">
+      <header className="flex justify-between items-end pb-5 border-b border-smoke-700">
+        <h2 className="font-display display-compressed text-[2.625rem] leading-none text-bone-100">
+          Your{" "}
+          <em className="font-editorial italic font-light text-champagne-400">
+            hours.
+          </em>
+        </h2>
+        <p className="font-editorial italic text-body-lg text-bone-200 max-w-[340px] text-right leading-snug">
+          Block windows when you can&rsquo;t see anyone. Default to closed.
+        </p>
+      </header>
 
       {error && (
-        <div className="mt-4 border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="border border-smoke-700 bg-smoke-800 px-4 py-3 text-label uppercase tracking-[0.18em] text-bone-200">
           {error}
         </div>
       )}
       {saved && (
-        <div className="mt-4 border border-[#3b7a57]/20 bg-[#3b7a57]/10 px-4 py-3 text-sm text-[#3b7a57]">
-          Schedule saved successfully.
+        <div className="border border-smoke-700 bg-smoke-800 px-4 py-3 text-label uppercase tracking-[0.18em] text-champagne-400">
+          Schedule saved.
         </div>
       )}
 
       {loading ? (
         <div className="flex justify-center py-12">
-          <Loader2 className="h-6 w-6 animate-spin text-espresso-300" />
+          <Loader2 className="h-6 w-6 animate-spin text-taupe-300" />
         </div>
       ) : (
-        <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_auto]">
-          {/* Weekly availability grid */}
-          <Card className="border-espresso-200/60 bg-ivory-50">
-            <div className="border-b border-espresso-200/60 px-6 py-4">
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-brass-600" />
-                <h2 className="font-serif text-lg text-espresso-800">
-                  Weekly Hours
-                </h2>
-              </div>
-              <p className="mt-1 text-xs text-espresso-400">
-                Toggle days on/off and set your working hours.
-              </p>
-            </div>
+        <div className="grid gap-9 lg:grid-cols-[1fr_320px]">
+          <section>
+            <h4 className="text-label uppercase tracking-[0.32em] text-taupe-300 mb-5 flex justify-between items-center font-medium">
+              Weekly hours
+              <span className="font-mono text-champagne-400">
+                {slots.length.toString().padStart(2, "0")} / 07 OPEN
+              </span>
+            </h4>
 
-            <div className="divide-y divide-espresso-200/40 p-0">
+            <div>
               {DAYS.map((day, i) => {
                 const slot = slots.find((s) => s.dayOfWeek === i);
                 const isActive = !!slot;
                 return (
                   <div
                     key={day.short}
-                    className={`flex items-center gap-4 px-6 py-3.5 transition-colors ${
-                      isActive ? "bg-ivory-50" : "bg-ivory-100/50"
+                    className={`border border-smoke-700 px-6 py-4 grid grid-cols-[100px_1fr] gap-6 items-center mb-px ${
+                      isActive ? "bg-smoke-900" : "bg-smoke-800"
                     }`}
                   >
                     <button
                       onClick={() => toggleDay(i)}
-                      className={`flex h-8 w-20 items-center justify-center text-xs font-medium tracking-wide transition-colors ${
+                      className={`px-3 py-2 text-label uppercase tracking-[0.28em] font-medium text-[10px] border ${
                         isActive
-                          ? "bg-espresso-800 text-ivory-100"
-                          : "border border-espresso-200 text-espresso-400 hover:border-espresso-400"
+                          ? "border-champagne-400 text-champagne-400"
+                          : "border-smoke-700 text-taupe-300 hover:text-bone-200"
                       }`}
                     >
-                      {day.short.toUpperCase()}
+                      {day.short}
                     </button>
 
-                    {isActive ? (
-                      <div className="flex items-center gap-2">
+                    {isActive && slot ? (
+                      <div className="flex items-center gap-3">
                         <input
                           type="time"
                           value={slot.startTime}
                           onChange={(e) =>
                             updateSlot(i, "startTime", e.target.value)
                           }
-                          className="rounded-md border border-espresso-200 bg-ivory-50 px-2.5 py-1.5 text-sm text-espresso-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass-500 focus-visible:ring-offset-2"
+                          className="bg-smoke-900 border border-smoke-700 px-3 py-2 font-mono text-mono text-bone-100 focus-visible:outline-none focus-visible:border-champagne-400"
                         />
-                        <span className="text-xs text-espresso-300">—</span>
+                        <span className="font-mono text-mono text-taupe-300">
+                          —
+                        </span>
                         <input
                           type="time"
                           value={slot.endTime}
                           onChange={(e) =>
                             updateSlot(i, "endTime", e.target.value)
                           }
-                          className="rounded-md border border-espresso-200 bg-ivory-50 px-2.5 py-1.5 text-sm text-espresso-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass-500 focus-visible:ring-offset-2"
+                          className="bg-smoke-900 border border-smoke-700 px-3 py-2 font-mono text-mono text-bone-100 focus-visible:outline-none focus-visible:border-champagne-400"
                         />
                       </div>
                     ) : (
-                      <span className="text-xs italic text-espresso-300">
-                        Unavailable
+                      <span className="font-editorial italic text-body-md text-taupe-300">
+                        Closed.
                       </span>
                     )}
                   </div>
@@ -178,70 +180,69 @@ export default function ProviderSchedulePage() {
               })}
             </div>
 
-            <div className="flex items-center justify-between border-t border-espresso-200/60 px-6 py-4">
-              <p className="text-xs text-espresso-400">
-                {slots.length} of 7 days active
-              </p>
+            <div className="flex justify-end pt-5 mt-5 border-t border-smoke-700">
               <Button
                 variant="primary"
                 onClick={handleSave}
                 disabled={loading || saving}
               >
-                {saving ? "Saving\u2026" : "Save Schedule"}
+                {saving ? "Saving…" : "Save schedule"}
               </Button>
             </div>
-          </Card>
+          </section>
 
-          {/* Calendar preview */}
-          <Card className="border-espresso-200/60 bg-ivory-50 p-4 lg:w-[300px]">
-            <div className="mb-3 flex items-center gap-2 px-2">
-              <CalendarDays className="h-4 w-4 text-brass-600" />
-              <h2 className="font-serif text-sm text-espresso-800">
-                Availability Preview
-              </h2>
+          <aside>
+            <h4 className="text-label uppercase tracking-[0.32em] text-taupe-300 mb-5 font-medium">
+              Preview
+            </h4>
+            <div className="bg-smoke-900 border border-smoke-700 p-4">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={setSelectedDate}
+                modifiers={{
+                  available: dayHasAvailability,
+                  unavailable: (date: Date) => !dayHasAvailability(date),
+                }}
+                modifiersClassNames={{
+                  available: "font-medium",
+                  unavailable: "opacity-30",
+                }}
+                disabled={{ before: new Date() }}
+                className="mx-auto"
+              />
+              {selectedDate && (
+                <div className="mt-4 pt-4 border-t border-smoke-700">
+                  <p className="text-label uppercase tracking-[0.28em] text-taupe-300 font-medium text-[10px]">
+                    {selectedDate.toLocaleDateString("en-US", {
+                      weekday: "long",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </p>
+                  {dayHasAvailability(selectedDate) ? (
+                    <p className="mt-2 font-mono text-mono text-champagne-400">
+                      {
+                        slots.find(
+                          (s) => s.dayOfWeek === selectedDate.getDay(),
+                        )?.startTime
+                      }{" "}
+                      —{" "}
+                      {
+                        slots.find(
+                          (s) => s.dayOfWeek === selectedDate.getDay(),
+                        )?.endTime
+                      }
+                    </p>
+                  ) : (
+                    <p className="mt-2 font-editorial italic text-body-md text-taupe-300">
+                      Closed.
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={setSelectedDate}
-              modifiers={{
-                available: dayHasAvailability,
-                unavailable: (date: Date) => !dayHasAvailability(date),
-              }}
-              modifiersClassNames={{
-                available: "font-medium",
-                unavailable: "opacity-30",
-              }}
-              disabled={{ before: new Date() }}
-              className="mx-auto"
-            />
-            {selectedDate && (
-              <div className="mt-3 border-t border-espresso-200/40 px-2 pt-3">
-                <p className="text-xs text-espresso-400">
-                  {selectedDate.toLocaleDateString("en-US", {
-                    weekday: "long",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </p>
-                {dayHasAvailability(selectedDate) ? (
-                  <p className="mt-1 text-sm font-medium text-[#3b7a57]">
-                    {slots.find(
-                      (s) => s.dayOfWeek === selectedDate.getDay(),
-                    )?.startTime}{" "}
-                    —{" "}
-                    {slots.find(
-                      (s) => s.dayOfWeek === selectedDate.getDay(),
-                    )?.endTime}
-                  </p>
-                ) : (
-                  <p className="mt-1 text-sm italic text-espresso-300">
-                    Not available
-                  </p>
-                )}
-              </div>
-            )}
-          </Card>
+          </aside>
         </div>
       )}
     </div>

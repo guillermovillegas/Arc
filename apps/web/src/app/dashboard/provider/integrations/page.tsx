@@ -13,7 +13,7 @@ import {
   ExternalLink,
   CheckCircle2,
   Clock,
-  Image,
+  Image as ImageIcon,
 } from "lucide-react";
 
 interface Integration {
@@ -37,7 +37,7 @@ export default function IntegrationsPage() {
       id: "google-calendar",
       name: "Google Calendar",
       description:
-        "Two-way sync your Arc bookings with Google Calendar. External events automatically block your availability so you never double-book.",
+        "Two-way sync. External events block your Faineant availability; Faineant visits land in Google Calendar.",
       icon: Calendar,
       status: "disconnected",
     },
@@ -45,7 +45,7 @@ export default function IntegrationsPage() {
       id: "instagram",
       name: "Instagram",
       description:
-        "Connect your Instagram to automatically import your latest posts into your Arc portfolio. Keep your portfolio fresh without lifting a finger.",
+        "Pull recent posts into your portfolio. We're still negotiating with Meta — patience.",
       icon: Instagram,
       status: "disconnected",
     },
@@ -63,7 +63,7 @@ export default function IntegrationsPage() {
       }
       if (integrationId === "instagram") {
         setError(
-          "Instagram integration is coming soon. We're working with Meta's API team to bring this to Arc.",
+          "Instagram is not ready yet. We'll let you know when it is.",
         );
       }
     } catch {
@@ -74,52 +74,56 @@ export default function IntegrationsPage() {
   }
 
   return (
-    <div>
-      <h1 className="font-serif text-heading text-espresso-800">
-        Integrations
-      </h1>
-      <p className="mt-1 text-body-sm text-espresso-400">
-        Connect your favorite tools to streamline your workflow and keep
-        everything in sync.
-      </p>
+    <div className="p-12 px-14 flex flex-col gap-12">
+      <header className="flex justify-between items-end pb-5 border-b border-smoke-700">
+        <h2 className="font-display display-compressed text-[2.625rem] leading-none text-bone-100">
+          Calendar{" "}
+          <em className="font-editorial italic font-light text-champagne-400">
+            sync.
+          </em>
+        </h2>
+        <p className="font-editorial italic text-body-lg text-bone-200 max-w-[340px] text-right leading-snug">
+          Google Calendar &mdash; two-way. Apple Calendar &mdash; read-only via ICS.
+        </p>
+      </header>
 
       {error && (
-        <div className="mt-4 border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="border border-smoke-700 bg-smoke-800 px-4 py-3 text-label uppercase tracking-[0.18em] text-bone-200">
           {error}
         </div>
       )}
       {success && (
-        <div className="mt-4 border border-[#3b7a57]/20 bg-[#3b7a57]/10 px-4 py-3 text-sm text-[#3b7a57]">
+        <div className="border border-smoke-700 bg-smoke-800 px-4 py-3 text-label uppercase tracking-[0.18em] text-champagne-400">
           {success}
         </div>
       )}
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-2">
         {integrations.map((integration) => (
           <Card
             key={integration.id}
-            className="border-espresso-200/60 bg-ivory-50"
+            className="border-smoke-700 bg-smoke-900"
           >
             <CardHeader>
-              <div className="flex items-start justify-between">
+              <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center bg-brass-100">
-                    <integration.icon className="h-5 w-5 text-brass-600" />
+                  <div className="flex h-10 w-10 items-center justify-center border border-smoke-700 bg-smoke-800">
+                    <integration.icon className="h-5 w-5 text-champagne-400" />
                   </div>
                   <div>
-                    <CardTitle className="text-espresso-800">
+                    <CardTitle className="font-display text-bone-100 tracking-[-0.01em]">
                       {integration.name}
                     </CardTitle>
-                    <CardDescription className="mt-1 text-espresso-400">
+                    <CardDescription className="mt-1 font-editorial italic text-bone-200">
                       {integration.description}
                     </CardDescription>
                   </div>
                 </div>
                 <Badge
-                  className={`shrink-0 gap-1.5 border-transparent ${
+                  className={`shrink-0 gap-1.5 border-smoke-700 bg-smoke-800 text-label uppercase tracking-[0.18em] ${
                     integration.status === "connected"
-                      ? "bg-[#3b7a57]/10 text-[#3b7a57]"
-                      : "bg-espresso-100 text-espresso-400"
+                      ? "text-champagne-400"
+                      : "text-taupe-300"
                   }`}
                 >
                   {integration.status === "connected" ? (
@@ -130,7 +134,7 @@ export default function IntegrationsPage() {
                   ) : (
                     <>
                       <Clock className="h-3 w-3" />
-                      Not connected
+                      Idle
                     </>
                   )}
                 </Badge>
@@ -138,14 +142,14 @@ export default function IntegrationsPage() {
             </CardHeader>
             <CardContent>
               {integration.status === "connected" ? (
-                <div className="flex items-center justify-between rounded bg-ivory-100 px-4 py-3">
+                <div className="flex items-center justify-between border border-smoke-700 bg-smoke-800 px-4 py-3">
                   <div>
-                    <p className="text-sm font-medium text-espresso-800">
+                    <p className="font-mono text-mono text-bone-100">
                       {integration.details || "Connected"}
                     </p>
                     {integration.connectedAt && (
-                      <p className="text-xs text-espresso-400">
-                        Connected{" "}
+                      <p className="text-label uppercase tracking-[0.18em] text-taupe-300 mt-1">
+                        Since{" "}
                         {new Date(integration.connectedAt).toLocaleDateString()}
                       </p>
                     )}
@@ -164,25 +168,24 @@ export default function IntegrationsPage() {
                 >
                   <Link2 className="h-4 w-4" />
                   {connecting === integration.id
-                    ? "Connecting\u2026"
+                    ? "Connecting…"
                     : `Connect ${integration.name}`}
                 </Button>
               )}
 
-              {/* Feature list */}
-              <div className="mt-4 space-y-2">
+              <div className="mt-5 space-y-2">
                 {integration.id === "google-calendar" && (
                   <>
-                    <FeatureRow icon={CheckCircle2} text="Block time from external events" />
-                    <FeatureRow icon={CheckCircle2} text="Arc bookings appear in Google Calendar" />
+                    <FeatureRow icon={CheckCircle2} text="External events block your availability" />
+                    <FeatureRow icon={CheckCircle2} text="Faineant visits land in Google Calendar" />
                     <FeatureRow icon={CheckCircle2} text="Real-time push sync" />
                   </>
                 )}
                 {integration.id === "instagram" && (
                   <>
-                    <FeatureRow icon={Image} text="Auto-import recent posts to portfolio" />
-                    <FeatureRow icon={ExternalLink} text="Link back to your Instagram profile" />
-                    <FeatureRow icon={Clock} text="Syncs every 15 minutes" />
+                    <FeatureRow icon={ImageIcon} text="Pull recent posts to portfolio" />
+                    <FeatureRow icon={ExternalLink} text="Link to your Instagram profile" />
+                    <FeatureRow icon={Clock} text="Refreshes every 15 minutes" />
                   </>
                 )}
               </div>
@@ -191,25 +194,26 @@ export default function IntegrationsPage() {
         ))}
       </div>
 
-      {/* Coming soon */}
-      <div className="mt-8 border-t border-espresso-200/40 pt-6">
-        <h2 className="font-serif text-lg text-espresso-800">Coming soon</h2>
-        <p className="mt-1 text-sm text-espresso-400">
-          More integrations are on the way.
+      <section className="border-t border-smoke-700 pt-8">
+        <h4 className="text-label uppercase tracking-[0.32em] text-taupe-300 mb-5 font-medium">
+          Coming, eventually
+        </h4>
+        <p className="font-editorial italic text-body-lg text-bone-200 mb-5">
+          A few more partners. No promises on timing.
         </p>
-        <div className="mt-4 flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-2">
           {["Apple Calendar", "Booksy", "Square", "Vagaro", "TikTok"].map(
             (name) => (
               <div
                 key={name}
-                className="border border-espresso-200/60 bg-ivory-100 px-4 py-2 text-sm text-espresso-400"
+                className="border border-smoke-700 bg-smoke-900 px-4 py-2 font-mono text-mono text-taupe-300"
               >
                 {name}
               </div>
             ),
           )}
         </div>
-      </div>
+      </section>
     </div>
   );
 }
@@ -222,8 +226,8 @@ function FeatureRow({
   text: string;
 }) {
   return (
-    <div className="flex items-center gap-2 text-xs text-espresso-500">
-      <Icon className="h-3.5 w-3.5 text-brass-600" />
+    <div className="flex items-center gap-2 font-editorial italic text-body-sm text-bone-200">
+      <Icon className="h-3.5 w-3.5 text-champagne-400" />
       {text}
     </div>
   );
