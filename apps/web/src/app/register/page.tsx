@@ -1,20 +1,57 @@
+import Link from "next/link";
+import Image from "next/image";
 import { Suspense } from "react";
 import { RegisterForm } from "@/components/register-form";
 
-function RegisterContent() {
-  return (
-    <div className="flex min-h-svh flex-col items-center justify-center bg-ivory-100 p-6 md:p-10">
-      <div className="w-full max-w-sm md:max-w-3xl">
-        <RegisterForm />
-      </div>
-    </div>
-  );
-}
-
 export default function RegisterPage() {
   return (
-    <Suspense fallback={<div className="flex min-h-svh items-center justify-center bg-ivory-100" />}>
-      <RegisterContent />
-    </Suspense>
+    <main className="min-h-screen grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] bg-smoke-900">
+      <div className="flex flex-col p-14 justify-between">
+        <Link href="/" className="block">
+          <Image
+            src="/brand/faineant-wordmark-white.png"
+            alt="FAINEANT"
+            width={170}
+            height={24}
+            className="h-6 w-auto"
+            priority
+          />
+        </Link>
+        <div className="max-w-[420px] flex flex-col gap-6">
+          <span className="text-label uppercase tracking-[0.32em] text-taupe-300">
+            Create an account
+          </span>
+          <h1 className="font-display display-compressed text-[3.5rem] leading-[0.95] text-bone-100">
+            An hour{" "}
+            <em className="font-editorial italic font-light text-champagne-400 not-italic-ish">
+              of nothing
+            </em>{" "}
+            awaits.
+          </h1>
+          <p className="font-editorial italic text-editorial text-bone-200">
+            Five details, no junk mail. Cancellation is always free.
+          </p>
+          <Suspense fallback={null}>
+            <RegisterForm />
+          </Suspense>
+          <p className="font-mono text-mono text-taupe-300">
+            Already a client?{" "}
+            <Link href="/login" className="text-champagne-400 hover:underline">
+              Sign in →
+            </Link>
+          </p>
+        </div>
+        <div className="font-mono text-mono text-taupe-400">© FAINEANT · CHICAGO</div>
+      </div>
+      <div className="hidden lg:block relative bg-smoke-950 overflow-hidden">
+        <Image
+          src="/brand/photography/hero.png"
+          alt=""
+          fill
+          className="object-cover object-center"
+          sizes="60vw"
+        />
+      </div>
+    </main>
   );
 }
