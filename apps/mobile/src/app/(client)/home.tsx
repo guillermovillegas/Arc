@@ -80,7 +80,7 @@ export default function ClientHomeScreen() {
             <Pressable
               key={cat.slug}
               style={styles.tile}
-              onPress={() => router.push(`/services/${cat.slug}`)}
+              onPress={() => router.push(`/(booking)/service?slug=${cat.slug}`)}
             >
               <Image source={tileImages[cat.slug]} style={styles.tileImage} resizeMode="cover" />
               <View style={styles.tileBody}>

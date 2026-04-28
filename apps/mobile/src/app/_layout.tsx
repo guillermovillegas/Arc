@@ -65,6 +65,7 @@ export default function RootLayout() {
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(client)" options={{ headerShown: false }} />
         <Stack.Screen name="(provider)" options={{ headerShown: false }} />
+        <Stack.Screen name="(booking)" options={{ headerShown: false }} />
       </Stack>
     </>
   );
