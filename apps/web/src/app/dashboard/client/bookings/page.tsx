@@ -1,35 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import {
-  Loader2,
-  CalendarDays,
-  Clock,
-  MapPin,
-  User,
-  DollarSign,
-  FileText,
-  XCircle,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import Link from "next/link";
+import { Loader2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,7 +13,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth";
 
@@ -59,39 +31,42 @@ interface BookingItem {
   };
 }
 
-type TabFilter = "upcoming" | "past" | "cancelled";
+const MONTHS = [
+  "JAN",
+  "FEB",
+  "MAR",
+  "APR",
+  "MAY",
+  "JUN",
+  "JUL",
+  "AUG",
+  "SEP",
+  "OCT",
+  "NOV",
+  "DEC",
+];
+const WEEKDAYS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
-const STATUS_BADGE_CLASSES: Record<string, string> = {
-  PENDING: "border-brass-300 bg-brass-100 text-brass-700",
-  CONFIRMED: "border-[#3b7a57]/30 bg-[#3b7a57]/10 text-[#3b7a57]",
-  IN_PROGRESS: "border-brass-400 bg-brass-200 text-brass-800",
-  COMPLETED: "border-[#3b7a57]/30 bg-[#3b7a57]/10 text-[#3b7a57]",
-  CANCELLED: "border-espresso-300 bg-espresso-100 text-espresso-500",
-  NO_SHOW: "border-espresso-300 bg-espresso-100 text-espresso-500",
-};
-
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+function shortDate(iso: string): string {
+  const d = new Date(iso);
+  return `${d.getDate().toString().padStart(2, "0")} ${MONTHS[d.getMonth()]}`;
 }
 
-function formatTime(dateStr: string): string {
-  return new Date(dateStr).toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+function shortWeekdayTime(iso: string): string {
+  const d = new Date(iso);
+  const hh = d.getHours().toString().padStart(2, "0");
+  const mm = d.getMinutes().toString().padStart(2, "0");
+  return `${WEEKDAYS[d.getDay()]} · ${hh}:${mm}`;
 }
 
 function formatPrice(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
 }
 
-function statusLabel(status: string): string {
-  return status.replace(/_/g, " ");
+function providerName(b: BookingItem): string {
+  const first = b.providerProfile?.user?.firstName ?? "";
+  const last = b.providerProfile?.user?.lastName ?? "";
+  return `${first} ${last}`.trim().toUpperCase() || "UNKNOWN";
 }
 
 export default function ClientBookingsPage() {
@@ -99,13 +74,7 @@ export default function ClientBookingsPage() {
   const [bookings, setBookings] = useState<BookingItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<TabFilter>("upcoming");
-  const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
 
-  // Detail dialog
-  const [detailBooking, setDetailBooking] = useState<BookingItem | null>(null);
-
-  // Cancel dialog
   const [cancelBooking, setCancelBooking] = useState<BookingItem | null>(null);
   const [cancelling, setCancelling] = useState(false);
 
@@ -129,49 +98,30 @@ export default function ClientBookingsPage() {
     loadBookings();
   }, [loadBookings]);
 
-  const filteredBookings = useMemo(() => {
+  const { upcoming, past } = useMemo(() => {
     const now = new Date();
-    let filtered = bookings;
-
-    // Tab filter
-    if (activeTab === "upcoming") {
-      filtered = filtered.filter(
-        (b) =>
-          new Date(b.startTime) >= now &&
-          b.status !== "CANCELLED" &&
-          b.status !== "NO_SHOW" &&
-          b.status !== "COMPLETED"
-      );
-    } else if (activeTab === "past") {
-      filtered = filtered.filter(
-        (b) =>
-          new Date(b.startTime) < now ||
-          b.status === "COMPLETED" ||
-          b.status === "NO_SHOW"
-      );
-      // exclude cancelled from past
-      filtered = filtered.filter((b) => b.status !== "CANCELLED");
-    } else if (activeTab === "cancelled") {
-      filtered = filtered.filter((b) => b.status === "CANCELLED");
+    const up: BookingItem[] = [];
+    const pa: BookingItem[] = [];
+    for (const b of bookings) {
+      const isPast =
+        new Date(b.startTime) < now ||
+        b.status === "COMPLETED" ||
+        b.status === "NO_SHOW";
+      const isCancelled = b.status === "CANCELLED";
+      if (isCancelled) continue;
+      if (isPast) pa.push(b);
+      else up.push(b);
     }
-
-    // Date filter
-    if (dateFilter) {
-      filtered = filtered.filter(
-        (b) =>
-          new Date(b.startTime).toDateString() === dateFilter.toDateString()
-      );
-    }
-
-    // Sort by startTime descending for past, ascending for upcoming
-    filtered = [...filtered].sort((a, b) => {
-      const diff =
-        new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
-      return activeTab === "past" ? -diff : diff;
-    });
-
-    return filtered;
-  }, [bookings, activeTab, dateFilter]);
+    up.sort(
+      (a, b) =>
+        new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
+    );
+    pa.sort(
+      (a, b) =>
+        new Date(b.startTime).getTime() - new Date(a.startTime).getTime(),
+    );
+    return { upcoming: up, past: pa };
+  }, [bookings]);
 
   async function handleCancel() {
     if (!cancelBooking || !accessToken) return;
@@ -180,7 +130,7 @@ export default function ClientBookingsPage() {
       await api.patch(
         `/bookings/${cancelBooking.id}/status`,
         { status: "CANCELLED" },
-        { token: accessToken }
+        { token: accessToken },
       );
       setCancelBooking(null);
       await loadBookings();
@@ -191,379 +141,192 @@ export default function ClientBookingsPage() {
     }
   }
 
-  function canCancel(booking: BookingItem): boolean {
-    return (
-      booking.status === "PENDING" ||
-      booking.status === "CONFIRMED"
-    );
+  function canCancel(b: BookingItem): boolean {
+    return b.status === "PENDING" || b.status === "CONFIRMED";
   }
 
-  const providerName = (booking: BookingItem): string => {
-    const first = booking.providerProfile?.user?.firstName ?? "";
-    const last = booking.providerProfile?.user?.lastName ?? "";
-    const full = `${first} ${last}`.trim();
-    return full || "Unknown Provider";
-  };
-
   return (
-    <div>
-      <h1 className="font-serif text-heading text-espresso-800">My Bookings</h1>
-      <p className="mt-1 text-body-sm text-espresso-400">
-        View and manage all your upcoming and past appointments.
-      </p>
+    <div className="p-12 px-14 flex flex-col gap-12">
+      <header className="flex justify-between items-end pb-5 border-b border-smoke-700">
+        <h2 className="font-display text-[2.625rem] leading-none text-bone-100">
+          Your{" "}
+          <em className="font-editorial italic font-light text-champagne-400">
+            visits.
+          </em>
+        </h2>
+        <p className="font-editorial italic text-body-lg text-bone-200 max-w-[340px] text-right leading-snug">
+          A short, slow ledger. What&rsquo;s coming, and what&rsquo;s already
+          been.
+        </p>
+      </header>
 
       {error && (
-        <div className="mt-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="border border-smoke-700 bg-smoke-800 px-4 py-3 text-label uppercase tracking-[0.18em] text-bone-200">
           {error}
           <button
             onClick={() => setError(null)}
-            className="ml-2 font-medium underline"
+            className="ml-3 font-mono text-mono text-champagne-400"
           >
-            Dismiss
+            DISMISS
           </button>
         </div>
       )}
 
-      <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <Tabs
-          value={activeTab}
-          onValueChange={(v) => setActiveTab(v as TabFilter)}
-          className="w-full sm:w-auto"
-        >
-          <TabsList className="bg-ivory-100 border border-espresso-200/40">
-            <TabsTrigger
-              value="upcoming"
-              className="data-[state=active]:bg-espresso-800 data-[state=active]:text-ivory-100"
-            >
-              Upcoming
-            </TabsTrigger>
-            <TabsTrigger
-              value="past"
-              className="data-[state=active]:bg-espresso-800 data-[state=active]:text-ivory-100"
-            >
-              Past
-            </TabsTrigger>
-            <TabsTrigger
-              value="cancelled"
-              className="data-[state=active]:bg-espresso-800 data-[state=active]:text-ivory-100"
-            >
-              Cancelled
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-1.5">
-              <CalendarDays className="h-3.5 w-3.5" />
-              {dateFilter
-                ? dateFilter.toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                  })
-                : "Filter by date"}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent
-            className="w-auto border-espresso-200/60 bg-ivory-50 p-0"
-            align="end"
-          >
-            <Calendar
-              mode="single"
-              selected={dateFilter}
-              onSelect={(d) => setDateFilter(d)}
-            />
-            {dateFilter && (
-              <div className="border-t border-espresso-200/40 p-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full text-xs text-espresso-400"
-                  onClick={() => setDateFilter(undefined)}
-                >
-                  Clear date filter
-                </Button>
-              </div>
-            )}
-          </PopoverContent>
-        </Popover>
-      </div>
-
       {loading ? (
         <div className="flex justify-center py-12">
-          <Loader2 className="h-6 w-6 animate-spin text-espresso-300" />
-        </div>
-      ) : filteredBookings.length === 0 ? (
-        <div className="py-12 text-center">
-          <CalendarDays className="mx-auto h-10 w-10 text-espresso-300" />
-          <h3 className="mt-3 font-serif text-subheading text-espresso-800">
-            No bookings found
-          </h3>
-          <p className="mt-1 text-body-sm text-espresso-400">
-            {activeTab === "upcoming"
-              ? "You have no upcoming appointments. Browse providers to book a service."
-              : activeTab === "past"
-                ? "No past appointments to display."
-                : "No cancelled bookings."}
-          </p>
+          <Loader2 className="h-6 w-6 animate-spin text-taupe-300" />
         </div>
       ) : (
-        <div className="mt-6 overflow-hidden rounded-lg border border-espresso-200/60 bg-ivory-50">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-espresso-200/40 hover:bg-transparent">
-                <TableHead className="text-espresso-600 font-medium">
-                  Date & Time
-                </TableHead>
-                <TableHead className="text-espresso-600 font-medium">
-                  Service
-                </TableHead>
-                <TableHead className="text-espresso-600 font-medium hidden sm:table-cell">
-                  Provider
-                </TableHead>
-                <TableHead className="text-espresso-600 font-medium">
-                  Status
-                </TableHead>
-                <TableHead className="text-espresso-600 font-medium text-right">
-                  Price
-                </TableHead>
-                <TableHead className="text-espresso-600 font-medium text-right">
-                  Actions
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredBookings.map((booking) => (
-                <TableRow
-                  key={booking.id}
-                  className="border-espresso-200/30 cursor-pointer hover:bg-ivory-100/80"
-                  onClick={() => setDetailBooking(booking)}
+        <>
+          <section>
+            <h4 className="text-label uppercase tracking-[0.32em] text-taupe-300 mb-5 flex justify-between items-center font-medium">
+              Upcoming{" "}
+              <span className="font-mono text-champagne-400">
+                {upcoming.length.toString().padStart(2, "0")} / ON THE CALENDAR
+              </span>
+            </h4>
+            {upcoming.length === 0 ? (
+              <div className="bg-smoke-900 border border-smoke-700 p-9 text-center">
+                <p className="font-editorial italic text-body-lg text-bone-200">
+                  Nothing on the calendar. The week is yours.
+                </p>
+                <Link
+                  href="/practitioners"
+                  className="mt-4 inline-block px-4 py-2.5 border border-smoke-700 text-label uppercase tracking-[0.28em] text-bone-200 font-medium"
                 >
-                  <TableCell className="text-espresso-800">
-                    <div className="font-medium">
-                      {formatDate(booking.startTime)}
+                  Find a practitioner
+                </Link>
+              </div>
+            ) : (
+              <div>
+                {upcoming.map((b) => (
+                  <div
+                    key={b.id}
+                    className="bg-smoke-900 border border-smoke-700 p-5 px-6 grid grid-cols-[80px_1fr_1fr_auto_auto] gap-6 items-center mb-px hover:bg-smoke-800 transition-colors"
+                  >
+                    <div className="font-mono text-mono text-taupe-300">
+                      {shortDate(b.startTime)}
+                      <strong className="block text-bone-100 font-medium text-[13px]">
+                        {shortWeekdayTime(b.startTime)}
+                      </strong>
                     </div>
-                    <div className="text-xs text-espresso-400">
-                      {formatTime(booking.startTime)} &ndash;{" "}
-                      {formatTime(booking.endTime)}
+                    <div className="font-display font-medium text-[15px] text-bone-100 tracking-[-0.01em]">
+                      {b.service.name}
+                      <small className="block font-editorial italic font-normal text-[13px] text-bone-200 mt-0.5">
+                        {b.service.durationMinutes} min
+                        {b.location ? ` · ${b.location}` : ""}
+                      </small>
                     </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="font-medium text-espresso-800">
-                      {booking.service.name}
+                    <div className="text-label uppercase tracking-[0.18em] text-taupe-300 font-medium text-[11px]">
+                      {providerName(b)}
+                      <small className="block font-editorial italic font-light text-[12px] tracking-normal normal-case text-bone-200 mt-0.5">
+                        {b.status.replace(/_/g, " ").toLowerCase()}
+                      </small>
                     </div>
-                    <div className="text-xs text-espresso-400">
-                      {booking.service.durationMinutes} min
+                    <div className="font-mono text-mono text-champagne-400 text-[13px] text-right">
+                      {formatPrice(b.totalPriceInCents)}
                     </div>
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell text-espresso-700">
-                    {providerName(booking)}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      className={
-                        STATUS_BADGE_CLASSES[booking.status] ??
-                        "bg-espresso-100 text-espresso-500"
-                      }
-                    >
-                      {statusLabel(booking.status)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right font-semibold text-espresso-800">
-                    {formatPrice(booking.totalPriceInCents)}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {canCancel(booking) && (
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        className="text-[0.875rem]"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setCancelBooking(booking);
-                        }}
+                    {canCancel(b) ? (
+                      <button
+                        type="button"
+                        onClick={() => setCancelBooking(b)}
+                        className="px-3.5 py-2 border border-smoke-700 text-label uppercase tracking-[0.28em] text-bone-200 font-medium text-[9px]"
                       >
                         Cancel
-                      </Button>
+                      </button>
+                    ) : (
+                      <span className="px-3.5 py-2 text-label uppercase tracking-[0.28em] text-taupe-300 font-medium text-[9px]">
+                        &mdash;
+                      </span>
                     )}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section>
+            <h4 className="text-label uppercase tracking-[0.32em] text-taupe-300 mb-5 flex justify-between items-center font-medium">
+              Past visits{" "}
+              <span className="font-mono text-champagne-400">
+                {past.length.toString().padStart(2, "0")} / IDLE COLLECTION
+              </span>
+            </h4>
+            {past.length === 0 ? (
+              <div className="bg-smoke-900 border border-smoke-700 p-9 text-center">
+                <p className="font-editorial italic text-body-lg text-bone-200">
+                  No past visits yet. Soon.
+                </p>
+              </div>
+            ) : (
+              <div>
+                {past.map((b) => (
+                  <div
+                    key={b.id}
+                    className="bg-smoke-900 border border-smoke-700 p-5 px-6 grid grid-cols-[80px_1fr_1fr_auto_auto] gap-6 items-center mb-px hover:bg-smoke-800 transition-colors"
+                  >
+                    <div className="font-mono text-mono text-taupe-300">
+                      {shortDate(b.startTime)}
+                      <strong className="block text-bone-100 font-medium text-[13px]">
+                        {shortWeekdayTime(b.startTime)}
+                      </strong>
+                    </div>
+                    <div className="font-display font-medium text-[15px] text-bone-100 tracking-[-0.01em]">
+                      {b.service.name}
+                      <small className="block font-editorial italic font-normal text-[13px] text-bone-200 mt-0.5">
+                        {b.service.durationMinutes} min
+                        {b.location ? ` · ${b.location}` : ""}
+                      </small>
+                    </div>
+                    <div className="text-label uppercase tracking-[0.18em] text-taupe-300 font-medium text-[11px]">
+                      {providerName(b)}
+                      <small className="block font-editorial italic font-light text-[12px] tracking-normal normal-case text-bone-200 mt-0.5">
+                        {b.status === "COMPLETED"
+                          ? "“done, quietly.”"
+                          : b.status.replace(/_/g, " ").toLowerCase()}
+                      </small>
+                    </div>
+                    <div className="font-mono text-mono text-champagne-400 text-[13px] text-right">
+                      {formatPrice(b.totalPriceInCents)}
+                    </div>
+                    <Link
+                      href="#"
+                      className="px-3.5 py-2 border border-smoke-700 text-label uppercase tracking-[0.28em] text-bone-200 font-medium text-[9px]"
+                    >
+                      Book again
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        </>
       )}
 
-      {/* Detail Dialog */}
-      <Dialog
-        open={detailBooking !== null}
-        onOpenChange={(open) => {
-          if (!open) setDetailBooking(null);
-        }}
-      >
-        <DialogContent className="border-espresso-200/60 bg-ivory-50 sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="font-serif text-espresso-800">
-              Booking Details
-            </DialogTitle>
-            <DialogDescription className="text-espresso-400">
-              {detailBooking?.service?.name ?? "Appointment"} on{" "}
-              {detailBooking ? formatDate(detailBooking.startTime) : ""}
-            </DialogDescription>
-          </DialogHeader>
-          {detailBooking && (
-            <div className="space-y-4 pt-2">
-              <div className="flex items-start gap-3">
-                <FileText className="mt-0.5 h-4 w-4 text-espresso-400" />
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-espresso-400">
-                    Service
-                  </p>
-                  <p className="font-medium text-espresso-800">
-                    {detailBooking.service.name}
-                  </p>
-                  <p className="text-sm text-espresso-500">
-                    {detailBooking.service.category} &middot;{" "}
-                    {detailBooking.service.durationMinutes} min
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <User className="mt-0.5 h-4 w-4 text-espresso-400" />
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-espresso-400">
-                    Provider
-                  </p>
-                  <p className="font-medium text-espresso-800">
-                    {providerName(detailBooking)}
-                  </p>
-                  {detailBooking.providerProfile?.businessName && (
-                    <p className="text-sm text-espresso-500">
-                      {detailBooking.providerProfile.businessName}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <Clock className="mt-0.5 h-4 w-4 text-espresso-400" />
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-espresso-400">
-                    Date & Time
-                  </p>
-                  <p className="font-medium text-espresso-800">
-                    {formatDate(detailBooking.startTime)}
-                  </p>
-                  <p className="text-sm text-espresso-500">
-                    {formatTime(detailBooking.startTime)} &ndash;{" "}
-                    {formatTime(detailBooking.endTime)}
-                  </p>
-                </div>
-              </div>
-
-              {detailBooking.location && (
-                <div className="flex items-start gap-3">
-                  <MapPin className="mt-0.5 h-4 w-4 text-espresso-400" />
-                  <div>
-                    <p className="text-xs font-medium uppercase tracking-wide text-espresso-400">
-                      Location
-                    </p>
-                    <p className="font-medium text-espresso-800">
-                      {detailBooking.location}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex items-start gap-3">
-                <DollarSign className="mt-0.5 h-4 w-4 text-espresso-400" />
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-espresso-400">
-                    Price
-                  </p>
-                  <p className="font-medium text-espresso-800">
-                    {formatPrice(detailBooking.totalPriceInCents)}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 rounded-md bg-ivory-100 px-3 py-2">
-                <p className="text-xs font-medium uppercase tracking-wide text-espresso-400">
-                  Status
-                </p>
-                <Badge
-                  className={
-                    STATUS_BADGE_CLASSES[detailBooking.status] ??
-                    "bg-espresso-100 text-espresso-500"
-                  }
-                >
-                  {statusLabel(detailBooking.status)}
-                </Badge>
-              </div>
-
-              {detailBooking.notes && (
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-espresso-400">
-                    Notes
-                  </p>
-                  <p className="mt-1 text-sm text-espresso-700">
-                    {detailBooking.notes}
-                  </p>
-                </div>
-              )}
-
-              {canCancel(detailBooking) && (
-                <div className="flex justify-end border-t border-espresso-200/40 pt-4">
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    className="text-[0.875rem]"
-                    onClick={() => {
-                      setDetailBooking(null);
-                      setCancelBooking(detailBooking);
-                    }}
-                  >
-                    <XCircle className="mr-1.5 h-3.5 w-3.5" />
-                    Cancel Booking
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Cancel AlertDialog */}
+      {/* Cancel confirmation */}
       <AlertDialog
         open={cancelBooking !== null}
         onOpenChange={(open) => {
           if (!open && !cancelling) setCancelBooking(null);
         }}
       >
-        <AlertDialogContent className="border-espresso-200/60 bg-ivory-50">
+        <AlertDialogContent className="border border-smoke-700 bg-smoke-900">
           <AlertDialogHeader>
-            <AlertDialogTitle className="font-serif text-espresso-800">
-              Cancel Booking
+            <AlertDialogTitle className="font-display text-[1.5rem] text-bone-100">
+              Cancel this visit?
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-espresso-500">
-              Are you sure you want to cancel your{" "}
-              <span className="font-medium text-espresso-700">
-                {cancelBooking?.service?.name ?? ""}
-              </span>{" "}
-              appointment
+            <AlertDialogDescription className="font-editorial italic text-bone-200">
               {cancelBooking
-                ? ` on ${formatDate(cancelBooking.startTime)} at ${formatTime(cancelBooking.startTime)}`
+                ? `Your ${cancelBooking.service.name} on ${shortDate(cancelBooking.startTime)} at ${shortWeekdayTime(cancelBooking.startTime).split(" · ")[1] ?? ""}.`
                 : ""}
-              ? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel
               disabled={cancelling}
-              className="border-espresso-300 text-espresso-700"
+              className="border-smoke-700 text-bone-200 bg-transparent hover:bg-smoke-800"
             >
-              Keep Booking
+              Keep it
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={(e) => {
@@ -571,15 +334,15 @@ export default function ClientBookingsPage() {
                 handleCancel();
               }}
               disabled={cancelling}
-              className="bg-red-600 text-white hover:bg-red-700"
+              className="bg-bone-100 text-smoke-900 hover:bg-bone-200"
             >
               {cancelling ? (
                 <>
                   <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                  Cancelling...
+                  Cancelling
                 </>
               ) : (
-                "Yes, Cancel"
+                "Yes, cancel"
               )}
             </AlertDialogAction>
           </AlertDialogFooter>
