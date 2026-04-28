@@ -1,6 +1,6 @@
 import { prisma } from "../config/database";
 import { AppError } from "../middleware/error-handler";
-import { SetAvailabilityInput, CreateOverrideInput, TimeSlot } from "@arc/shared";
+import { SetAvailabilityInput, CreateOverrideInput, TimeSlot } from "@faineant/shared";
 import { getExternalEventsForDate } from "./calendar-sync.service";
 
 export async function setAvailability(userId: string, input: SetAvailabilityInput) {

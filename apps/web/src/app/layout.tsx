@@ -5,7 +5,7 @@ import {
   Cormorant_Garamond,
   JetBrains_Mono,
 } from "next/font/google";
-import { BRAND_NAME, BRAND_TAGLINE } from "@arc/shared";
+import { BRAND_NAME, BRAND_TAGLINE } from "@faineant/shared";
 import { AuthProvider } from "@/components/auth-provider";
 import "@/styles/globals.css";
 

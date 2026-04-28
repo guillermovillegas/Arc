@@ -2,7 +2,7 @@ import { prisma } from "../config/database";
 import { hashPassword, comparePassword } from "../utils/password";
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from "../utils/jwt";
 import { AppError } from "../middleware/error-handler";
-import { RegisterInput, LoginInput } from "@arc/shared";
+import { RegisterInput, LoginInput } from "@faineant/shared";
 import crypto from "crypto";
 
 function generateSlug(firstName: string, lastName: string): string {

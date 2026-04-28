@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth";
-import { SERVICE_CATEGORY_LABELS } from "@arc/shared";
+import { SERVICE_CATEGORY_LABELS } from "@faineant/shared";
 import { Loader2 } from "lucide-react";
 
 interface ServiceItem {

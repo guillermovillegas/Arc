@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { View, Text, Pressable, ScrollView, StyleSheet } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { SERVICE_CATEGORIES, type ServiceCategorySlug } from "@arc/shared";
+import { SERVICE_CATEGORIES, type ServiceCategorySlug } from "@faineant/shared";
 import { colors, fonts, sizes, spacing } from "@/theme";
 import { useBookingStore } from "@/stores/booking";
 

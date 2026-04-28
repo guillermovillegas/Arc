@@ -1,7 +1,7 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { authenticate } from "../middleware/auth";
 import { validate } from "../middleware/validate";
-import { sendMessageSchema } from "@arc/shared";
+import { sendMessageSchema } from "@faineant/shared";
 import * as messageService from "../services/message.service";
 
 const router = Router();

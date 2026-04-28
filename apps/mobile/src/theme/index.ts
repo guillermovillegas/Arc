@@ -1,4 +1,4 @@
-import { palette, fontFamily, fontWeight } from "@arc/shared";
+import { palette, fontFamily, fontWeight } from "@faineant/shared";
 
 // Re-export shared tokens so callers can use them directly when needed.
 export { palette, fontFamily, fontWeight };

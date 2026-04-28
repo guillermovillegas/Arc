@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from "express";
 import { validate } from "../middleware/validate";
 import { authLimiter } from "../middleware/rate-limit";
 import { authenticate } from "../middleware/auth";
-import { registerSchema, loginSchema, refreshTokenSchema } from "@arc/shared";
+import { registerSchema, loginSchema, refreshTokenSchema } from "@faineant/shared";
 import * as authService from "../services/auth.service";
 
 const router = Router();

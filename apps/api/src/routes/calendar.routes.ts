@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from "express";
 import { authenticate } from "../middleware/auth";
 import { requireRole } from "../middleware/role";
 import { validate } from "../middleware/validate";
-import { addIcsFeedSchema } from "@arc/shared";
+import { addIcsFeedSchema } from "@faineant/shared";
 import * as calendarService from "../services/calendar-sync.service";
 
 const router = Router();

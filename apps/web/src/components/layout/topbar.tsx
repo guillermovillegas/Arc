@@ -1,4 +1,4 @@
-import { CITY } from "@arc/shared";
+import { CITY } from "@faineant/shared";
 
 export function Topbar() {
   return (

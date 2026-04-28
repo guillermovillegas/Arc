@@ -1,5 +1,5 @@
 {
-  "name": "@arc/mobile",
+  "name": "@faineant/mobile",
   "version": "0.1.0",
   "private": true,
   "main": "expo-router/entry",
@@ -16,7 +16,7 @@
     "ios": "expo run:ios"
   },
   "dependencies": {
-    "@arc/shared": "workspace:*",
+    "@faineant/shared": "workspace:*",
     "@babel/runtime": "^7.29.2",
     "@expo-google-fonts/bricolage-grotesque": "^0.4.1",
     "@expo-google-fonts/cormorant-garamond": "^0.4.1",

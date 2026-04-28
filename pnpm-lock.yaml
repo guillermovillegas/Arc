@@ -32,7 +32,7 @@ importers:
 
   apps/api:
     dependencies:
-      '@arc/shared':
+      '@faineant/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       '@prisma/client':
@@ -111,9 +111,6 @@ importers:
 
   apps/mobile:
     dependencies:
-      '@arc/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
       '@babel/runtime':
         specifier: ^7.29.2
         version: 7.29.2
@@ -129,6 +126,9 @@ importers:
       '@expo/webpack-config':
         specifier: ~19.0.1
         version: 19.0.1(expo@50.0.21(@babel/core@7.29.0)(@react-native/babel-preset@0.73.21(@babel/core@7.29.0)(@babel/preset-env@7.29.2(@babel/core@7.29.0)))(react-native@0.73.0(@babel/core@7.29.0)(@babel/preset-env@7.29.2(@babel/core@7.29.0))(react@18.2.0))(react@18.2.0))
+      '@faineant/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@stripe/stripe-react-native':
         specifier: ^0.37.0
         version: 0.37.3(expo@50.0.21(@babel/core@7.29.0)(@react-native/babel-preset@0.73.21(@babel/core@7.29.0)(@babel/preset-env@7.29.2(@babel/core@7.29.0)))(react-native@0.73.0(@babel/core@7.29.0)(@babel/preset-env@7.29.2(@babel/core@7.29.0))(react@18.2.0))(react@18.2.0))(react-native@0.73.0(@babel/core@7.29.0)(@babel/preset-env@7.29.2(@babel/core@7.29.0))(react@18.2.0))(react@18.2.0)
@@ -220,7 +220,7 @@ importers:
 
   apps/web:
     dependencies:
-      '@arc/shared':
+      '@faineant/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       '@radix-ui/react-alert-dialog':

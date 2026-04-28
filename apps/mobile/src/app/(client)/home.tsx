@@ -10,7 +10,7 @@ import {
   type ImageSourcePropType,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { SERVICE_CATEGORIES, type ServiceCategorySlug } from "@arc/shared";
+import { SERVICE_CATEGORIES, type ServiceCategorySlug } from "@faineant/shared";
 import { api } from "@/lib/api-client";
 import { colors, fonts, sizes, spacing } from "@/theme";
 

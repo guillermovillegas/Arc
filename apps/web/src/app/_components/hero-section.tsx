@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { CITY } from "@arc/shared";
+import { CITY } from "@faineant/shared";
 
 export function HeroSection() {
   return (

@@ -1,5 +1,5 @@
 {
-  "name": "@arc/api",
+  "name": "@faineant/api",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -13,7 +13,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@arc/shared": "workspace:*",
+    "@faineant/shared": "workspace:*",
     "@prisma/client": "^5.12.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",

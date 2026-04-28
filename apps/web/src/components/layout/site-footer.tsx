@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { CITY } from "@arc/shared";
+import { CITY } from "@faineant/shared";
 
 const FOOT_COLS = [
   {

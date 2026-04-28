@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
-import { NEIGHBOURHOODS, type Neighbourhood } from "@arc/shared";
+import { NEIGHBOURHOODS, type Neighbourhood } from "@faineant/shared";
 import { useAuth } from "@/lib/auth";
 import { api } from "@/lib/api-client";
 

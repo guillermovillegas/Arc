@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from "express";
 import { authenticate } from "../middleware/auth";
 import { requireRole } from "../middleware/role";
 import { validate } from "../middleware/validate";
-import { setAvailabilitySchema, createOverrideSchema } from "@arc/shared";
+import { setAvailabilitySchema, createOverrideSchema } from "@faineant/shared";
 import * as availabilityService from "../services/availability.service";
 
 const router = Router();

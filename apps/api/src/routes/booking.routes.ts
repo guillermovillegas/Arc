@@ -1,7 +1,7 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { authenticate } from "../middleware/auth";
 import { validate } from "../middleware/validate";
-import { createBookingSchema, updateBookingStatusSchema } from "@arc/shared";
+import { createBookingSchema, updateBookingStatusSchema } from "@faineant/shared";
 import * as bookingService from "../services/booking.service";
 
 const router = Router();

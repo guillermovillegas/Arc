@@ -1,7 +1,7 @@
 import { prisma } from "../config/database";
 import { AppError } from "../middleware/error-handler";
-import { CreateBookingInput } from "@arc/shared";
-import { BOOKING_STATUS_TRANSITIONS, BookingStatus } from "@arc/shared";
+import { CreateBookingInput } from "@faineant/shared";
+import { BOOKING_STATUS_TRANSITIONS, BookingStatus } from "@faineant/shared";
 
 export async function createBooking(clientId: string, input: CreateBookingInput) {
   const service = await prisma.service.findUnique({

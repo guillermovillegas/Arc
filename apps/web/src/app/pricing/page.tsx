@@ -1,7 +1,7 @@
 import { Topbar } from "@/components/layout/topbar";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
-import { SERVICE_CATEGORIES } from "@arc/shared";
+import { SERVICE_CATEGORIES } from "@faineant/shared";
 
 export const metadata = {
   title: "How it works — FAINEANT",
