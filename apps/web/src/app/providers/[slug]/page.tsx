@@ -1,182 +1,154 @@
-import { Metadata } from "next";
-import Link from "next/link";
-import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { SERVICE_CATEGORY_LABELS } from "@arc/shared";
+import Image from "next/image";
+import { notFound } from "next/navigation";
+import { Topbar } from "@/components/layout/topbar";
+import { SiteHeader } from "@/components/layout/site-header";
+import { SiteFooter } from "@/components/layout/site-footer";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
+// TODO(impl): replace static lookup with Prisma query in a server action
+const PRACTITIONERS: Record<string, {
+  name: string; nameEm: string; tagline: string; bio: string;
+  metaItems: { dt: string; dd: string }[];
+  services: { name: string; sub: string; dur: string; price: string }[];
+  imgSrc: string;
+  quote: string;
+}> = {
+  "maeve-le-gal": {
+    name: "Maeve",
+    nameEm: "Le Gal.",
+    tagline: "Hairdressing — twenty-two years",
+    bio: "Trained at Cristophe in Paris. Twenty-two years cutting hair, the last six entirely in clients' homes. Specialises in long, soft, deliberate haircuts. Speaks slowly. Plays Erik Satie. Will not work on your phone.",
+    metaItems: [
+      { dt: "Years", dd: "22" },
+      { dt: "Speaks", dd: "English, French" },
+      { dt: "Neighbourhood", dd: "West Loop" },
+      { dt: "House call radius", dd: "10 mi" },
+      { dt: "Visits in 2025", dd: "312" },
+      { dt: "Rating", dd: "4.94 / 5" },
+    ],
+    services: [
+      { name: "Hour of nothing", sub: "Cut, shampoo, blow-dry, slowly", dur: "90 MIN", price: "$180" },
+      { name: "Trim only", sub: "For clients she already knows", dur: "45 MIN", price: "$110" },
+      { name: "Cut + colour, edited", sub: "Single-process or root-only", dur: "180 MIN", price: "$420" },
+    ],
+    imgSrc: "/brand/photography/portrait-maeve.png",
+    quote: "I cut hair for people who would rather lie down than stand at a salon for two hours. The work is the same. The chair is just yours.",
+  },
+  "imani-okafor": {
+    name: "Imani",
+    nameEm: "Okafor.",
+    tagline: "Lash work — eleven years",
+    bio: "Eleven years of lash work, four of them house calls only. Trained in Lagos, certified in London. Believes in the lying-down hour: a single client, a clean light, no music with words. Will gently refuse a fill that should be a removal.",
+    metaItems: [
+      { dt: "Years", dd: "11" },
+      { dt: "Speaks", dd: "English, Igbo" },
+      { dt: "Neighbourhood", dd: "Bed-Stuy" },
+      { dt: "House call radius", dd: "8 mi" },
+      { dt: "Visits in 2025", dd: "248" },
+      { dt: "Rating", dd: "4.97 / 5" },
+    ],
+    services: [
+      { name: "Full set, classic", sub: "Two hours flat on your couch", dur: "120 MIN", price: "$240" },
+      { name: "Fill, two-week", sub: "For clients she already knows", dur: "75 MIN", price: "$130" },
+      { name: "Removal", sub: "Soak, lift, rest your eyes", dur: "45 MIN", price: "$80" },
+    ],
+    imgSrc: "/brand/photography/tile-lash.png",
+    quote: "Lashes are an hour you owe yourself. I close the curtains, I put on something quiet, I do the work. You wake up looking like you slept well.",
+  },
+  "yumi-watanabe": {
+    name: "Yumi",
+    nameEm: "Watanabe.",
+    tagline: "Manicure — sixteen years",
+    bio: "Sixteen years of nails, the last five entirely at home. Studied gel structure in Tokyo. Files in one direction. Doesn't paint while you scroll. Prefers to work at your kitchen table with the window cracked.",
+    metaItems: [
+      { dt: "Years", dd: "16" },
+      { dt: "Speaks", dd: "English, Japanese" },
+      { dt: "Neighbourhood", dd: "Logan Square" },
+      { dt: "House call radius", dd: "12 mi" },
+      { dt: "Visits in 2025", dd: "286" },
+      { dt: "Rating", dd: "4.96 / 5" },
+    ],
+    services: [
+      { name: "Manicure, edited", sub: "Shape, cuticle, single colour", dur: "60 MIN", price: "$95" },
+      { name: "Gel, structured", sub: "Builder base, long-wear", dur: "90 MIN", price: "$145" },
+      { name: "Pedicure, slow", sub: "Soak, file, polish, sit", dur: "75 MIN", price: "$120" },
+    ],
+    imgSrc: "/brand/photography/tile-nails.png",
+    quote: "A manicure is a small ritual. Sixty minutes, one colour, no rush. I would rather you sat still than that we hurried.",
+  },
+  "leo-aragon": {
+    name: "Leo",
+    nameEm: "Aragón.",
+    tagline: "Barbering — nineteen years",
+    bio: "Nineteen years behind a chair, the last three entirely in clients' homes. Trained in Madrid, learned the hot towel in Havana. Cuts to a metronome. Will not cut while you take a call. Brings his own apron, his own broom.",
+    metaItems: [
+      { dt: "Years", dd: "19" },
+      { dt: "Speaks", dd: "English, Spanish" },
+      { dt: "Neighbourhood", dd: "Pilsen" },
+      { dt: "House call radius", dd: "10 mi" },
+      { dt: "Visits in 2025", dd: "334" },
+      { dt: "Rating", dd: "4.95 / 5" },
+    ],
+    services: [
+      { name: "Full cut + hot towel", sub: "Scissor, clipper, finish", dur: "60 MIN", price: "$120" },
+      { name: "Beard, edited", sub: "Trim, line, oil", dur: "30 MIN", price: "$60" },
+      { name: "Cut + beard", sub: "The whole hour, properly", dur: "75 MIN", price: "$160" },
+    ],
+    imgSrc: "/brand/photography/tile-barber.png",
+    quote: "A good cut takes an hour. Not forty minutes between two other men. An hour, in your kitchen, with the radio low.",
+  },
+};
 
-interface Props {
-  params: { slug: string };
-}
-
-async function getProvider(slug: string) {
-  const res = await fetch(`${API_URL}/search/providers/${slug}`, {
-    next: { revalidate: 60 },
-  });
-  if (!res.ok) return null;
-  const data = await res.json();
-  return data.data;
-}
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const provider = await getProvider(params.slug);
-  if (!provider) return { title: "Provider Not Found - ARC" };
-
-  const name = provider.businessName || `${provider.user.firstName} ${provider.user.lastName}`;
-  return {
-    title: `${name} - ARC`,
-    description: provider.bio || `Book services with ${name} on ARC`,
-    openGraph: {
-      title: `${name} on ARC`,
-      description: provider.bio || `Book beauty services with ${name}`,
-      type: "profile",
-    },
-  };
-}
-
-export default async function ProviderProfilePage({ params }: Props) {
-  const provider = await getProvider(params.slug);
-
-  if (!provider) {
-    return (
-      <div className="flex min-h-screen flex-col bg-ivory-100">
-        <Header />
-        <main className="flex flex-1 items-center justify-center">
-          <div className="text-center">
-            <h1 className="font-serif text-2xl font-bold text-espresso-800">Provider Not Found</h1>
-            <p className="mt-2 text-espresso-600">This profile doesn&apos;t exist or has been removed.</p>
-            <Link href="/providers" className="mt-4 inline-block text-brass-600 hover:underline">
-              Browse all providers
-            </Link>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
-  const name = provider.businessName || `${provider.user.firstName} ${provider.user.lastName}`;
+export default function PractitionerPage({ params }: { params: { slug: string } }) {
+  const p = PRACTITIONERS[params.slug];
+  if (!p) notFound();
 
   return (
-    <div className="flex min-h-screen flex-col bg-ivory-100">
-      <Header />
-
-      <main className="flex-1 px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl">
-          {/* Profile Header */}
-          <div className="flex flex-col items-start gap-6 sm:flex-row">
-            <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-brass-100 text-3xl font-bold text-brass-600">
-              {provider.user.firstName[0]}{provider.user.lastName[0]}
-            </div>
-            <div className="flex-1">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h1 className="font-serif text-2xl font-bold text-espresso-800">{name}</h1>
-                  {provider.address && (
-                    <p className="mt-1 text-espresso-600">{provider.address}</p>
-                  )}
-                  <div className="mt-2 flex items-center gap-2">
-                    <span className="text-brass-500 text-lg">★</span>
-                    <span className="font-semibold text-espresso-800">{provider.averageRating.toFixed(1)}</span>
-                    <span className="text-espresso-400">({provider.totalReviews} reviews)</span>
-                    {provider.isVerified && (
-                      <span className="rounded-full bg-brass-100 px-2 py-0.5 text-xs font-medium text-brass-700">
-                        Verified
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <Link href={`/book/${provider.id}`}>
-                  <Button variant="accent" size="lg">Book Now</Button>
-                </Link>
-              </div>
-              {provider.bio && <p className="mt-4 text-espresso-600">{provider.bio}</p>}
+    <>
+      <Topbar />
+      <SiteHeader />
+      <main className="max-w-[1480px] mx-auto px-14 py-20">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] min-h-[680px] border border-smoke-700">
+          <div className="relative bg-smoke-900 overflow-hidden">
+            <Image src={p.imgSrc} alt={`${p.name} ${p.nameEm}`} fill className="object-cover object-top" sizes="(max-width: 1024px) 100vw, 55vw" />
+            <div className="absolute bottom-0 inset-x-0 p-8 bg-gradient-to-t from-black/90 via-black/60 to-transparent z-10">
+              <p className="font-editorial italic font-light text-[24px] text-bone-100 leading-snug">
+                &ldquo;{p.quote}&rdquo;
+              </p>
             </div>
           </div>
-
-          {/* Services */}
-          <section className="mt-12">
-            <h2 className="font-serif text-xl font-bold text-espresso-800">Services</h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              {provider.services.map((service: { id: string; name: string; category: string; description: string | null; durationMinutes: number; priceInCents: number }) => (
-                <Card key={service.id} className="p-4 border-espresso-200/60 bg-ivory-50">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-medium text-espresso-800">{service.name}</h3>
-                      <p className="text-sm text-espresso-400">
-                        {SERVICE_CATEGORY_LABELS[service.category as keyof typeof SERVICE_CATEGORY_LABELS] || service.category} &middot; {service.durationMinutes} min
-                      </p>
-                      {service.description && (
-                        <p className="mt-1 text-sm text-espresso-600">{service.description}</p>
-                      )}
-                    </div>
-                    <span className="text-lg font-semibold text-brass-600">
-                      ${(service.priceInCents / 100).toFixed(2)}
-                    </span>
+          <div className="bg-smoke-900 p-14 px-14 pb-8 flex flex-col gap-6">
+            <span className="text-label uppercase tracking-[0.32em] text-taupe-300 font-medium">In Practice &middot; No 01 / 14</span>
+            <h2 className="font-display display-compressed text-[4rem] leading-[0.94] text-bone-100">
+              {p.name}{" "}
+              <em className="font-editorial italic font-light text-champagne-400">{p.nameEm}</em>
+            </h2>
+            <p className="font-editorial italic font-light text-body-lg text-bone-200 leading-relaxed max-w-[520px]">
+              {p.bio}
+            </p>
+            <dl className="grid grid-cols-2 gap-6 py-6 border-t border-smoke-700 border-b border-smoke-700">
+              {p.metaItems.map((m) => (
+                <div key={m.dt}>
+                  <dt className="text-label uppercase tracking-[0.3em] text-taupe-300 mb-1.5 font-medium">{m.dt}</dt>
+                  <dd className="font-editorial italic text-body-lg text-bone-100 leading-snug">{m.dd}</dd>
+                </div>
+              ))}
+            </dl>
+            <div className="flex flex-col gap-2">
+              <h5 className="text-label uppercase tracking-[0.3em] text-taupe-300 mb-2 font-medium">{p.name}&apos;s menu</h5>
+              {p.services.map((s) => (
+                <div key={s.name} className="grid grid-cols-[1fr_auto_auto] gap-4 items-center p-4 px-4 border border-smoke-700">
+                  <div className="font-display font-medium text-bone-100 tracking-[-0.01em]">
+                    {s.name}<small className="block font-editorial italic font-light text-bone-200 text-[13px] mt-0.5">{s.sub}</small>
                   </div>
-                </Card>
+                  <span className="font-mono text-mono text-taupe-300 tracking-[0.04em]">{s.dur}</span>
+                  <span className="font-mono text-[14px] text-champagne-400 font-medium">{s.price}</span>
+                </div>
               ))}
             </div>
-          </section>
-
-          {/* Portfolio */}
-          {provider.portfolioItems?.length > 0 && (
-            <section className="mt-12">
-              <h2 className="font-serif text-xl font-bold text-espresso-800">Portfolio</h2>
-              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {provider.portfolioItems.map((item: { id: string; imageUrl: string; caption: string | null }) => (
-                  <div key={item.id} className="group relative aspect-square overflow-hidden rounded-lg bg-ivory-200">
-                    <img
-                      src={item.imageUrl}
-                      alt={item.caption || "Portfolio image"}
-                      className="h-full w-full object-cover"
-                    />
-                    {item.caption && (
-                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-espresso-800/70 p-3 opacity-0 transition-opacity group-hover:opacity-100">
-                        <p className="text-sm text-ivory-100">{item.caption}</p>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* Reviews */}
-          {provider.reviews?.length > 0 && (
-            <section className="mt-12">
-              <h2 className="font-serif text-xl font-bold text-espresso-800">Reviews</h2>
-              <div className="mt-4 space-y-4">
-                {provider.reviews.map((review: { id: string; rating: number; text: string | null; createdAt: string; client: { firstName: string; lastName: string } }) => (
-                  <Card key={review.id} className="p-4 border-espresso-200/60 bg-ivory-50">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-espresso-800">
-                        {review.client.firstName} {review.client.lastName[0]}.
-                      </span>
-                      <div className="flex">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <span key={i} className={i < review.rating ? "text-brass-500" : "text-espresso-300"}>
-                            ★
-                          </span>
-                        ))}
-                      </div>
-                      <span className="text-sm text-espresso-400">
-                        {new Date(review.createdAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                    {review.text && <p className="mt-2 text-sm text-espresso-600">{review.text}</p>}
-                  </Card>
-                ))}
-              </div>
-            </section>
-          )}
+          </div>
         </div>
       </main>
-
-      <Footer />
-    </div>
+      <SiteFooter />
+    </>
   );
 }
