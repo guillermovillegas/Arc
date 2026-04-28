@@ -15,6 +15,14 @@ beforeEach(() => {
 });
 
 describe("ClientProfileScreen", () => {
+  it("renders editorial header", () => {
+    (auth.getStoredTokens as jest.Mock).mockResolvedValue({ user: null });
+
+    const { getByText } = render(<ClientProfileScreen />);
+    expect(getByText("ACCOUNT")).toBeTruthy();
+    expect(getByText("your address.")).toBeTruthy();
+  });
+
   it("loads and displays user info", async () => {
     (auth.getStoredTokens as jest.Mock).mockResolvedValue({
       user: { firstName: "John", lastName: "Doe", email: "john@test.com" },
@@ -28,7 +36,7 @@ describe("ClientProfileScreen", () => {
     });
   });
 
-  it("renders user avatar initials", async () => {
+  it("renders the field labels", async () => {
     (auth.getStoredTokens as jest.Mock).mockResolvedValue({
       user: { firstName: "John", lastName: "Doe", email: "john@test.com" },
     });
@@ -36,7 +44,10 @@ describe("ClientProfileScreen", () => {
     const { getByText } = render(<ClientProfileScreen />);
 
     await waitFor(() => {
-      expect(getByText("JD")).toBeTruthy();
+      expect(getByText("Name")).toBeTruthy();
+      expect(getByText("Email")).toBeTruthy();
+      expect(getByText("Address")).toBeTruthy();
+      expect(getByText("Card on file")).toBeTruthy();
     });
   });
 
@@ -44,7 +55,7 @@ describe("ClientProfileScreen", () => {
     (auth.getStoredTokens as jest.Mock).mockResolvedValue({ user: null });
 
     const { getByText } = render(<ClientProfileScreen />);
-    expect(getByText("Sign Out")).toBeTruthy();
+    expect(getByText("Sign out")).toBeTruthy();
   });
 
   it("clears tokens and navigates to login on sign out", async () => {
@@ -54,7 +65,7 @@ describe("ClientProfileScreen", () => {
     (auth.clearTokens as jest.Mock).mockResolvedValue(undefined);
 
     const { getByText } = render(<ClientProfileScreen />);
-    fireEvent.press(getByText("Sign Out"));
+    fireEvent.press(getByText("Sign out"));
 
     await waitFor(() => {
       expect(auth.clearTokens).toHaveBeenCalled();
@@ -62,10 +73,11 @@ describe("ClientProfileScreen", () => {
     });
   });
 
-  it("shows placeholder when no user loaded", () => {
+  it("renders em-dash placeholders when no user is loaded", () => {
     (auth.getStoredTokens as jest.Mock).mockResolvedValue({ user: null });
 
-    const { getByText } = render(<ClientProfileScreen />);
-    expect(getByText("?")).toBeTruthy();
+    const { getAllByText } = render(<ClientProfileScreen />);
+    // Name and Email both show "—" until user loads.
+    expect(getAllByText("—").length).toBeGreaterThanOrEqual(2);
   });
 });

@@ -50,65 +50,62 @@ describe("ClientBookingsScreen", () => {
     });
   });
 
-  it("displays booking service names", async () => {
+  it("renders editorial header", async () => {
     (auth.getStoredTokens as jest.Mock).mockResolvedValue({ accessToken: "tok" });
     (apiClient.api.get as jest.Mock).mockResolvedValueOnce({ data: mockBookings });
 
     const { getByText } = render(<ClientBookingsScreen />);
 
     await waitFor(() => {
+      expect(getByText("YOUR VISITS")).toBeTruthy();
+      expect(getByText("calendar.")).toBeTruthy();
+    });
+  });
+
+  it("displays the next upcoming visit in the hero card", async () => {
+    (auth.getStoredTokens as jest.Mock).mockResolvedValue({ accessToken: "tok" });
+    (apiClient.api.get as jest.Mock).mockResolvedValueOnce({ data: mockBookings });
+
+    const { getByText } = render(<ClientBookingsScreen />);
+
+    await waitFor(() => {
+      expect(getByText("Next visit")).toBeTruthy();
       expect(getByText("Haircut")).toBeTruthy();
+    });
+  });
+
+  it("displays past visits with service names and providers", async () => {
+    (auth.getStoredTokens as jest.Mock).mockResolvedValue({ accessToken: "tok" });
+    (apiClient.api.get as jest.Mock).mockResolvedValueOnce({ data: mockBookings });
+
+    const { getByText } = render(<ClientBookingsScreen />);
+
+    await waitFor(() => {
+      expect(getByText("Past visits")).toBeTruthy();
       expect(getByText("Hair Color")).toBeTruthy();
-      expect(getByText("Braids")).toBeTruthy();
     });
   });
 
-  it("displays provider names", async () => {
+  it("displays past visit price as whole dollars", async () => {
     (auth.getStoredTokens as jest.Mock).mockResolvedValue({ accessToken: "tok" });
     (apiClient.api.get as jest.Mock).mockResolvedValueOnce({ data: mockBookings });
 
     const { getByText } = render(<ClientBookingsScreen />);
 
     await waitFor(() => {
-      expect(getByText("Marcus Johnson")).toBeTruthy();
-      expect(getByText("Sarah Lee")).toBeTruthy();
+      expect(getByText("$75")).toBeTruthy();
     });
   });
 
-  it("displays status badges", async () => {
-    (auth.getStoredTokens as jest.Mock).mockResolvedValue({ accessToken: "tok" });
-    (apiClient.api.get as jest.Mock).mockResolvedValueOnce({ data: mockBookings });
-
-    const { getByText } = render(<ClientBookingsScreen />);
-
-    await waitFor(() => {
-      expect(getByText("CONFIRMED")).toBeTruthy();
-      expect(getByText("COMPLETED")).toBeTruthy();
-      expect(getByText("PENDING")).toBeTruthy();
-    });
-  });
-
-  it("displays prices formatted as dollars", async () => {
-    (auth.getStoredTokens as jest.Mock).mockResolvedValue({ accessToken: "tok" });
-    (apiClient.api.get as jest.Mock).mockResolvedValueOnce({ data: mockBookings });
-
-    const { getByText } = render(<ClientBookingsScreen />);
-
-    await waitFor(() => {
-      expect(getByText("$35.00")).toBeTruthy();
-      expect(getByText("$75.00")).toBeTruthy();
-      expect(getByText("$50.00")).toBeTruthy();
-    });
-  });
-
-  it("shows empty state when no bookings", async () => {
+  it("shows empty hero card when no bookings", async () => {
     (auth.getStoredTokens as jest.Mock).mockResolvedValue({ accessToken: "tok" });
     (apiClient.api.get as jest.Mock).mockResolvedValueOnce({ data: [] });
 
     const { getByText } = render(<ClientBookingsScreen />);
 
     await waitFor(() => {
-      expect(getByText("No bookings yet")).toBeTruthy();
+      expect(getByText("Nothing scheduled")).toBeTruthy();
+      expect(getByText("The calendar is empty.")).toBeTruthy();
     });
   });
 

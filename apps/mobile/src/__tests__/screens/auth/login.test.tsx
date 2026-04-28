@@ -1,7 +1,6 @@
 import React from "react";
 import { render, fireEvent, waitFor } from "@testing-library/react-native";
 import { useRouter } from "expo-router";
-import { Alert } from "react-native";
 import * as apiClient from "@/lib/api-client";
 import * as auth from "@/lib/auth";
 import LoginScreen from "@/app/(auth)/login";
@@ -21,18 +20,18 @@ describe("LoginScreen", () => {
   it("renders login form elements", () => {
     const { getByText, getByPlaceholderText } = render(<LoginScreen />);
 
-    expect(getByText("Arc")).toBeTruthy();
-    expect(getByText("Welcome back")).toBeTruthy();
-    expect(getByPlaceholderText("you@example.com")).toBeTruthy();
-    expect(getByPlaceholderText("Enter your password")).toBeTruthy();
-    expect(getByText("Sign In")).toBeTruthy();
+    expect(getByText("SIGN IN")).toBeTruthy();
+    expect(getByText("the door.")).toBeTruthy();
+    expect(getByPlaceholderText("you@somewhere.com")).toBeTruthy();
+    expect(getByPlaceholderText("••••••••")).toBeTruthy();
+    expect(getByText("SIGN IN →")).toBeTruthy();
   });
 
   it("updates email and password fields on input", () => {
     const { getByPlaceholderText } = render(<LoginScreen />);
 
-    const emailInput = getByPlaceholderText("you@example.com");
-    const passwordInput = getByPlaceholderText("Enter your password");
+    const emailInput = getByPlaceholderText("you@somewhere.com");
+    const passwordInput = getByPlaceholderText("••••••••");
 
     fireEvent.changeText(emailInput, "user@test.com");
     fireEvent.changeText(passwordInput, "password123");
@@ -54,9 +53,12 @@ describe("LoginScreen", () => {
 
     const { getByPlaceholderText, getByText } = render(<LoginScreen />);
 
-    fireEvent.changeText(getByPlaceholderText("you@example.com"), "user@test.com");
-    fireEvent.changeText(getByPlaceholderText("Enter your password"), "password123");
-    fireEvent.press(getByText("Sign In"));
+    fireEvent.changeText(getByPlaceholderText("you@somewhere.com"), "user@test.com");
+    fireEvent.changeText(
+      getByPlaceholderText("••••••••"),
+      "password123",
+    );
+    fireEvent.press(getByText("SIGN IN →"));
 
     await waitFor(() => {
       expect(apiClient.api.post).toHaveBeenCalledWith("/auth/login", {
@@ -84,9 +86,12 @@ describe("LoginScreen", () => {
 
     const { getByPlaceholderText, getByText } = render(<LoginScreen />);
 
-    fireEvent.changeText(getByPlaceholderText("you@example.com"), "a@b.com");
-    fireEvent.changeText(getByPlaceholderText("Enter your password"), "pass");
-    fireEvent.press(getByText("Sign In"));
+    fireEvent.changeText(getByPlaceholderText("you@somewhere.com"), "a@b.com");
+    fireEvent.changeText(
+      getByPlaceholderText("••••••••"),
+      "pass",
+    );
+    fireEvent.press(getByText("SIGN IN →"));
 
     await waitFor(() => {
       expect(mockRouter.replace).toHaveBeenCalledWith("/(client)/home");
@@ -106,9 +111,12 @@ describe("LoginScreen", () => {
 
     const { getByPlaceholderText, getByText } = render(<LoginScreen />);
 
-    fireEvent.changeText(getByPlaceholderText("you@example.com"), "a@b.com");
-    fireEvent.changeText(getByPlaceholderText("Enter your password"), "pass");
-    fireEvent.press(getByText("Sign In"));
+    fireEvent.changeText(getByPlaceholderText("you@somewhere.com"), "a@b.com");
+    fireEvent.changeText(
+      getByPlaceholderText("••••••••"),
+      "pass",
+    );
+    fireEvent.press(getByText("SIGN IN →"));
 
     await waitFor(() => {
       expect(mockRouter.replace).toHaveBeenCalledWith("/(provider)/home");
@@ -118,16 +126,21 @@ describe("LoginScreen", () => {
   it("shows loading state while logging in", async () => {
     let resolvePost: (value: unknown) => void;
     (apiClient.api.post as jest.Mock).mockReturnValueOnce(
-      new Promise((r) => { resolvePost = r; }),
+      new Promise((r) => {
+        resolvePost = r;
+      }),
     );
 
     const { getByText, getByPlaceholderText } = render(<LoginScreen />);
 
-    fireEvent.changeText(getByPlaceholderText("you@example.com"), "a@b.com");
-    fireEvent.changeText(getByPlaceholderText("Enter your password"), "pass");
-    fireEvent.press(getByText("Sign In"));
+    fireEvent.changeText(getByPlaceholderText("you@somewhere.com"), "a@b.com");
+    fireEvent.changeText(
+      getByPlaceholderText("••••••••"),
+      "pass",
+    );
+    fireEvent.press(getByText("SIGN IN →"));
 
-    expect(getByText("Signing in\u2026")).toBeTruthy();
+    expect(getByText("WAIT…")).toBeTruthy();
 
     resolvePost!({
       data: {
@@ -138,37 +151,41 @@ describe("LoginScreen", () => {
     });
 
     await waitFor(() => {
-      expect(getByText("Sign In")).toBeTruthy();
+      expect(getByText("SIGN IN →")).toBeTruthy();
     });
   });
 
-  it("shows alert on login error", async () => {
+  it("shows inline error on login failure", async () => {
     (apiClient.api.post as jest.Mock).mockRejectedValueOnce(new Error("Invalid credentials"));
-    const alertSpy = jest.spyOn(Alert, "alert");
 
     const { getByPlaceholderText, getByText } = render(<LoginScreen />);
 
-    fireEvent.changeText(getByPlaceholderText("you@example.com"), "bad@email.com");
-    fireEvent.changeText(getByPlaceholderText("Enter your password"), "wrong");
-    fireEvent.press(getByText("Sign In"));
+    fireEvent.changeText(getByPlaceholderText("you@somewhere.com"), "bad@email.com");
+    fireEvent.changeText(
+      getByPlaceholderText("••••••••"),
+      "wrong",
+    );
+    fireEvent.press(getByText("SIGN IN →"));
 
     await waitFor(() => {
-      expect(alertSpy).toHaveBeenCalledWith("Error", "Invalid credentials");
+      expect(getByText("PASSWORD INCORRECT. NOTHING ELSE HAPPENED.")).toBeTruthy();
     });
   });
 
-  it("shows generic error for non-Error throws", async () => {
+  it("shows inline error for non-Error throws", async () => {
     (apiClient.api.post as jest.Mock).mockRejectedValueOnce("something weird");
-    const alertSpy = jest.spyOn(Alert, "alert");
 
     const { getByPlaceholderText, getByText } = render(<LoginScreen />);
 
-    fireEvent.changeText(getByPlaceholderText("you@example.com"), "a@b.com");
-    fireEvent.changeText(getByPlaceholderText("Enter your password"), "p");
-    fireEvent.press(getByText("Sign In"));
+    fireEvent.changeText(getByPlaceholderText("you@somewhere.com"), "a@b.com");
+    fireEvent.changeText(
+      getByPlaceholderText("••••••••"),
+      "pass",
+    );
+    fireEvent.press(getByText("SIGN IN →"));
 
     await waitFor(() => {
-      expect(alertSpy).toHaveBeenCalledWith("Error", "Login failed");
+      expect(getByText("PASSWORD INCORRECT. NOTHING ELSE HAPPENED.")).toBeTruthy();
     });
   });
 });

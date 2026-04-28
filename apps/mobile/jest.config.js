@@ -8,6 +8,7 @@ module.exports = {
   ],
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
+    "\\.(png|jpg|jpeg|gif|webp|svg)$": "<rootDir>/jest.fileMock.js",
   },
   testMatch: ["**/__tests__/**/*.test.{ts,tsx}"],
   testEnvironment: "node",

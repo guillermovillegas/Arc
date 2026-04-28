@@ -14,122 +14,99 @@ beforeEach(() => {
   (useRouter as jest.Mock).mockReturnValue(mockRouter);
 });
 
-const mockProviders = [
-  {
-    id: "p1",
-    slug: "marcus-cuts",
-    businessName: "Marcus Cuts",
-    bio: "Premium barber services",
-    averageRating: 4.8,
-    totalReviews: 42,
-    distance: 2.3,
-    user: { firstName: "Marcus", lastName: "Johnson" },
-    services: [{ name: "Haircut", priceInCents: 3500 }],
-  },
-  {
-    id: "p2",
-    slug: "nail-studio",
-    businessName: null,
-    bio: null,
-    averageRating: 4.5,
-    totalReviews: 15,
-    distance: null,
-    user: { firstName: "Sarah", lastName: "Lee" },
-    services: [{ name: "Manicure", priceInCents: 4000 }],
-  },
-];
-
 describe("ClientHomeScreen", () => {
-  it("renders search input", () => {
-    (apiClient.api.get as jest.Mock).mockResolvedValueOnce({ data: { items: [] } });
-
-    const { getByPlaceholderText } = render(<ClientHomeScreen />);
-    expect(getByPlaceholderText("Search by name, craft, or location\\u2026")).toBeTruthy();
-  });
-
-  it("loads and displays providers on mount", async () => {
-    (apiClient.api.get as jest.Mock).mockResolvedValueOnce({ data: { items: mockProviders } });
-
-    const { getByText } = render(<ClientHomeScreen />);
-
-    await waitFor(() => {
-      expect(getByText("Marcus Cuts")).toBeTruthy();
-      expect(getByText("★ 4.8 (42) · 2.3 mi")).toBeTruthy();
-      expect(getByText("Premium barber services")).toBeTruthy();
-    });
-  });
-
-  it("displays full name when no business name", async () => {
-    (apiClient.api.get as jest.Mock).mockResolvedValueOnce({ data: { items: mockProviders } });
-
-    const { getByText } = render(<ClientHomeScreen />);
-
-    await waitFor(() => {
-      expect(getByText("Sarah Lee")).toBeTruthy();
-    });
-  });
-
-  it("shows rating without distance when distance is null", async () => {
-    (apiClient.api.get as jest.Mock).mockResolvedValueOnce({ data: { items: [mockProviders[1]] } });
-
-    const { getByText } = render(<ClientHomeScreen />);
-
-    await waitFor(() => {
-      expect(getByText("★ 4.5 (15)")).toBeTruthy();
-    });
-  });
-
-  it("shows empty state when no providers found", async () => {
+  it("renders FAINEANT editorial headline", async () => {
     (apiClient.api.get as jest.Mock).mockResolvedValueOnce({ data: { items: [] } });
 
     const { getByText } = render(<ClientHomeScreen />);
 
     await waitFor(() => {
-      expect(getByText("No professionals found")).toBeTruthy();
+      expect(getByText("TODAY")).toBeTruthy();
+      expect(getByText("nothing")).toBeTruthy();
     });
   });
 
-  it("searches providers on submit", async () => {
-    (apiClient.api.get as jest.Mock)
-      .mockResolvedValueOnce({ data: { items: [] } })
-      .mockResolvedValueOnce({ data: { items: [mockProviders[0]] } });
+  it("renders all six service category tiles", async () => {
+    (apiClient.api.get as jest.Mock).mockResolvedValueOnce({ data: { items: [] } });
 
-    const { getByPlaceholderText } = render(<ClientHomeScreen />);
+    const { getByText } = render(<ClientHomeScreen />);
+
+    await waitFor(() => {
+      expect(getByText("Hair")).toBeTruthy();
+      expect(getByText("Nails")).toBeTruthy();
+      expect(getByText("Face")).toBeTruthy();
+      expect(getByText("Lash")).toBeTruthy();
+      expect(getByText("Barber")).toBeTruthy();
+      expect(getByText("Makeup")).toBeTruthy();
+    });
+  });
+
+  it("renders editorial number labels for each tile", async () => {
+    (apiClient.api.get as jest.Mock).mockResolvedValueOnce({ data: { items: [] } });
+
+    const { getByText } = render(<ClientHomeScreen />);
+
+    await waitFor(() => {
+      expect(getByText("№ 01")).toBeTruthy();
+      expect(getByText("№ 06")).toBeTruthy();
+    });
+  });
+
+  it("loads providers on mount", async () => {
+    (apiClient.api.get as jest.Mock).mockResolvedValueOnce({ data: { items: [] } });
+
+    render(<ClientHomeScreen />);
 
     await waitFor(() => {
       expect(apiClient.api.get).toHaveBeenCalledWith("/search/providers");
     });
-
-    fireEvent.changeText(getByPlaceholderText("Search by name, craft, or location\\u2026"), "barber");
-    fireEvent(getByPlaceholderText("Search by name, craft, or location\\u2026"), "submitEditing");
-
-    await waitFor(() => {
-      expect(apiClient.api.get).toHaveBeenCalledWith("/search/providers?q=barber");
-    });
   });
 
-  it("navigates to provider profile on card press", async () => {
-    (apiClient.api.get as jest.Mock).mockResolvedValueOnce({ data: { items: mockProviders } });
+  it("navigates to booking flow when Hair tile pressed", async () => {
+    (apiClient.api.get as jest.Mock).mockResolvedValueOnce({ data: { items: [] } });
 
     const { getByText } = render(<ClientHomeScreen />);
 
     await waitFor(() => {
-      expect(getByText("Marcus Cuts")).toBeTruthy();
+      expect(getByText("Hair")).toBeTruthy();
     });
 
-    fireEvent.press(getByText("Marcus Cuts"));
+    fireEvent.press(getByText("Hair"));
 
-    expect(mockRouter.push).toHaveBeenCalledWith("/provider/p1");
+    expect(mockRouter.push).toHaveBeenCalledWith("/(booking)/service?slug=hair");
   });
 
-  it("renders provider avatar initials", async () => {
-    (apiClient.api.get as jest.Mock).mockResolvedValueOnce({ data: { items: mockProviders } });
+  it("navigates to booking flow when Barber tile pressed", async () => {
+    (apiClient.api.get as jest.Mock).mockResolvedValueOnce({ data: { items: [] } });
 
     const { getByText } = render(<ClientHomeScreen />);
 
     await waitFor(() => {
-      expect(getByText("MJ")).toBeTruthy();
-      expect(getByText("SL")).toBeTruthy();
+      expect(getByText("Barber")).toBeTruthy();
+    });
+
+    fireEvent.press(getByText("Barber"));
+
+    expect(mockRouter.push).toHaveBeenCalledWith("/(booking)/service?slug=barber");
+  });
+
+  it("shows error message when provider load fails", async () => {
+    (apiClient.api.get as jest.Mock).mockRejectedValueOnce(new Error("Network down"));
+
+    const { getByText } = render(<ClientHomeScreen />);
+
+    await waitFor(() => {
+      expect(getByText("Network down")).toBeTruthy();
+    });
+  });
+
+  it("uses generic error message when failure is not an Error instance", async () => {
+    (apiClient.api.get as jest.Mock).mockRejectedValueOnce("oops");
+
+    const { getByText } = render(<ClientHomeScreen />);
+
+    await waitFor(() => {
+      expect(getByText("Failed to load providers")).toBeTruthy();
     });
   });
 });

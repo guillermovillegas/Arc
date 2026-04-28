@@ -53,7 +53,8 @@ describe("ProviderHomeScreen", () => {
     (apiClient.api.get as jest.Mock).mockResolvedValueOnce({ data: mockBookings });
 
     const { getByText } = render(<ProviderHomeScreen />);
-    expect(getByText("Today's Schedule")).toBeTruthy();
+    expect(getByText("TODAY")).toBeTruthy();
+    expect(getByText("calendar.")).toBeTruthy();
   });
 
   it("loads bookings with stored token", async () => {
@@ -99,7 +100,7 @@ describe("ProviderHomeScreen", () => {
     const { getByText } = render(<ProviderHomeScreen />);
 
     await waitFor(() => {
-      expect(getByText("No bookings today")).toBeTruthy();
+      expect(getByText("Nothing on the books.")).toBeTruthy();
     });
   });
 

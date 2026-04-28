@@ -78,7 +78,11 @@ describe("MessagesScreen", () => {
     const { getByText } = render(<MessagesScreen />);
 
     await waitFor(() => {
-      expect(getByText("No conversations yet")).toBeTruthy();
+      expect(
+        getByText(
+          "Most clients don’t message. The few who do are usually about parking.",
+        ),
+      ).toBeTruthy();
     });
   });
 

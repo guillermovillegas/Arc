@@ -81,6 +81,18 @@ jest.mock("react-native", () => {
       return React.createElement("KeyboardAvoidingView", props, children);
     },
     ActivityIndicator: (props) => React.createElement("ActivityIndicator", props),
+    Image: (props) => React.createElement("Image", props),
+    Pressable: ({ onPress, children, style, ...props }) => {
+      return React.createElement(
+        "Pressable",
+        {
+          ...props,
+          onPress,
+          style: typeof style === "function" ? style({ pressed: false }) : style,
+        },
+        children,
+      );
+    },
   };
   return RN;
 });

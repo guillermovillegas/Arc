@@ -57,7 +57,8 @@ describe("EarningsScreen", () => {
     (apiClient.api.get as jest.Mock).mockResolvedValueOnce({ data: mockEarnings });
 
     const { getByText } = render(<EarningsScreen />);
-    expect(getByText("Total Earnings")).toBeTruthy();
+    expect(getByText("TO DATE")).toBeTruthy();
+    expect(getByText("earned.")).toBeTruthy();
   });
 
   it("displays Payment History section", () => {
@@ -65,7 +66,7 @@ describe("EarningsScreen", () => {
     (apiClient.api.get as jest.Mock).mockResolvedValueOnce({ data: mockEarnings });
 
     const { getByText } = render(<EarningsScreen />);
-    expect(getByText("Payment History")).toBeTruthy();
+    expect(getByText("HISTORY")).toBeTruthy();
   });
 
   it("displays individual payment amounts", async () => {
@@ -109,7 +110,7 @@ describe("EarningsScreen", () => {
     const { getByText } = render(<EarningsScreen />);
 
     await waitFor(() => {
-      expect(getByText("No payments yet")).toBeTruthy();
+      expect(getByText("No payments yet.")).toBeTruthy();
     });
   });
 

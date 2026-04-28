@@ -256,7 +256,7 @@ describe("ProviderBookingsScreen", () => {
     const { getByText } = render(<ProviderBookingsScreen />);
 
     await waitFor(() => {
-      expect(getByText("No bookings")).toBeTruthy();
+      expect(getByText("Quiet so far.")).toBeTruthy();
     });
   });
 });
