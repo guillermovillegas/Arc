@@ -1,8 +1,8 @@
-# ARC Project Instructions
+# FAINEANT Project Instructions
 
 ## What This Is
 
-Beauty services marketplace (barbers, nail techs, lash techs, makeup artists). Monorepo with web, API, mobile, and shared package.
+In-home beauty services in Chicago. A directory of practitioners — barbers, hair stylists, nail technicians, lash artists, makeup artists, facialists — who travel to the client's home. Monorepo with web, API, mobile, and shared package.
 
 ## Stack
 
@@ -10,7 +10,7 @@ Beauty services marketplace (barbers, nail techs, lash techs, makeup artists). M
 - **API:** Express + Prisma + PostgreSQL + Socket.IO (standalone server, NOT Vercel serverless)
 - **Web:** Next.js 14.2 (App Router) + Tailwind 3.4 + shadcn/ui (CVA + Radix)
 - **Mobile:** Expo 50 + React Native 0.73 + Expo Router
-- **Shared:** `@arc/shared` — types, Zod schemas, constants
+- **Shared:** `@faineant/shared` — types, Zod schemas, brand constants, theme tokens
 - **Payments:** Stripe Connect Express (5% platform fee)
 - **Calendar Sync:** Google Calendar API (two-way) + ICS feed import
 - **Tests:** Vitest (web + API), Jest (mobile) — 293 tests total
@@ -32,7 +32,7 @@ Beauty services marketplace (barbers, nail techs, lash techs, makeup artists). M
 - Auth via JWT Bearer tokens. `authenticate` middleware → `requireRole()` middleware.
 - Error handling via `AppError` class + global `errorHandler` middleware.
 - Booking creation uses serializable Prisma transaction to prevent double-booking.
-- Calendar sync: `getAvailableSlots()` merges ARC bookings + external calendar events.
+- Calendar sync: `getAvailableSlots()` merges FAINEANT bookings + external calendar events.
 
 ### Mobile (Expo)
 - Tokens stored via expo-secure-store.
@@ -49,9 +49,9 @@ Beauty services marketplace (barbers, nail techs, lash techs, makeup artists). M
 
 The shared package must build before web or API:
 ```bash
-pnpm --filter @arc/shared build   # First
-pnpm --filter @arc/web build      # Then
-pnpm --filter @arc/api build      # Then
+pnpm --filter @faineant/shared build   # First
+pnpm --filter @faineant/web build      # Then
+pnpm --filter @faineant/api build      # Then
 ```
 Turborepo handles this automatically via `pnpm build`.
 

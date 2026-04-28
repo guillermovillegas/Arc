@@ -1,7 +1,7 @@
-# ARC — Calendar & Booking Platform Sync Strategy
+# FAINEANT — Calendar & Booking Platform Sync Strategy
 
-> Barbers won't adopt ARC if it means managing two calendars.
-> This document plans how ARC syncs with existing booking tools so providers
+> Barbers won't adopt FAINEANT if it means managing two calendars.
+> This document plans how FAINEANT syncs with existing booking tools so providers
 > see one unified schedule regardless of where the booking came from.
 
 ---
@@ -29,16 +29,16 @@ Most barbers already use a booking platform. The top ones:
 ```
 ┌──────────────┐     ┌──────────────────┐     ┌─────────────┐
 │  Booksy      │────>│                  │<───>│             │
-│  Squire      │────>│  Google Calendar  │<───>│    ARC      │
+│  Squire      │────>│  Google Calendar  │<───>│    FAINEANT      │
 │  theCut      │────>│  (hub)           │<───>│  Calendar   │
 │  Vagaro      │────>│                  │     │             │
 │  Fresha      │────>│                  │     │             │
 └──────────────┘     └──────────────────┘     └─────────────┘
       one-way               two-way sync
-    (platform → GCal)      (GCal ↔ ARC)
+    (platform → GCal)      (GCal ↔ FAINEANT)
 ```
 
-Almost every booking platform pushes events to Google Calendar. ARC does two-way sync with Google Calendar. The result: bookings from ANY platform appear as busy time in ARC, and ARC bookings appear in the provider's other platform.
+Almost every booking platform pushes events to Google Calendar. FAINEANT does two-way sync with Google Calendar. The result: bookings from ANY platform appear as busy time in FAINEANT, and FAINEANT bookings appear in the provider's other platform.
 
 ---
 
@@ -50,15 +50,15 @@ Almost every booking platform pushes events to Google Calendar. ARC does two-way
 
 **What it does:**
 - Provider connects Google account via OAuth 2.0
-- ARC reads existing events as "busy" time (blocks those slots)
-- ARC writes new bookings as Google Calendar events
+- FAINEANT reads existing events as "busy" time (blocks those slots)
+- FAINEANT writes new bookings as Google Calendar events
 - Changes in either direction sync within minutes via push notifications (webhooks)
 
 **API capabilities:**
 | Action | Endpoint | Notes |
 |--------|----------|-------|
 | List events | `GET /calendars/{id}/events` | Read busy times |
-| Create event | `POST /calendars/{id}/events` | Write ARC bookings |
+| Create event | `POST /calendars/{id}/events` | Write FAINEANT bookings |
 | Update event | `PUT /calendars/{id}/events/{id}` | Reschedule |
 | Delete event | `DELETE /calendars/{id}/events/{id}` | Cancel |
 | Watch for changes | `POST /calendars/{id}/events/watch` | Real-time push notifications |
@@ -84,16 +84,16 @@ prisma/schema.prisma
 
 **Sync logic:**
 1. On connect: full import of next 30 days of events → mark as "external busy"
-2. On new ARC booking: create Google Calendar event with booking details
-3. On Google Calendar change (webhook): check if it conflicts with ARC bookings, update availability
-4. On ARC cancellation: delete corresponding Google Calendar event
+2. On new FAINEANT booking: create Google Calendar event with booking details
+3. On Google Calendar change (webhook): check if it conflicts with FAINEANT bookings, update availability
+4. On FAINEANT cancellation: delete corresponding Google Calendar event
 5. Every 15 min: poll for changes as webhook fallback (Google requires re-subscription every 7 days)
 
 **Edge cases:**
 - All-day events: treat as fully blocked
 - Recurring events: expand instances, check each occurrence
 - Multi-calendar: let provider choose which calendar to sync
-- Conflicts: if external event overlaps existing ARC booking, notify provider
+- Conflicts: if external event overlaps existing FAINEANT booking, notify provider
 
 ---
 
@@ -103,7 +103,7 @@ prisma/schema.prisma
 
 **What it does:**
 - Provider pastes an ICS feed URL from their other platform
-- ARC polls the feed every 15–30 minutes
+- FAINEANT polls the feed every 15–30 minutes
 - Events from the feed are marked as "external busy" time
 - One-way only (read from other platform, can't write back)
 
@@ -127,7 +127,7 @@ prisma/schema.prisma
 | Action | Endpoint | Notes |
 |--------|----------|-------|
 | List bookings | `GET /v2/bookings` | Filter by date, status, team member |
-| Create booking | `POST /v2/bookings` | Create from ARC into Square |
+| Create booking | `POST /v2/bookings` | Create from FAINEANT into Square |
 | Update booking | `PUT /v2/bookings/{id}` | Reschedule, status change |
 | Cancel booking | `POST /v2/bookings/{id}/cancel` | Cancel with reason |
 | List availability | `POST /v2/bookings/availability/search` | Get open slots |
@@ -138,10 +138,10 @@ prisma/schema.prisma
 **Docs:** https://developer.squareup.com/docs/bookings-api
 
 **Sync logic:**
-- Two-way: ARC bookings → Square, Square bookings → ARC
+- Two-way: FAINEANT bookings → Square, Square bookings → FAINEANT
 - Use webhooks for real-time updates
-- Map ARC services to Square catalog items
-- Handle Square team members → ARC provider profiles
+- Map FAINEANT services to Square catalog items
+- Handle Square team members → FAINEANT provider profiles
 
 ---
 
@@ -185,7 +185,7 @@ prisma/schema.prisma
 
 ### Tier 5: Cal.com (Open Source Alternative) — Optional
 
-**Why consider:** Open source (AGPLv3), self-hostable, free API. Could use as ARC's internal scheduling engine instead of building from scratch.
+**Why consider:** Open source (AGPLv3), self-hostable, free API. Could use as FAINEANT's internal scheduling engine instead of building from scratch.
 
 **Capabilities:** Full REST API v2, webhooks, embeddable booking widget, workflow automation.
 **Cost:** Free (self-hosted) or $15/user/mo (cloud)
@@ -245,19 +245,19 @@ enum CalendarProvider {
 
 ## Availability Conflict Resolution
 
-When checking available slots, ARC now checks THREE sources:
+When checking available slots, FAINEANT now checks THREE sources:
 
 ```
 Available slot = NOT blocked by:
-  1. ARC bookings (existing booking.service.ts conflict check)
-  2. ARC availability overrides (existing availability.service.ts)
+  1. FAINEANT bookings (existing booking.service.ts conflict check)
+  2. FAINEANT availability overrides (existing availability.service.ts)
   3. External calendar events (NEW - ExternalEvent table)
 ```
 
 Updated slot query:
 ```typescript
 async function getAvailableSlots(providerProfileId: string, date: string) {
-  // Existing: get ARC bookings for this provider on this date
+  // Existing: get FAINEANT bookings for this provider on this date
   const arcBookings = await getArcBookings(providerProfileId, date);
   
   // Existing: get availability schedule + overrides
@@ -284,15 +284,15 @@ async function getAvailableSlots(providerProfileId: string, date: string) {
 1. Provider goes to Dashboard → Settings → Calendar Sync
 2. Clicks "Connect Google Calendar"
 3. OAuth popup → select Google account → grant calendar access
-4. ARC imports existing events (shows "Syncing..." with progress)
-5. Provider sees their Google Calendar events as gray blocks in their ARC schedule
-6. New ARC bookings automatically appear in their Google Calendar
+4. FAINEANT imports existing events (shows "Syncing..." with progress)
+5. Provider sees their Google Calendar events as gray blocks in their FAINEANT schedule
+6. New FAINEANT bookings automatically appear in their Google Calendar
 
 ### Provider imports ICS feed:
 1. Provider goes to Dashboard → Settings → Calendar Sync
 2. Clicks "Import Calendar Feed"
 3. Pastes ICS URL from Booksy/Vagaro/etc (instruction text: "Find this in your booking app's settings under 'Calendar Export' or 'Sync'")
-4. ARC validates the feed URL, shows preview of upcoming events
+4. FAINEANT validates the feed URL, shows preview of upcoming events
 5. Events sync every 15 minutes
 
 ### Client books a time slot:
@@ -337,11 +337,11 @@ async function getAvailableSlots(providerProfileId: string, date: string) {
 
 Most barber marketplaces are **walled gardens** — they force providers to use ONLY their platform. This creates friction and limits adoption.
 
-ARC's approach: **meet providers where they are.** If a barber uses Booksy for their existing clients, ARC doesn't ask them to abandon it. ARC syncs with their existing calendar and adds marketplace discovery on top. The barber gets:
+FAINEANT's approach: **meet providers where they are.** If a barber uses Booksy for their existing clients, FAINEANT doesn't ask them to abandon it. FAINEANT syncs with their existing calendar and adds marketplace discovery on top. The barber gets:
 
 1. Their existing clients keep booking through Booksy (business as usual)
-2. NEW clients discover them through ARC's marketplace
+2. NEW clients discover them through FAINEANT's marketplace
 3. One unified schedule — zero double-booking risk
-4. They can gradually shift clients to ARC if they prefer the lower fees
+4. They can gradually shift clients to FAINEANT if they prefer the lower fees
 
-This is the **adoption wedge**. It removes the biggest objection: "I can't switch because all my clients are already on [X]." They don't have to switch. ARC just adds on top.
+This is the **adoption wedge**. It removes the biggest objection: "I can't switch because all my clients are already on [X]." They don't have to switch. FAINEANT just adds on top.

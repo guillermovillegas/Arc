@@ -1,8 +1,8 @@
-# Arc Marketplace Roadmap
+# Faineant Marketplace Roadmap
 
 ## Vision (2026-04-10)
 
-Arc is the bridge between discerning clients and exceptional beauty professionals — a premium, concierge-grade marketplace for barbers, nail techs, lash techs, and makeup artists. The product should feel sophisticated and effortless on both sides: clients discover vetted craftspeople and book in seconds; professionals run a real business without ever managing two calendars or chasing cash.
+Faineant is the bridge between discerning clients and exceptional beauty professionals — a premium, concierge-grade marketplace for barbers, nail techs, lash techs, and makeup artists. The product should feel sophisticated and effortless on both sides: clients discover vetted craftspeople and book in seconds; professionals run a real business without ever managing two calendars or chasing cash.
 
 **Brand pillars:** Quality & craftsmanship · Convenience & flexibility · Community & connection · Simplicity & sophistication · Professional empowerment.
 
@@ -91,7 +91,7 @@ Priority: Must fix before any real users.
 - **Status:** Not implemented
 - **Why:** Barbers already use Booksy/Square/Vagaro. They won't manage two calendars. Without this, adoption is dead on arrival.
 - **Work:**
-  - Google Calendar OAuth 2.0 two-way sync (read external events, write ARC bookings)
+  - Google Calendar OAuth 2.0 two-way sync (read external events, write FAINEANT bookings)
   - ICS feed import as fallback (paste URL from any platform)
   - New Prisma models: `CalendarConnection`, `ExternalEvent`
   - Update availability slot calculation to merge external busy times
@@ -124,7 +124,7 @@ Priority: Must fix before any real users.
 - **Estimate:** Small
 
 ### 1.4 Fix TypeScript Config
-- **Status:** `@arc/shared` missing `composite: true`, web pages have `@arc/shared` resolution errors
+- **Status:** `@faineant/shared` missing `composite: true`, web pages have `@faineant/shared` resolution errors
 - **Work:**
   - Add `"composite": true` to `packages/shared/tsconfig.json`
   - Ensure shared package builds before web/api typecheck
@@ -262,7 +262,7 @@ Priority: Makes the product competitive.
 
 ## Phase 5: Vision-Aligned Features
 
-Priority: Closes the gap between the current marketplace and the full Arc vision. These are net-new capabilities not covered by Phases 1–4.
+Priority: Closes the gap between the current marketplace and the full Faineant vision. These are net-new capabilities not covered by Phases 1–4.
 
 ### 5.1 On-the-Go Service Mode
 - **Why:** The vision hinges on connecting clients who want service anywhere with professionals who travel. A barber working a mobile van or doing house calls needs a first-class "I'm out of shop" mode, not a hack.
@@ -313,9 +313,9 @@ Priority: Closes the gap between the current marketplace and the full Arc vision
 - **Why:** The vision demands a sophisticated, concierge feel. Current copy is functional but too casual.
 - **Work:**
   - Landing page copy refresh (shipped 2026-04-10)
-  - Rename user-facing `ARC` → `Arc` across web, mobile, emails
+  - Consistent FAINEANT brand treatment across web, mobile, emails
   - Typography pass: serif accents for headlines, refined spacing
-  - Transactional email templates in Arc voice
+  - Transactional email templates in Faineant voice
   - Provider verification badge + "Vetted" language
   - Review the entire in-app microcopy for the voice guide (quality, craftsmanship, effortless, elevated)
 - **Estimate:** Medium (spans several sprints)
@@ -387,4 +387,4 @@ Premium voice rollout, social sign-in, no-show policy engine. These unlock the c
 On-the-go mode + live map. The "anywhere" half of the brand promise.
 
 **Sprint 8 (Vision — Delight):** 5.3 + 5.4
-Ping broadcasts + AI concierge. These are the features that make Arc feel like nothing else in the category.
+Ping broadcasts + AI concierge. These are the features that make Faineant feel like nothing else in the category.

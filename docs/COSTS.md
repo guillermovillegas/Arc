@@ -1,6 +1,6 @@
-# ARC Marketplace — Infrastructure & Service Costs
+# FAINEANT Marketplace — Infrastructure & Service Costs
 
-> Exhaustive cost breakdown for launching and operating ARC.
+> Exhaustive cost breakdown for launching and operating FAINEANT.
 > All prices as of April 2026. Costs shown as monthly unless noted.
 
 ---
@@ -19,8 +19,8 @@
 
 | Item | Provider | Cost | Notes |
 |------|----------|------|-------|
-| Primary domain (`arc.app` or `getarc.com`) | Cloudflare / Namecheap / Google Domains | $10–50/yr | `.app` domains ~$15/yr, premium names vary |
-| Additional domain (redirect) | Same | $10–15/yr | Optional: `arcbeauty.com` etc. |
+| Primary domain (`faineant.co` or `getfaineant.com`) | Cloudflare / Namecheap / Google Domains | $10–50/yr | `.app` domains ~$15/yr, premium names vary |
+| Additional domain (redirect) | Same | $10–15/yr | Optional: `faineantbeauty.com` etc. |
 | DNS hosting | Cloudflare (free tier) | **$0** | Included with domain transfer to CF |
 | SSL/TLS certificates | Cloudflare / Vercel / Let's Encrypt | **$0** | Auto-provisioned |
 
@@ -178,7 +178,7 @@ Needed for: verification, booking confirmations, password reset, notifications.
 
 Resend overage: $0.00040/email after plan limit.
 
-#### Email Templates Needed for ARC
+#### Email Templates Needed for FAINEANT
 
 | Template | Trigger | Priority |
 |----------|---------|----------|
@@ -215,16 +215,16 @@ Cost for React Email: **$0** (open source).
 
 #### DNS Setup Required
 
-To send from `noreply@arc.app`, add these DNS records (provided by Resend):
+To send from `noreply@faineant.co`, add these DNS records (provided by Resend):
 
 | Type | Name | Value | Purpose |
 |------|------|-------|---------|
-| TXT | arc.app | `v=spf1 include:amazonses.com ~all` | SPF (sender auth) |
-| CNAME | resend._domainkey.arc.app | `[provided by Resend]` | DKIM (signing) |
-| TXT | _dmarc.arc.app | `v=DMARC1; p=none;` | DMARC (policy) |
-| MX | send.arc.app | `feedback-smtp.us-east-1.amazonses.com` | Bounce handling |
+| TXT | faineant.co | `v=spf1 include:amazonses.com ~all` | SPF (sender auth) |
+| CNAME | resend._domainkey.faineant.co | `[provided by Resend]` | DKIM (signing) |
+| TXT | _dmarc.faineant.co | `v=DMARC1; p=none;` | DMARC (policy) |
+| MX | send.faineant.co | `feedback-smtp.us-east-1.amazonses.com` | Bounce handling |
 
-No Google Workspace seat needed for `noreply@arc.app` — Resend handles sending directly.
+No Google Workspace seat needed for `noreply@faineant.co` — Resend handles sending directly.
 
 #### Estimated Email Volume
 
@@ -250,17 +250,17 @@ No Google Workspace seat needed for `noreply@arc.app` — Resend handles sending
 
 | Plan | Cost | Includes |
 |------|------|----------|
-| **Business Starter** | **$7.20/user/mo** ($86.40/yr) | 30GB Drive, custom email (you@arc.app), Meet (100 participants) |
+| **Business Starter** | **$7.20/user/mo** ($86.40/yr) | 30GB Drive, custom email (you@faineant.co), Meet (100 participants) |
 | **Business Standard** | **$14.40/user/mo** ($172.80/yr) | 2TB Drive, recording, 150 Meet participants |
 | **Business Plus** | **$21.60/user/mo** ($259.20/yr) | 5TB Drive, Vault, advanced endpoint management |
 
 Minimum team emails needed:
 | Email | Purpose |
 |-------|---------|
-| `hello@arc.app` | General inquiries |
-| `support@arc.app` | Customer support |
-| `noreply@arc.app` | Transactional emails (can use Resend, no Workspace seat needed) |
-| `admin@arc.app` | Admin/billing |
+| `hello@faineant.co` | General inquiries |
+| `support@faineant.co` | Customer support |
+| `noreply@faineant.co` | Transactional emails (can use Resend, no Workspace seat needed) |
+| `admin@faineant.co` | Admin/billing |
 
 **Recommended: 2 Google Workspace Starter seats @ $14.40/mo** ($172.80/yr)
 Use Resend for transactional `noreply@` emails (no seat needed, just DNS verification).
@@ -275,14 +275,14 @@ Already integrated with Stripe Connect.
 |------|------|-------|
 | Stripe processing fee | **2.9% + $0.30 per transaction** | Standard US card rate |
 | Stripe Connect (Express) | **$2/mo per active connected account** | Waived for first $1M in volume for startups |
-| ARC platform fee | **2.9% per transaction** (configurable) | Your revenue from `STRIPE_PLATFORM_FEE_PERCENT` |
+| FAINEANT platform fee | **2.9% per transaction** (configurable) | Your revenue from `STRIPE_PLATFORM_FEE_PERCENT` |
 | Payout to providers | **$0.25 per payout** (Instant: 1%) | Standard payouts are free |
 | Stripe Radar (fraud) | **$0.05/transaction** | Optional, recommended |
 | Stripe Tax | **$0.50/transaction** | Optional, auto sales tax |
 | Disputes/chargebacks | **$15 per dispute** | Win or lose |
 
 **Cost: Variable (transaction-based only, no monthly fee)**
-Revenue: With 2.9% platform fee, ARC earns ~$2.90 per $100 transaction.
+Revenue: With 2.9% platform fee, FAINEANT earns ~$2.90 per $100 transaction.
 
 ---
 
@@ -365,7 +365,7 @@ Google gives **$200/mo free credit** across all Maps APIs. This covers ~28,000 m
 | Free | **$0** | 30 builds/mo (low priority queue) |
 | Production | **$99/mo** | Unlimited builds, priority queue, update channels |
 
-Note: ARC processes payments via Stripe (not IAP), so App Store/Play Store commissions likely don't apply to service bookings. Apple's rules may require 30% cut on digital goods — but real-world service bookings are typically exempt.
+Note: FAINEANT processes payments via Stripe (not IAP), so App Store/Play Store commissions likely don't apply to service bookings. Apple's rules may require 30% cut on digital goods — but real-world service bookings are typically exempt.
 
 **Recommended:**
 - Apple Developer: **$99/yr**
@@ -395,7 +395,7 @@ Note: ARC processes payments via Stripe (not IAP), so App Store/Play Store commi
 | **GitHub Actions** | 2000 min/mo (free repos) | $0.008/min (private) | CI/CD pipeline |
 | **Vercel** (builds) | Included with Pro | $0 | Auto-deploy on push |
 
-Typical ARC pipeline (lint + typecheck + test + build): ~5 min per run.
+Typical FAINEANT pipeline (lint + typecheck + test + build): ~5 min per run.
 At 100 runs/mo = 500 min → well within free tier.
 
 **Recommended: GitHub Actions Free + Vercel Pro @ $0 additional**
@@ -437,7 +437,7 @@ Estimated 1000 AI queries/mo at ~500 tokens each: **~$5–10/mo**
 | **Intercom** | — | **$139/seat/mo** | Full-featured but expensive |
 | **Zendesk** | — | **$55–115/agent/mo** | Enterprise-grade |
 
-ARC is a two-sided marketplace — you'll field issues from **both** clients and providers (booking disputes, payment questions, onboarding help). Budget accordingly.
+FAINEANT is a two-sided marketplace — you'll field issues from **both** clients and providers (booking disputes, payment questions, onboarding help). Budget accordingly.
 
 **Recommended: Crisp Free at launch → $25/mo when volume grows.**
 
@@ -452,7 +452,7 @@ ARC is a two-sided marketplace — you'll field issues from **both** clients and
 | **Amplitude** | 50K MTUs | **$49/mo** Growth | Similar to Mixpanel |
 | **Vercel Analytics** | Included with Pro | $0 | Web Vitals + traffic only |
 
-Key metrics to track for ARC: search-to-book conversion, provider activation rate, booking completion rate, repeat booking rate, time-to-first-booking.
+Key metrics to track for FAINEANT: search-to-book conversion, provider activation rate, booking completion rate, repeat booking rate, time-to-first-booking.
 
 **Recommended: PostHog Free @ $0/mo** (generous free tier, instrument from day 1)
 
@@ -475,7 +475,7 @@ You're building a two-sided marketplace. Provider acquisition is effectively a s
 ## 19. Compliance & Regulatory
 
 ### PCI DSS
-ARC uses Stripe.js client-side tokenization — card data never touches ARC servers.
+FAINEANT uses Stripe.js client-side tokenization — card data never touches FAINEANT servers.
 Qualifies for **SAQ-A** (simplest self-assessment). Cost: **$0** (fill out questionnaire annually).
 
 ### CCPA / State Privacy Laws
@@ -497,7 +497,7 @@ Not needed at launch. Required for enterprise partnerships.
 - Timing: 12–24 months post-launch
 
 ### Cosmetology License Verification
-Beauty providers must be licensed in their state. If ARC lists an unlicensed provider and a client is harmed, ARC faces liability.
+Beauty providers must be licensed in their state. If FAINEANT lists an unlicensed provider and a client is harmed, FAINEANT faces liability.
 - Minimum: Require providers to self-attest licensing in ToS (**$0**)
 - Better: Integrate license verification API (LicenseLogix, Certn): **$5–10/verification**
 - Timing: Self-attestation at launch, automated verification in Phase 2
@@ -506,7 +506,7 @@ Beauty providers must be licensed in their state. If ARC lists an unlicensed pro
 
 ## 20. Content Moderation
 
-ARC has user-generated content: reviews, community posts, comments, portfolio photos, profile images, messages. All need moderation.
+FAINEANT has user-generated content: reviews, community posts, comments, portfolio photos, profile images, messages. All need moderation.
 
 | Approach | Cost | Notes |
 |----------|------|-------|
@@ -596,7 +596,7 @@ A marketplace connecting strangers for physical services has real liability expo
 | Cyber Liability | **$80–250** | $1,000–3,000 | At launch or within 3 months |
 | D&O Insurance | **$300–500** | $3,500–6,000 | Before fundraising only |
 
-Providers should carry their own professional liability insurance (cosmetology insurance). ARC should **require** providers to maintain their own coverage and add this to provider terms.
+Providers should carry their own professional liability insurance (cosmetology insurance). FAINEANT should **require** providers to maintain their own coverage and add this to provider terms.
 
 **Recommended at launch: GL + E&O bundle via Hiscox or Next Insurance @ ~$100/mo ($1,200/yr)**
 
@@ -671,7 +671,7 @@ Stripe pays out to your Mercury checking account on a 2-day rolling basis (or da
 2. If enrolling as organization (recommended): get DUNS number first (free, 5–14 business days)
 3. Enroll in Apple Developer Program ($99/yr)
 4. Wait for approval (24–48 hours)
-5. Create App Store Connect record for ARC
+5. Create App Store Connect record for FAINEANT
 6. Configure certificates, provisioning profiles (or let EAS handle it)
 7. Upload first build via EAS
 
@@ -701,7 +701,7 @@ Stripe pays out to your Mercury checking account on a 2-day rolling basis (or da
 | Privacy Policy | Lawyer / generator | **$200–800** | Required by App Store and Play Store |
 | Cookie Policy | Generator | **$0–100** | iubenda or Termly free tier |
 | DMCA policy | Template | **$0** | Required if user-generated content (portfolio photos) |
-| Marketplace agreement (provider terms) | Lawyer | **$500–1,000** | Agreement between ARC and service providers |
+| Marketplace agreement (provider terms) | Lawyer | **$500–1,000** | Agreement between FAINEANT and service providers |
 | **Optional: Trademark** | USPTO | **$250–350** | Per class, recommended but not urgent at launch |
 
 **Recommended: Budget $2,000 for legal.** Stripe Atlas includes basic templates. Supplement with a marketplace-specific lawyer review.
@@ -732,7 +732,7 @@ Most early-stage startups skip insurance until they have revenue. Budget $50–1
 | **Developer** | Apple DUNS Number (org enrollment) | $0 |
 | **Developer** | Google Play Console | $25 |
 | **Developer** | Twilio 10DLC brand registration | $50 |
-| **Domain** | Primary domain (arc.app) | $50 |
+| **Domain** | Primary domain (faineant.co) | $50 |
 | **Brand** | Logo + basic brand assets | $300 |
 | **Brand** | App Store screenshots + assets | $100 |
 | **Legal** | Terms of Service + Privacy Policy | $2,000 |
@@ -754,7 +754,7 @@ Most early-stage startups skip insurance until they have revenue. Budget $50–1
 | **Cache** | Redis (serverless) | Upstash Pro | $15 | $180 |
 | **File Storage** | Image uploads (~50GB) | Cloudflare R2 | $5 | $60 |
 | **Email (transactional)** | Verification, confirmations | Resend Pro | $25 | $300 |
-| **Email (business)** | team@arc.app (3 seats) | Google Workspace | $25 | $300 |
+| **Email (business)** | team@faineant.co (3 seats) | Google Workspace | $25 | $300 |
 | **Maps** | Geolocation + display | Google Maps | $0 | $0 |
 | **Payments** | Processing (transaction %) | Stripe | $0 | $0 |
 | **Banking** | Business checking | Mercury | $0 | $0 |
@@ -792,7 +792,7 @@ Most early-stage startups skip insurance until they have revenue. Budget $50–1
 | **Total Year 1** | **~$13,000** |
 | **Total Year 1 + 15% buffer** | **~$15,000** |
 
-**$15,000 gets ARC from zero to 5,000 users** — legally incorporated, trademarked, properly
+**$15,000 gets FAINEANT from zero to 5,000 users** — legally incorporated, trademarked, properly
 banked, insured, both app stores, full infrastructure, monitoring, analytics, support tools,
 content moderation, and CPA-prepared taxes.
 
@@ -899,7 +899,7 @@ When you outgrow the $400/mo setup:
 
 ## Transaction Economics (Critical)
 
-ARC uses Stripe Connect with `application_fee_amount`. The current platform fee
+FAINEANT uses Stripe Connect with `application_fee_amount`. The current platform fee
 is **5%** (`STRIPE_PLATFORM_FEE_PERCENT=5` in env). Here's how money actually flows:
 
 ### Per-Transaction Breakdown ($45 booking)
@@ -912,17 +912,17 @@ Stripe processing fee (2.9% + $0.30)
   + flat fee      =  $0.30
   Total Stripe    = -$1.61
 
-ARC platform fee (5% of $45.00)    = -$2.25
+FAINEANT platform fee (5% of $45.00)    = -$2.25
 
 Provider receives                   $41.14
 ```
 
-**Key:** Stripe's 2.9% + $0.30 is deducted from the total charge first. ARC's 5%
+**Key:** Stripe's 2.9% + $0.30 is deducted from the total charge first. FAINEANT's 5%
 application fee is taken from what remains. The provider gets the rest.
 
-### ARC's Actual Revenue Per Transaction
+### FAINEANT's Actual Revenue Per Transaction
 
-| Booking Price | Stripe Fee (2.9%+$0.30) | ARC Fee (5%) | ARC Keeps | Provider Gets |
+| Booking Price | Stripe Fee (2.9%+$0.30) | FAINEANT Fee (5%) | FAINEANT Keeps | Provider Gets |
 |---------------|------------------------|-------------|-----------|---------------|
 | $20 | $0.88 | $1.00 | **$1.00** | $18.12 |
 | $35 | $1.32 | $1.75 | **$1.75** | $31.94 |
@@ -933,16 +933,16 @@ application fee is taken from what remains. The provider gets the rest.
 | $150 | $4.65 | $7.50 | **$7.50** | $137.85 |
 | $200 | $6.10 | $10.00 | **$10.00** | $183.90 |
 
-ARC's effective take rate is **5% of GMV** regardless of Stripe fees.
-Stripe fees are absorbed by the total (shared pain between ARC and provider).
+FAINEANT's effective take rate is **5% of GMV** regardless of Stripe fees.
+Stripe fees are absorbed by the total (shared pain between FAINEANT and provider).
 
 ### Should You Raise the Platform Fee?
 
-At 5%, ARC earns $2.25 on a $45 booking. Industry comparisons:
+At 5%, FAINEANT earns $2.25 on a $45 booking. Industry comparisons:
 
 | Platform | Take Rate | Notes |
 |----------|-----------|-------|
-| ARC (current) | **5%** | Low, competitive |
+| FAINEANT (current) | **5%** | Low, competitive |
 | Booksy | 3–5% + subscription | $30/mo subscription to providers |
 | StyleSeat | 25% on marketplace bookings | Very high, includes marketing |
 | Fresha | 0% + payment fee (2.19%+$0.20) | Makes money on payments only |
@@ -955,10 +955,10 @@ a **premium tier** for providers at $15–30/mo with lower transaction fee (2–
 
 ### Revenue vs Cost (Corrected with Real Stripe Math)
 
-ARC revenue = **5% of GMV** (the `application_fee_amount`).
-Stripe fees are not deducted from ARC's cut — they come from the total charge.
+FAINEANT revenue = **5% of GMV** (the `application_fee_amount`).
+Stripe fees are not deducted from FAINEANT's cut — they come from the total charge.
 
-| Monthly GMV | Bookings (~$45 avg) | ARC Revenue (5%) | All Costs | Net |
+| Monthly GMV | Bookings (~$45 avg) | FAINEANT Revenue (5%) | All Costs | Net |
 |-------------|---------------------|-------------------|-----------|-----|
 | $5,000 | ~110 | $250 | $700 | **-$450** |
 | $10,000 | ~222 | $500 | $700 | **-$200** |
@@ -989,15 +989,15 @@ Don't forget these transaction-adjacent costs:
 | Stripe Radar (fraud prevention) | $0.05/screened transaction | Recommended at scale |
 | Stripe Tax (auto sales tax) | $0.50/transaction | Required in some states |
 
-**Refund risk:** If a $45 booking is refunded, ARC returns the full $45 to the client.
-Stripe does NOT refund its $1.61 processing fee. ARC loses $1.61 + its $2.25 fee = **$3.86 loss per refund.**
+**Refund risk:** If a $45 booking is refunded, FAINEANT returns the full $45 to the client.
+Stripe does NOT refund its $1.61 processing fee. FAINEANT loses $1.61 + its $2.25 fee = **$3.86 loss per refund.**
 Budget for a ~2–5% refund/dispute rate at launch.
 
 ### Worst-Case Scenario: Refund-Adjusted Revenue
 
 Assuming 3% refund rate:
 
-| Monthly GMV | Bookings | Refunded (3%) | ARC Gross (5%) | Refund Loss | ARC Net Revenue |
+| Monthly GMV | Bookings | Refunded (3%) | FAINEANT Gross (5%) | Refund Loss | FAINEANT Net Revenue |
 |-------------|----------|---------------|----------------|-------------|-----------------|
 | $10,000 | 222 | 7 | $500 | -$27 | **$473** |
 | $25,000 | 556 | 17 | $1,250 | -$66 | **$1,184** |
@@ -1012,7 +1012,7 @@ deposit requirements and clear cancellation policies mitigate this.
 
 ```
 ┌─────────────────────────────────────────────────┐
-│  ARC Marketplace — Year 1 Budget                │
+│  FAINEANT Marketplace — Year 1 Budget                │
 │                                                 │
 │  SETUP (one-time)                               │
 │  Stripe Atlas (LLC + EIN)        $500           │
@@ -1047,7 +1047,7 @@ deposit requirements and clear cancellation policies mitigate this.
 │  Target users for break-even     ~700-1,200     │
 │                                                 │
 │  AT $50K GMV:                                   │
-│    ARC revenue (5%)              $2,500/mo      │
+│    FAINEANT revenue (5%)              $2,500/mo      │
 │    All costs (infra+ins+tax)     $750/mo        │
 │    Net profit                    $1,750/mo      │
 │                                                 │
