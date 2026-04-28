@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
+import { View, Text, Image, ActivityIndicator, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { getStoredTokens } from "@/lib/auth";
 import { colors, fonts } from "@/lib/theme";
@@ -31,9 +31,14 @@ export default function SplashScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.logo}>Arc</Text>
-      <Text style={styles.tagline}>Exceptional beauty, anywhere.</Text>
+    <View style={styles.container} testID="splash-root">
+      <Image
+        source={require("../../assets/brand/faineant-wordmark-white.png")}
+        style={styles.wordmark}
+        resizeMode="contain"
+        accessibilityLabel="FAINEANT"
+      />
+      <Text style={styles.tagline}>House calls for the slow-living.</Text>
       {loading && <ActivityIndicator color={colors.brass[500]} style={styles.loader} />}
     </View>
   );
@@ -46,18 +51,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.espresso[800],
   },
-  logo: {
-    fontSize: 56,
-    fontFamily: fonts.serif,
-    color: colors.ivory[100],
-    letterSpacing: 1,
+  wordmark: {
+    width: 240,
+    height: 56,
   },
   tagline: {
     fontSize: 14,
     fontFamily: fonts.serif,
     fontStyle: "italic",
     color: colors.brass[500],
-    marginTop: 8,
+    marginTop: 12,
   },
   loader: { marginTop: 32 },
 });

@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "ARC",
-    "slug": "arc",
+    "name": "FAINEANT",
+    "slug": "faineant",
     "version": "0.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -14,7 +14,7 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "app.arc.mobile",
+      "bundleIdentifier": "co.faineant.mobile",
       "config": {
         "googleMapsApiKey": "YOUR_IOS_KEY"
       }
@@ -24,14 +24,14 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#006fc9"
       },
-      "package": "app.arc.mobile",
+      "package": "co.faineant.mobile",
       "config": {
         "googleMaps": {
           "apiKey": "YOUR_ANDROID_KEY"
         }
       }
     },
-    "scheme": "arc",
+    "scheme": "faineant",
     "plugins": ["expo-router", "expo-secure-store", "expo-location"]
   }
 }

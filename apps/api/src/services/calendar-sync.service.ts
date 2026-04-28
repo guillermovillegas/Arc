@@ -206,7 +206,7 @@ export async function syncGoogleCalendar(connectionId: string) {
   }
 }
 
-/** Write an ARC booking to the provider's Google Calendar */
+/** Write a FAINEANT booking to the provider's Google Calendar */
 export async function createGoogleCalendarEvent(
   userId: string,
   booking: {
@@ -229,17 +229,17 @@ export async function createGoogleCalendarEvent(
     calendarId: connection.externalId || "primary",
     requestBody: {
       summary: `${booking.serviceName} — ${booking.clientName}`,
-      description: `ARC Booking #${booking.id.slice(0, 8)}${booking.notes ? `\n\nNotes: ${booking.notes}` : ""}`,
+      description: `FAINEANT Booking #${booking.id.slice(0, 8)}${booking.notes ? `\n\nNotes: ${booking.notes}` : ""}`,
       start: { dateTime: booking.startTime.toISOString() },
       end: { dateTime: booking.endTime.toISOString() },
-      source: { title: "ARC", url: `${env.WEB_URL}/dashboard/provider/bookings` },
+      source: { title: "FAINEANT", url: `${env.WEB_URL}/dashboard/provider/bookings` },
     },
   });
 
   return event.data.id;
 }
 
-/** Remove an ARC booking from the provider's Google Calendar */
+/** Remove a FAINEANT booking from the provider's Google Calendar */
 export async function deleteGoogleCalendarEvent(
   userId: string,
   googleEventId: string,
