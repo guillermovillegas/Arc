@@ -1,7 +1,7 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { authenticate } from "../middleware/auth";
 import { validate } from "../middleware/validate";
-import { createPostSchema, createCommentSchema } from "@arc/shared";
+import { createPostSchema, createCommentSchema } from "@faineant/shared";
 import * as postService from "../services/post.service";
 
 const router = Router();

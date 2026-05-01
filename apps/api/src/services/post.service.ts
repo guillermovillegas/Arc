@@ -1,6 +1,6 @@
 import { prisma } from "../config/database";
 import { AppError } from "../middleware/error-handler";
-import { CreatePostInput, CreateCommentInput, PostCategory } from "@arc/shared";
+import { CreatePostInput, CreateCommentInput, PostCategory } from "@faineant/shared";
 
 export async function createPost(authorId: string, input: CreatePostInput) {
   return prisma.post.create({

@@ -1,6 +1,7 @@
 import { prisma } from "../config/database";
 import { AppError } from "../middleware/error-handler";
-import { SetAvailabilityInput, CreateOverrideInput, TimeSlot } from "@arc/shared";
+import { SetAvailabilityInput, CreateOverrideInput, TimeSlot } from "@faineant/shared";
+import { getExternalEventsForDate } from "./calendar-sync.service";
 
 export async function setAvailability(userId: string, input: SetAvailabilityInput) {
   const profile = await prisma.providerProfile.findUnique({ where: { userId } });
@@ -92,6 +93,23 @@ export async function getAvailableSlots(
     select: { startTime: true, endTime: true },
   });
 
+  // Get external calendar events (Google Calendar, ICS feeds)
+  const profile = await prisma.providerProfile.findUnique({
+    where: { id: providerProfileId },
+    select: { userId: true },
+  });
+
+  let externalEvents: Array<{ startTime: Date; endTime: Date }> = [];
+  if (profile) {
+    externalEvents = await getExternalEventsForDate(profile.userId, date);
+  }
+
+  // Merge all busy times
+  const allBusyTimes = [
+    ...existingBookings.map((b) => ({ startTime: b.startTime, endTime: b.endTime })),
+    ...externalEvents,
+  ];
+
   // Generate time slots
   const slots: TimeSlot[] = [];
   const slotInterval = 30; // 30-minute slot intervals
@@ -112,7 +130,7 @@ export async function getAvailableSlots(
 
       const slotEnd = new Date(slotStart.getTime() + serviceDurationMinutes * 60 * 1000);
 
-      const isConflict = existingBookings.some(
+      const isConflict = allBusyTimes.some(
         (b) => b.startTime < slotEnd && b.endTime > slotStart,
       );
 

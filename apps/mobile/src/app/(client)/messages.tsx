@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, ScrollView, Pressable, StyleSheet } from "react-native";
 import { api } from "@/lib/api-client";
 import { getStoredTokens } from "@/lib/auth";
+import { colors, fonts, sizes, spacing } from "@/theme";
 
 interface Conversation {
   id: string;
@@ -20,53 +21,127 @@ export default function MessagesScreen() {
     const { accessToken } = await getStoredTokens();
     if (!accessToken) return;
     try {
-      const res = await api.get<{ data: Conversation[] }>("/messages/conversations", { token: accessToken });
+      const res = await api.get<{ data: Conversation[] }>("/messages/conversations", {
+        token: accessToken,
+      });
       setConversations(res.data);
     } catch {
-      // Handle error
+      // Handle error silently
     }
   }
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={conversations}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.list}
-        ListEmptyComponent={<Text style={styles.empty}>No conversations yet</Text>}
-        renderItem={({ item }) => (
-          <TouchableOpacity style={styles.card}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>
-                {item.otherParticipant.firstName[0]}{item.otherParticipant.lastName[0]}
-              </Text>
-            </View>
-            <View style={styles.content}>
-              <Text style={styles.name}>
-                {item.otherParticipant.firstName} {item.otherParticipant.lastName}
-              </Text>
-              {item.lastMessage && (
-                <Text style={styles.preview} numberOfLines={1}>{item.lastMessage.text}</Text>
-              )}
-            </View>
-          </TouchableOpacity>
-        )}
-      />
-    </View>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: colors.background }}
+      contentContainerStyle={{ padding: spacing.lg, gap: spacing.xl, paddingBottom: spacing.xxxl }}
+    >
+      <View style={{ paddingTop: 64 }}>
+        <Text style={styles.eyebrow}>MESSAGES</Text>
+        <Text style={styles.headline}>
+          The <Text style={styles.headlineEm}>quiet</Text> inbox.
+        </Text>
+      </View>
+
+      {conversations.length === 0 ? (
+        <View style={styles.emptyBlock}>
+          <Text style={styles.emptyText}>
+            Most clients don&rsquo;t message. The few who do are usually about parking.
+          </Text>
+        </View>
+      ) : (
+        <View style={{ gap: spacing.sm }}>
+          {conversations.map((item) => (
+            <Pressable key={item.id} style={styles.row}>
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>
+                  {item.otherParticipant.firstName[0]}
+                  {item.otherParticipant.lastName[0]}
+                </Text>
+              </View>
+              <View style={styles.rowBody}>
+                <Text style={styles.name}>
+                  {item.otherParticipant.firstName} {item.otherParticipant.lastName}
+                </Text>
+                {item.lastMessage && (
+                  <Text style={styles.preview} numberOfLines={1}>
+                    {item.lastMessage.text}
+                  </Text>
+                )}
+              </View>
+            </Pressable>
+          ))}
+        </View>
+      )}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  list: { padding: 16 },
-  card: { flexDirection: "row", padding: 12, borderBottomWidth: 1, borderBottomColor: "#f0f0f0" },
-  avatar: {
-    width: 44, height: 44, borderRadius: 22, backgroundColor: "#e0effe",
-    justifyContent: "center", alignItems: "center", marginRight: 12,
+  eyebrow: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: sizes.label,
+    color: colors.taupe[300],
+    letterSpacing: 3.5,
+    textTransform: "uppercase",
+    marginBottom: spacing.md,
   },
-  avatarText: { fontWeight: "bold", color: "#006fc9" },
-  content: { flex: 1, justifyContent: "center" },
-  name: { fontSize: 15, fontWeight: "600", color: "#111" },
-  preview: { fontSize: 13, color: "#888", marginTop: 2 },
-  empty: { textAlign: "center", color: "#999", marginTop: 40 },
+  headline: {
+    fontFamily: fonts.displayBlack,
+    fontSize: 40,
+    color: colors.primaryFg,
+    letterSpacing: -1.2,
+    lineHeight: 40,
+  },
+  headlineEm: {
+    fontFamily: fonts.editorialLight,
+    color: colors.accent,
+    fontStyle: "italic",
+  },
+  emptyBlock: {
+    paddingLeft: spacing.md,
+    borderLeftWidth: 1,
+    borderLeftColor: colors.accent,
+  },
+  emptyText: {
+    fontFamily: fonts.editorialLight,
+    fontSize: sizes.subheading,
+    color: colors.secondaryFg,
+    fontStyle: "italic",
+    lineHeight: 26,
+  },
+  row: {
+    flexDirection: "row",
+    paddingVertical: spacing.md,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.border,
+    alignItems: "center",
+  },
+  avatar: {
+    width: 44,
+    height: 44,
+    backgroundColor: colors.smoke[800],
+    borderWidth: 1,
+    borderColor: colors.border,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: spacing.md,
+  },
+  avatarText: {
+    fontFamily: fonts.displayMedium,
+    fontSize: sizes.bodySm,
+    color: colors.primaryFg,
+    letterSpacing: 1,
+  },
+  rowBody: { flex: 1, justifyContent: "center" },
+  name: {
+    fontFamily: fonts.displayMedium,
+    fontSize: sizes.body,
+    color: colors.primaryFg,
+  },
+  preview: {
+    fontFamily: fonts.body,
+    fontSize: sizes.bodySm,
+    color: colors.taupe[300],
+    marginTop: spacing.xs,
+  },
 });

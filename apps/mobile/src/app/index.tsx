@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { View, Text, ActivityIndicator } from "react-native";
+import { View, Text, Image, ActivityIndicator, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { getStoredTokens } from "@/lib/auth";
+import { colors, fonts } from "@/lib/theme";
 
 export default function SplashScreen() {
   const router = useRouter();
@@ -12,23 +13,54 @@ export default function SplashScreen() {
   }, []);
 
   async function checkAuth() {
-    const { accessToken, user } = await getStoredTokens();
+    try {
+      const { accessToken, user } = await getStoredTokens();
 
-    if (!accessToken || !user) {
+      if (!accessToken || !user) {
+        router.replace("/(auth)/login");
+      } else if (user.role === "PROVIDER") {
+        router.replace("/(provider)/home");
+      } else {
+        router.replace("/(client)/home");
+      }
+    } catch {
       router.replace("/(auth)/login");
-    } else if (user.role === "PROVIDER") {
-      router.replace("/(provider)/home");
-    } else {
-      router.replace("/(client)/home");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   }
 
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#006fc9" }}>
-      <Text style={{ fontSize: 48, fontWeight: "bold", color: "white" }}>ARC</Text>
-      {loading && <ActivityIndicator color="white" style={{ marginTop: 20 }} />}
+    <View style={styles.container} testID="splash-root">
+      <Image
+        source={require("../../assets/brand/faineant-wordmark-white.png")}
+        style={styles.wordmark}
+        resizeMode="contain"
+        accessibilityLabel="FAINEANT"
+      />
+      <Text style={styles.tagline}>House calls for the slow-living.</Text>
+      {loading && <ActivityIndicator color={colors.brass[500]} style={styles.loader} />}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: colors.espresso[800],
+  },
+  wordmark: {
+    width: 240,
+    height: 56,
+  },
+  tagline: {
+    fontSize: 14,
+    fontFamily: fonts.serif,
+    fontStyle: "italic",
+    color: colors.brass[500],
+    marginTop: 12,
+  },
+  loader: { marginTop: 32 },
+});

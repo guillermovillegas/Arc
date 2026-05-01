@@ -1,11 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import Link from "next/link";
+import { Loader2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { api } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth";
-import { BookingStatus } from "@arc/shared";
 
 interface BookingItem {
   id: string;
@@ -14,98 +23,331 @@ interface BookingItem {
   endTime: string;
   totalPriceInCents: number;
   location: string | null;
+  notes: string | null;
   service: { name: string; category: string; durationMinutes: number };
-  providerProfile: {
-    user: { firstName: string; lastName: string; avatarUrl: string | null };
+  providerProfile?: {
+    user?: { firstName?: string; lastName?: string; avatarUrl?: string | null };
+    businessName?: string;
   };
+}
+
+const MONTHS = [
+  "JAN",
+  "FEB",
+  "MAR",
+  "APR",
+  "MAY",
+  "JUN",
+  "JUL",
+  "AUG",
+  "SEP",
+  "OCT",
+  "NOV",
+  "DEC",
+];
+const WEEKDAYS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+
+function shortDate(iso: string): string {
+  const d = new Date(iso);
+  return `${d.getDate().toString().padStart(2, "0")} ${MONTHS[d.getMonth()]}`;
+}
+
+function shortWeekdayTime(iso: string): string {
+  const d = new Date(iso);
+  const hh = d.getHours().toString().padStart(2, "0");
+  const mm = d.getMinutes().toString().padStart(2, "0");
+  return `${WEEKDAYS[d.getDay()]} · ${hh}:${mm}`;
+}
+
+function formatPrice(cents: number): string {
+  return `$${(cents / 100).toFixed(2)}`;
+}
+
+function providerName(b: BookingItem): string {
+  const first = b.providerProfile?.user?.firstName ?? "";
+  const last = b.providerProfile?.user?.lastName ?? "";
+  return `${first} ${last}`.trim().toUpperCase() || "UNKNOWN";
 }
 
 export default function ClientBookingsPage() {
   const { accessToken } = useAuth();
   const [bookings, setBookings] = useState<BookingItem[]>([]);
-  const [filter, setFilter] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (accessToken) loadBookings();
-  }, [accessToken, filter]);
+  const [cancelBooking, setCancelBooking] = useState<BookingItem | null>(null);
+  const [cancelling, setCancelling] = useState(false);
 
-  async function loadBookings() {
+  const loadBookings = useCallback(async () => {
+    if (!accessToken) return;
+    setError(null);
+    setLoading(true);
     try {
-      const params = filter ? `?status=${filter}` : "";
-      const res = await api.get<{ data: BookingItem[] }>(`/bookings/client${params}`, {
-        token: accessToken!,
+      const res = await api.get<{ data: BookingItem[] }>("/bookings/client", {
+        token: accessToken,
       });
       setBookings(res.data);
     } catch {
-      // Handle error
+      // Network error on initial load — degrade to empty state
+    } finally {
+      setLoading(false);
+    }
+  }, [accessToken]);
+
+  useEffect(() => {
+    loadBookings();
+  }, [loadBookings]);
+
+  const { upcoming, past } = useMemo(() => {
+    const now = new Date();
+    const up: BookingItem[] = [];
+    const pa: BookingItem[] = [];
+    for (const b of bookings) {
+      const isPast =
+        new Date(b.startTime) < now ||
+        b.status === "COMPLETED" ||
+        b.status === "NO_SHOW";
+      const isCancelled = b.status === "CANCELLED";
+      if (isCancelled) continue;
+      if (isPast) pa.push(b);
+      else up.push(b);
+    }
+    up.sort(
+      (a, b) =>
+        new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
+    );
+    pa.sort(
+      (a, b) =>
+        new Date(b.startTime).getTime() - new Date(a.startTime).getTime(),
+    );
+    return { upcoming: up, past: pa };
+  }, [bookings]);
+
+  async function handleCancel() {
+    if (!cancelBooking || !accessToken) return;
+    setCancelling(true);
+    try {
+      await api.patch(
+        `/bookings/${cancelBooking.id}/status`,
+        { status: "CANCELLED" },
+        { token: accessToken },
+      );
+      setCancelBooking(null);
+      await loadBookings();
+    } catch {
+      setError("Failed to cancel booking. Please try again.");
+    } finally {
+      setCancelling(false);
     }
   }
 
-  const statusColors: Record<string, string> = {
-    PENDING: "bg-yellow-100 text-yellow-800",
-    CONFIRMED: "bg-blue-100 text-blue-800",
-    IN_PROGRESS: "bg-purple-100 text-purple-800",
-    COMPLETED: "bg-green-100 text-green-800",
-    CANCELLED: "bg-gray-100 text-gray-800",
-    NO_SHOW: "bg-red-100 text-red-800",
-  };
+  function canCancel(b: BookingItem): boolean {
+    return b.status === "PENDING" || b.status === "CONFIRMED";
+  }
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-gray-900">My Bookings</h1>
+    <div className="p-12 px-14 flex flex-col gap-12">
+      <header className="flex justify-between items-end pb-5 border-b border-smoke-700">
+        <h2 className="font-display text-[2.625rem] leading-none text-bone-100">
+          Your{" "}
+          <em className="font-editorial italic font-light text-champagne-400">
+            visits.
+          </em>
+        </h2>
+        <p className="font-editorial italic text-body-lg text-bone-200 max-w-[340px] text-right leading-snug">
+          A short, slow ledger. What&rsquo;s coming, and what&rsquo;s already
+          been.
+        </p>
+      </header>
 
-      <div className="mt-4 flex gap-2">
-        {["", "PENDING", "CONFIRMED", "COMPLETED", "CANCELLED"].map((s) => (
-          <Button
-            key={s}
-            variant={filter === s ? "primary" : "outline"}
-            size="sm"
-            onClick={() => setFilter(s)}
+      {error && (
+        <div className="border border-smoke-700 bg-smoke-800 px-4 py-3 text-label uppercase tracking-[0.18em] text-bone-200">
+          {error}
+          <button
+            onClick={() => setError(null)}
+            className="ml-3 font-mono text-mono text-champagne-400"
           >
-            {s || "All"}
-          </Button>
-        ))}
-      </div>
+            DISMISS
+          </button>
+        </div>
+      )}
 
-      <div className="mt-6 space-y-4">
-        {bookings.length === 0 ? (
-          <p className="py-8 text-center text-gray-500">No bookings found</p>
-        ) : (
-          bookings.map((booking) => (
-            <Card key={booking.id} padding="sm">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-medium text-gray-900">{booking.service.name}</h3>
-                  <p className="text-sm text-gray-600">
-                    with {booking.providerProfile.user.firstName}{" "}
-                    {booking.providerProfile.user.lastName}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {new Date(booking.startTime).toLocaleDateString()} at{" "}
-                    {new Date(booking.startTime).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </p>
-                  {booking.location && (
-                    <p className="text-sm text-gray-500">{booking.location}</p>
-                  )}
-                </div>
-                <div className="text-right">
-                  <span
-                    className={`inline-block rounded-full px-2 py-1 text-xs font-medium ${statusColors[booking.status] || ""}`}
-                  >
-                    {booking.status}
-                  </span>
-                  <p className="mt-1 font-semibold text-gray-900">
-                    ${(booking.totalPriceInCents / 100).toFixed(2)}
-                  </p>
-                </div>
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-taupe-300" />
+        </div>
+      ) : (
+        <>
+          <section>
+            <h4 className="text-label uppercase tracking-[0.32em] text-taupe-300 mb-5 flex justify-between items-center font-medium">
+              Upcoming{" "}
+              <span className="font-mono text-champagne-400">
+                {upcoming.length.toString().padStart(2, "0")} / ON THE CALENDAR
+              </span>
+            </h4>
+            {upcoming.length === 0 ? (
+              <div className="bg-smoke-900 border border-smoke-700 p-9 text-center">
+                <p className="font-editorial italic text-body-lg text-bone-200">
+                  Nothing on the calendar. The week is yours.
+                </p>
+                <Link
+                  href="/practitioners"
+                  className="mt-4 inline-block px-4 py-2.5 border border-smoke-700 text-label uppercase tracking-[0.28em] text-bone-200 font-medium"
+                >
+                  Find a practitioner
+                </Link>
               </div>
-            </Card>
-          ))
-        )}
-      </div>
+            ) : (
+              <div>
+                {upcoming.map((b) => (
+                  <div
+                    key={b.id}
+                    className="bg-smoke-900 border border-smoke-700 p-5 px-6 grid grid-cols-[80px_1fr_1fr_auto_auto] gap-6 items-center mb-px hover:bg-smoke-800 transition-colors"
+                  >
+                    <div className="font-mono text-mono text-taupe-300">
+                      {shortDate(b.startTime)}
+                      <strong className="block text-bone-100 font-medium text-[13px]">
+                        {shortWeekdayTime(b.startTime)}
+                      </strong>
+                    </div>
+                    <div className="font-display font-medium text-[15px] text-bone-100 tracking-[-0.01em]">
+                      {b.service.name}
+                      <small className="block font-editorial italic font-normal text-[13px] text-bone-200 mt-0.5">
+                        {b.service.durationMinutes} min
+                        {b.location ? ` · ${b.location}` : ""}
+                      </small>
+                    </div>
+                    <div className="text-label uppercase tracking-[0.18em] text-taupe-300 font-medium text-[11px]">
+                      {providerName(b)}
+                      <small className="block font-editorial italic font-light text-[12px] tracking-normal normal-case text-bone-200 mt-0.5">
+                        {b.status.replace(/_/g, " ").toLowerCase()}
+                      </small>
+                    </div>
+                    <div className="font-mono text-mono text-champagne-400 text-[13px] text-right">
+                      {formatPrice(b.totalPriceInCents)}
+                    </div>
+                    {canCancel(b) ? (
+                      <button
+                        type="button"
+                        onClick={() => setCancelBooking(b)}
+                        className="px-3.5 py-2 border border-smoke-700 text-label uppercase tracking-[0.28em] text-bone-200 font-medium text-[9px]"
+                      >
+                        Cancel
+                      </button>
+                    ) : (
+                      <span className="px-3.5 py-2 text-label uppercase tracking-[0.28em] text-taupe-300 font-medium text-[9px]">
+                        &mdash;
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section>
+            <h4 className="text-label uppercase tracking-[0.32em] text-taupe-300 mb-5 flex justify-between items-center font-medium">
+              Past visits{" "}
+              <span className="font-mono text-champagne-400">
+                {past.length.toString().padStart(2, "0")} / IDLE COLLECTION
+              </span>
+            </h4>
+            {past.length === 0 ? (
+              <div className="bg-smoke-900 border border-smoke-700 p-9 text-center">
+                <p className="font-editorial italic text-body-lg text-bone-200">
+                  No past visits yet. Soon.
+                </p>
+              </div>
+            ) : (
+              <div>
+                {past.map((b) => (
+                  <div
+                    key={b.id}
+                    className="bg-smoke-900 border border-smoke-700 p-5 px-6 grid grid-cols-[80px_1fr_1fr_auto_auto] gap-6 items-center mb-px hover:bg-smoke-800 transition-colors"
+                  >
+                    <div className="font-mono text-mono text-taupe-300">
+                      {shortDate(b.startTime)}
+                      <strong className="block text-bone-100 font-medium text-[13px]">
+                        {shortWeekdayTime(b.startTime)}
+                      </strong>
+                    </div>
+                    <div className="font-display font-medium text-[15px] text-bone-100 tracking-[-0.01em]">
+                      {b.service.name}
+                      <small className="block font-editorial italic font-normal text-[13px] text-bone-200 mt-0.5">
+                        {b.service.durationMinutes} min
+                        {b.location ? ` · ${b.location}` : ""}
+                      </small>
+                    </div>
+                    <div className="text-label uppercase tracking-[0.18em] text-taupe-300 font-medium text-[11px]">
+                      {providerName(b)}
+                      <small className="block font-editorial italic font-light text-[12px] tracking-normal normal-case text-bone-200 mt-0.5">
+                        {b.status === "COMPLETED"
+                          ? "“done, quietly.”"
+                          : b.status.replace(/_/g, " ").toLowerCase()}
+                      </small>
+                    </div>
+                    <div className="font-mono text-mono text-champagne-400 text-[13px] text-right">
+                      {formatPrice(b.totalPriceInCents)}
+                    </div>
+                    <Link
+                      href="#"
+                      className="px-3.5 py-2 border border-smoke-700 text-label uppercase tracking-[0.28em] text-bone-200 font-medium text-[9px]"
+                    >
+                      Book again
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        </>
+      )}
+
+      {/* Cancel confirmation */}
+      <AlertDialog
+        open={cancelBooking !== null}
+        onOpenChange={(open) => {
+          if (!open && !cancelling) setCancelBooking(null);
+        }}
+      >
+        <AlertDialogContent className="border border-smoke-700 bg-smoke-900">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-display text-[1.5rem] text-bone-100">
+              Cancel this visit?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="font-editorial italic text-bone-200">
+              {cancelBooking
+                ? `Your ${cancelBooking.service.name} on ${shortDate(cancelBooking.startTime)} at ${shortWeekdayTime(cancelBooking.startTime).split(" · ")[1] ?? ""}.`
+                : ""}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              disabled={cancelling}
+              className="border-smoke-700 text-bone-200 bg-transparent hover:bg-smoke-800"
+            >
+              Keep it
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleCancel();
+              }}
+              disabled={cancelling}
+              className="bg-bone-100 text-smoke-900 hover:bg-bone-200"
+            >
+              {cancelling ? (
+                <>
+                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  Cancelling
+                </>
+              ) : (
+                "Yes, cancel"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

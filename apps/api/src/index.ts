@@ -38,7 +38,7 @@ setupSocketIO(httpServer);
 
 // Start server
 httpServer.listen(env.API_PORT, () => {
-  console.log(`ARC API running on port ${env.API_PORT}`);
+  console.log(`FAINEANT API running on port ${env.API_PORT}`);
   console.log(`Environment: ${env.NODE_ENV}`);
 });
 

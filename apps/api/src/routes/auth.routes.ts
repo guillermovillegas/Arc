@@ -1,7 +1,8 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { validate } from "../middleware/validate";
 import { authLimiter } from "../middleware/rate-limit";
-import { registerSchema, loginSchema, refreshTokenSchema } from "@arc/shared";
+import { authenticate } from "../middleware/auth";
+import { registerSchema, loginSchema, refreshTokenSchema } from "@faineant/shared";
 import * as authService from "../services/auth.service";
 
 const router = Router();
@@ -36,6 +37,7 @@ router.post(
 
 router.post(
   "/refresh",
+  authLimiter,
   validate(refreshTokenSchema),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -47,7 +49,7 @@ router.post(
   },
 );
 
-router.post("/logout", async (req: Request, res: Response, next: NextFunction) => {
+router.post("/logout", authenticate, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { refreshToken } = req.body;
     if (refreshToken) await authService.logout(refreshToken);

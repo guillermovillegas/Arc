@@ -1,145 +1,175 @@
-"use client";
-
-import { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
-import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
-import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { api } from "@/lib/api-client";
-import { SERVICE_CATEGORY_LABELS, ServiceCategory } from "@arc/shared";
+import { Topbar } from "@/components/layout/topbar";
+import { SiteHeader } from "@/components/layout/site-header";
+import { SiteFooter } from "@/components/layout/site-footer";
 
-interface Provider {
-  id: string;
+export const metadata = {
+  title: "The Salon — FAINEANT",
+  description:
+    "Fourteen practitioners. Chicago only. Hair, nails, face, lash, barber, makeup — at home.",
+};
+
+interface PractitionerCard {
   slug: string;
-  bio: string | null;
-  businessName: string | null;
-  averageRating: number;
-  totalReviews: number;
-  distance: number | null;
-  user: { firstName: string; lastName: string; avatarUrl: string | null };
-  services: { name: string; category: string; priceInCents: number }[];
+  firstName: string;
+  surname: string;
+  neighbourhood: string;
+  specialty: string;
+  numberLabel: string;
+  image: string;
 }
 
+// TODO(impl): replace with Prisma query
+const PRACTITIONERS: PractitionerCard[] = [
+  {
+    slug: "maeve-le-gal",
+    firstName: "Maeve",
+    surname: "Le Gal",
+    neighbourhood: "West Loop",
+    specialty: "Hair · cut & colour",
+    numberLabel: "№ 01",
+    image: "/brand/photography/portrait-maeve.png",
+  },
+  {
+    slug: "noor-amari",
+    firstName: "Noor",
+    surname: "Amari",
+    neighbourhood: "Logan Square",
+    specialty: "Nails · gel & natural",
+    numberLabel: "№ 02",
+    image: "/brand/photography/tile-nails.png",
+  },
+  {
+    slug: "isolde-vance",
+    firstName: "Isolde",
+    surname: "Vance",
+    neighbourhood: "Lincoln Park",
+    specialty: "Face · facials & dermaplane",
+    numberLabel: "№ 03",
+    image: "/brand/photography/tile-face.png",
+  },
+  {
+    slug: "june-hartwell",
+    firstName: "June",
+    surname: "Hartwell",
+    neighbourhood: "Wicker Park",
+    specialty: "Lash · classic & volume",
+    numberLabel: "№ 04",
+    image: "/brand/photography/tile-lash.png",
+  },
+  {
+    slug: "augustin-roe",
+    firstName: "Augustin",
+    surname: "Roe",
+    neighbourhood: "Fulton Market",
+    specialty: "Barber · cut & shave",
+    numberLabel: "№ 05",
+    image: "/brand/photography/tile-barber.png",
+  },
+  {
+    slug: "céleste-mori",
+    firstName: "Céleste",
+    surname: "Mori",
+    neighbourhood: "River North",
+    specialty: "Makeup · day & evening",
+    numberLabel: "№ 06",
+    image: "/brand/photography/tile-makeup.png",
+  },
+  {
+    slug: "henrik-lund",
+    firstName: "Henrik",
+    surname: "Lund",
+    neighbourhood: "West Loop",
+    specialty: "Hair · long & curly",
+    numberLabel: "№ 07",
+    image: "/brand/photography/tile-hair.png",
+  },
+  {
+    slug: "ottilie-renner",
+    firstName: "Ottilie",
+    surname: "Renner",
+    neighbourhood: "Logan Square",
+    specialty: "Face · acne & rosacea",
+    numberLabel: "№ 08",
+    image: "/brand/photography/tile-face.png",
+  },
+];
+
 export default function ProvidersPage() {
-  const [providers, setProviders] = useState<Provider[]>([]);
-  const [search, setSearch] = useState("");
-  const [category, setCategory] = useState<string>("");
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    loadProviders();
-  }, [category]);
-
-  async function loadProviders() {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams();
-      if (category) params.set("category", category);
-      if (search) params.set("q", search);
-
-      const res = await api.get<{ data: { items: Provider[] } }>(`/search/providers?${params}`);
-      setProviders(res.data.items);
-    } catch {
-      // Handle error
-    } finally {
-      setLoading(false);
-    }
-  }
-
   return (
-    <div className="flex min-h-screen flex-col">
-      <Header />
-
-      <main className="flex-1 px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-6xl">
-          <h1 className="text-3xl font-bold text-gray-900">Find a Provider</h1>
-          <p className="mt-2 text-gray-600">Browse beauty professionals near you</p>
-
-          {/* Filters */}
-          <div className="mt-6 flex flex-col gap-4 sm:flex-row">
-            <div className="flex-1">
-              <Input
-                placeholder="Search by name, specialty..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && loadProviders()}
-              />
-            </div>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
-            >
-              <option value="">All Categories</option>
-              {Object.entries(SERVICE_CATEGORY_LABELS).map(([key, label]) => (
-                <option key={key} value={key}>{label}</option>
-              ))}
-            </select>
-            <Button onClick={loadProviders}>Search</Button>
+    <>
+      <Topbar />
+      <SiteHeader />
+      <main className="bg-smoke-900 text-bone-100">
+        <section className="max-w-[1480px] mx-auto px-14 py-24 border-b border-smoke-700">
+          <span className="text-label uppercase tracking-[0.32em] text-taupe-300 font-medium">
+            № 02 · The Directory
+          </span>
+          <h1 className="font-display display-compressed text-[5rem] leading-[0.94] text-bone-100 mt-4">
+            The{" "}
+            <em className="font-editorial italic font-light text-champagne-400">
+              Salon.
+            </em>
+          </h1>
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] items-end gap-8 mt-10 pt-8 border-t border-taupe-500">
+            <p className="font-editorial italic font-light text-[24px] leading-snug text-bone-200 max-w-[680px]">
+              Fourteen practitioners, chosen one at a time. Each one travels.
+              Each one keeps their own calendar. Tap a name to read about them
+              and reserve an hour.
+            </p>
+            <p className="font-mono text-mono uppercase tracking-[0.3em] text-taupe-300 text-right">
+              Chicago only
+              <br />
+              Currently shown · 8 of 14
+            </p>
           </div>
+        </section>
 
-          {/* Results */}
-          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {loading ? (
-              Array.from({ length: 6 }).map((_, i) => (
-                <Card key={i} className="animate-pulse">
-                  <div className="h-12 w-12 rounded-full bg-gray-200" />
-                  <div className="mt-4 h-4 w-3/4 rounded bg-gray-200" />
-                  <div className="mt-2 h-4 w-1/2 rounded bg-gray-200" />
-                </Card>
-              ))
-            ) : providers.length === 0 ? (
-              <div className="col-span-full py-12 text-center text-gray-500">
-                No providers found. Try adjusting your search.
-              </div>
-            ) : (
-              providers.map((provider) => (
-                <Link key={provider.id} href={`/providers/${provider.slug}`}>
-                  <Card className="transition-shadow hover:shadow-md">
-                    <div className="flex items-start gap-4">
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-100 text-brand-600 font-bold">
-                        {provider.user.firstName[0]}{provider.user.lastName[0]}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-gray-900">
-                          {provider.businessName || `${provider.user.firstName} ${provider.user.lastName}`}
-                        </h3>
-                        <div className="mt-1 flex items-center gap-1">
-                          <span className="text-yellow-400">★</span>
-                          <span className="text-sm text-gray-700">{provider.averageRating.toFixed(1)}</span>
-                          <span className="text-sm text-gray-500">({provider.totalReviews})</span>
-                        </div>
-                        {provider.bio && (
-                          <p className="mt-2 line-clamp-2 text-sm text-gray-600">{provider.bio}</p>
-                        )}
-                        <div className="mt-3 flex flex-wrap gap-1">
-                          {provider.services.slice(0, 3).map((s) => (
-                            <span
-                              key={s.name}
-                              className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-700"
-                            >
-                              {s.name}
-                            </span>
-                          ))}
-                        </div>
-                        {provider.distance !== null && (
-                          <p className="mt-2 text-xs text-gray-500">
-                            {provider.distance.toFixed(1)} mi away
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </Card>
+        <section className="max-w-[1480px] mx-auto px-14 py-20">
+          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border-l border-t border-smoke-700">
+            {PRACTITIONERS.map((p) => (
+              <li
+                key={p.slug}
+                className="border-r border-b border-smoke-700 group bg-smoke-900"
+              >
+                <Link
+                  href={`/providers/${p.slug}`}
+                  className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-champagne-400"
+                >
+                  <div className="relative aspect-[4/5] overflow-hidden bg-smoke-950">
+                    <Image
+                      src={p.image}
+                      alt={`${p.firstName} ${p.surname}`}
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                      className="object-cover object-top transition-transform duration-[600ms] ease-fai-smooth group-hover:scale-[1.03]"
+                    />
+                  </div>
+                  <div className="p-8 flex flex-col gap-4">
+                    <span className="font-mono text-mono uppercase tracking-[0.3em] text-taupe-300">
+                      {p.numberLabel} · {p.neighbourhood}
+                    </span>
+                    <h3 className="font-display display-compressed text-[2.25rem] leading-[0.95] text-bone-100">
+                      {p.firstName}{" "}
+                      <em className="font-editorial italic font-light text-champagne-400">
+                        {p.surname}.
+                      </em>
+                    </h3>
+                    <p className="font-editorial italic text-body-lg text-bone-200">
+                      {p.specialty}
+                    </p>
+                    <span className="mt-4 pt-4 border-t border-smoke-700 text-label uppercase tracking-[0.32em] text-bone-100 group-hover:text-champagne-400 transition-colors duration-[250ms] ease-fai-smooth font-medium">
+                      Book →
+                    </span>
+                  </div>
                 </Link>
-              ))
-            )}
-          </div>
-        </div>
+              </li>
+            ))}
+          </ul>
+        </section>
       </main>
-
-      <Footer />
-    </div>
+      <SiteFooter />
+    </>
   );
 }

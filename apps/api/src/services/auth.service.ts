@@ -2,7 +2,7 @@ import { prisma } from "../config/database";
 import { hashPassword, comparePassword } from "../utils/password";
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from "../utils/jwt";
 import { AppError } from "../middleware/error-handler";
-import { RegisterInput, LoginInput } from "@arc/shared";
+import { RegisterInput, LoginInput } from "@faineant/shared";
 import crypto from "crypto";
 
 function generateSlug(firstName: string, lastName: string): string {
@@ -95,7 +95,14 @@ export async function refreshAccessToken(refreshToken: string) {
     throw new AppError(401, "UNAUTHORIZED", "Invalid or expired refresh token");
   }
 
-  const payload = verifyRefreshToken(refreshToken);
+  let payload: { userId: string; role: string };
+  try {
+    payload = verifyRefreshToken(refreshToken);
+  } catch {
+    await prisma.refreshToken.delete({ where: { id: stored.id } });
+    throw new AppError(401, "UNAUTHORIZED", "Invalid or expired refresh token");
+  }
+
   const accessToken = signAccessToken({ userId: payload.userId, role: payload.role });
 
   return { accessToken };

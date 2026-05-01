@@ -55,10 +55,12 @@ export function storeTokens(accessToken: string, refreshToken: string, user: Aut
   localStorage.setItem(TOKEN_KEY, accessToken);
   localStorage.setItem(REFRESH_KEY, refreshToken);
   localStorage.setItem(USER_KEY, JSON.stringify(user));
+  document.cookie = "arc_authenticated=1; path=/; max-age=604800; SameSite=Lax";
 }
 
 export function clearTokens() {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(REFRESH_KEY);
   localStorage.removeItem(USER_KEY);
+  document.cookie = "arc_authenticated=; path=/; max-age=0";
 }

@@ -1,74 +1,41 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
-import { api } from "@/lib/api-client";
-import { useAuth } from "@/lib/auth";
-
-interface ConversationItem {
-  id: string;
-  otherParticipant: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    avatarUrl: string | null;
-  };
-  lastMessage: { text: string; createdAt: string } | null;
-}
+import { MessageSquare } from "lucide-react";
 
 export default function ClientMessagesPage() {
-  const { accessToken } = useAuth();
-  const [conversations, setConversations] = useState<ConversationItem[]>([]);
-
-  useEffect(() => {
-    if (accessToken) loadConversations();
-  }, [accessToken]);
-
-  async function loadConversations() {
-    try {
-      const res = await api.get<{ data: ConversationItem[] }>("/messages/conversations", {
-        token: accessToken!,
-      });
-      setConversations(res.data);
-    } catch {
-      // Handle error
-    }
-  }
-
+  // TODO(impl): wire to /messages/conversations once messaging UX is rebranded.
+  // Until then, the editorial empty state is the page.
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-gray-900">Messages</h1>
+    <div className="p-12 px-14 flex flex-col gap-12">
+      <header className="flex justify-between items-end pb-5 border-b border-smoke-700">
+        <h2 className="font-display text-[2.625rem] leading-none text-bone-100">
+          Your{" "}
+          <em className="font-editorial italic font-light text-champagne-400">
+            messages.
+          </em>
+        </h2>
+        <p className="font-editorial italic text-body-lg text-bone-200 max-w-[340px] text-right leading-snug">
+          A quieter inbox, by design.
+        </p>
+      </header>
 
-      <div className="mt-6 space-y-3">
-        {conversations.length === 0 ? (
-          <p className="py-8 text-center text-gray-500">
-            No conversations yet. Start one by messaging a provider!
-          </p>
-        ) : (
-          conversations.map((conv) => (
-            <Card key={conv.id} padding="sm" className="cursor-pointer hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-600">
-                  {conv.otherParticipant.firstName[0]}{conv.otherParticipant.lastName[0]}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-gray-900">
-                    {conv.otherParticipant.firstName} {conv.otherParticipant.lastName}
-                  </h3>
-                  {conv.lastMessage && (
-                    <p className="truncate text-sm text-gray-500">{conv.lastMessage.text}</p>
-                  )}
-                </div>
-                {conv.lastMessage && (
-                  <span className="text-xs text-gray-400">
-                    {new Date(conv.lastMessage.createdAt).toLocaleDateString()}
-                  </span>
-                )}
-              </div>
-            </Card>
-          ))
-        )}
-      </div>
+      <section className="flex flex-col items-center text-center py-24 px-6 border border-smoke-700 bg-smoke-900">
+        <MessageSquare
+          className="h-16 w-16 text-smoke-700"
+          strokeWidth={1}
+          aria-hidden="true"
+        />
+        <h3 className="mt-8 font-display text-[1.75rem] leading-tight text-bone-100">
+          No messages{" "}
+          <em className="font-editorial italic font-light text-champagne-400">
+            yet.
+          </em>
+        </h3>
+        <p className="mt-4 font-editorial italic text-body-lg text-bone-200 max-w-[420px] leading-snug">
+          Most clients don&rsquo;t need them &mdash; practitioners arrive on
+          time.
+        </p>
+      </section>
     </div>
   );
 }

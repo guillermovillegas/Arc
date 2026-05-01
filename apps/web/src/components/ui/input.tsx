@@ -1,29 +1,22 @@
-import { InputHTMLAttributes, forwardRef } from "react";
+import * as React from "react";
+import { cn } from "@/lib/utils";
 
-interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
-  label?: string;
-  error?: string;
-}
-
-export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className = "", label, error, id, ...props }, ref) => {
-    return (
-      <div className="space-y-1.5">
-        {label && (
-          <label htmlFor={id} className="block text-body-sm font-medium text-neutral-700">
-            {label}
-          </label>
-        )}
-        <input
-          ref={ref}
-          id={id}
-          className={`block w-full rounded-xl border border-neutral-300 bg-white px-3.5 py-2.5 text-body-sm text-neutral-900 placeholder:text-neutral-400 transition-colors focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900 ${error ? "border-red-400 focus:border-red-500 focus:ring-red-500" : ""} ${className}`}
-          {...props}
-        />
-        {error && <p className="text-caption text-red-500">{error}</p>}
-      </div>
-    );
-  },
+const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
+  ({ className, type, ...props }, ref) => (
+    <input
+      type={type}
+      ref={ref}
+      className={cn(
+        "flex h-12 w-full rounded-none bg-transparent border-0 border-b border-smoke-700 px-0 py-2 font-sans text-body-lg text-bone-100 placeholder:text-taupe-300 ring-offset-background transition-colors duration-[250ms] ease-fai-smooth",
+        "focus-visible:outline-none focus-visible:border-champagne-400",
+        "disabled:cursor-not-allowed disabled:opacity-50",
+        "file:bg-transparent file:border-0 file:text-bone-100 file:text-body-sm file:font-medium",
+        className
+      )}
+      {...props}
+    />
+  )
 );
-
 Input.displayName = "Input";
+
+export { Input };

@@ -3,14 +3,61 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --background: #fafafa;
-    --foreground: #0a0a0a;
-    --muted: #f5f5f5;
-    --muted-foreground: #737373;
-    --border: #e5e5e5;
-    --ring: #0a0a0a;
-    --radius: 0.75rem;
+  /* Dark canonical (default body class is .dark) */
+  :root,
+  .dark {
+    --background: 30 11% 5%;            /* smoke-900 #0e0d0c */
+    --foreground: 39 32% 92%;           /* bone-100 #f3ede1 */
+    --card: 36 13% 7%;                  /* smoke-800 #15130f */
+    --card-foreground: 39 32% 92%;
+    --popover: 36 13% 7%;
+    --popover-foreground: 39 32% 92%;
+    --primary: 39 32% 92%;              /* bone-100 */
+    --primary-foreground: 30 11% 5%;    /* smoke-900 */
+    --secondary: 33 12% 11%;            /* smoke-700 #1f1c18 */
+    --secondary-foreground: 39 38% 85%; /* bone-200 #e8dfc9 */
+    --muted: 33 12% 11%;
+    --muted-foreground: 38 16% 47%;     /* taupe-300 #8a7e64 */
+    --accent: 38 33% 69%;               /* champagne-400 #c9b896 */
+    --accent-foreground: 30 11% 5%;
+    --destructive: 0 50% 28%;           /* oxblood-500 #6e2424 */
+    --destructive-foreground: 39 32% 92%;
+    --border: 33 12% 11%;
+    --input: 33 12% 11%;
+    --ring: 38 33% 69%;
+    --radius: 0.125rem;
+
+    --sidebar-background: 30 11% 4%;        /* smoke-950 */
+    --sidebar-foreground: 39 32% 92%;
+    --sidebar-primary: 38 33% 69%;
+    --sidebar-primary-foreground: 30 11% 5%;
+    --sidebar-accent: 33 12% 11%;
+    --sidebar-accent-foreground: 39 32% 92%;
+    --sidebar-border: 33 12% 11%;
+    --sidebar-ring: 38 33% 69%;
+  }
+
+  /* Light variant (transactional emails, opt-in user setting) */
+  .light {
+    --background: 39 32% 92%;            /* bone-100 */
+    --foreground: 30 11% 5%;             /* smoke-900 */
+    --card: 39 41% 95%;                  /* bone-50 */
+    --card-foreground: 30 11% 5%;
+    --popover: 39 41% 95%;
+    --popover-foreground: 30 11% 5%;
+    --primary: 30 11% 5%;
+    --primary-foreground: 39 32% 92%;
+    --secondary: 39 38% 85%;             /* bone-200 */
+    --secondary-foreground: 30 11% 5%;
+    --muted: 39 38% 85%;
+    --muted-foreground: 38 16% 38%;      /* taupe-400 */
+    --accent: 38 30% 60%;                /* champagne-500 */
+    --accent-foreground: 30 11% 5%;
+    --destructive: 0 50% 28%;
+    --destructive-foreground: 39 32% 92%;
+    --border: 39 38% 85%;
+    --input: 39 38% 85%;
+    --ring: 38 30% 60%;
   }
 
   html {
@@ -20,12 +67,12 @@
   }
 
   body {
-    @apply bg-white text-neutral-900 antialiased;
-    font-feature-settings: "ss01", "ss02", "cv01";
+    @apply bg-smoke-900 text-bone-100 font-sans antialiased;
+    font-feature-settings: "kern", "liga", "ss01";
   }
 
   ::selection {
-    @apply bg-neutral-900 text-white;
+    @apply bg-champagne-400 text-smoke-900;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -37,24 +84,34 @@
   }
 }
 
-@layer components {
-  .section-padding {
-    @apply px-5 sm:px-8 lg:px-12;
+@layer utilities {
+  /* Hairline rule in brand color */
+  .rule-hairline {
+    @apply border-t border-smoke-700;
   }
 
-  .section-width {
-    @apply mx-auto max-w-6xl;
+  .rule-hairline-warm {
+    @apply border-t border-taupe-500;
   }
 
-  .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-neutral-900 to-neutral-500;
+  /* Editorial caps label — used for section eyebrows */
+  .label-caps {
+    @apply text-label uppercase text-taupe-300;
   }
 
-  .glass {
-    @apply bg-white/80 backdrop-blur-xl border border-neutral-200/60;
+  /* Compressed display style — matches wordmark feel */
+  .display-compressed {
+    font-family: var(--font-display), "Bricolage Grotesque", sans-serif;
+    font-stretch: 90%;
+    font-weight: 700;
+    letter-spacing: -0.04em;
   }
 
-  .subtle-ring {
-    @apply ring-1 ring-neutral-950/5;
+  /* Subtle monogram watermark for manifesto sections */
+  .monogram-watermark {
+    background-image: url("/brand/faineant-monogram-white.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
   }
 }

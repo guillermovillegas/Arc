@@ -3,42 +3,73 @@ import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
+  Pressable,
   StyleSheet,
+  Image,
   KeyboardAvoidingView,
   Platform,
-  Alert,
+  ScrollView,
 } from "react-native";
-import { useRouter, Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { api } from "@/lib/api-client";
 import { storeTokens } from "@/lib/auth";
+import { colors, fonts, sizes, spacing } from "@/theme";
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+interface LoginResponse {
+  data: {
+    user: {
+      id: string;
+      email: string;
+      firstName: string;
+      lastName: string;
+      role: string;
+    };
+    accessToken: string;
+    refreshToken: string;
+  };
+}
 
 export default function LoginScreen() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
 
-  async function handleLogin() {
+  async function handleSignIn() {
+    setErr(null);
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail || !password) {
+      setErr("EMAIL AND PASSWORD ARE BOTH REQUIRED.");
+      return;
+    }
+    if (!EMAIL_REGEX.test(trimmedEmail)) {
+      setErr("THAT EMAIL DOESN'T LOOK RIGHT.");
+      return;
+    }
+
     setLoading(true);
     try {
-      const res = await api.post<{
-        data: {
-          user: { id: string; email: string; firstName: string; lastName: string; role: string };
-          accessToken: string;
-          refreshToken: string;
-        };
-      }>("/auth/login", { email, password });
+      const res = await api.post<LoginResponse>("/auth/login", {
+        email: trimmedEmail,
+        password,
+      });
 
-      await storeTokens(res.data.accessToken, res.data.refreshToken, res.data.user);
+      await storeTokens(
+        res.data.accessToken,
+        res.data.refreshToken,
+        res.data.user
+      );
 
       if (res.data.user.role === "PROVIDER") {
         router.replace("/(provider)/home");
       } else {
         router.replace("/(client)/home");
       }
-    } catch (err) {
-      Alert.alert("Error", err instanceof Error ? err.message : "Login failed");
+    } catch {
+      setErr("PASSWORD INCORRECT. NOTHING ELSE HAPPENED.");
     } finally {
       setLoading(false);
     }
@@ -46,61 +77,146 @@ export default function LoginScreen() {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={styles.container}
+      style={styles.root}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <View style={styles.inner}>
-        <Text style={styles.logo}>ARC</Text>
-        <Text style={styles.title}>Welcome back</Text>
-
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
+      >
+        <Image
+          source={require("../../../assets/brand/faineant-wordmark-white.png")}
+          style={styles.wordmark}
+          resizeMode="contain"
         />
-
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
-
-        <TouchableOpacity
-          style={[styles.button, loading && styles.buttonDisabled]}
-          onPress={handleLogin}
-          disabled={loading}
-        >
-          <Text style={styles.buttonText}>{loading ? "Signing in..." : "Sign In"}</Text>
-        </TouchableOpacity>
-
-        <Link href="/(auth)/register" style={styles.link}>
-          <Text style={styles.linkText}>
-            Don&apos;t have an account? <Text style={styles.linkBold}>Sign up</Text>
+        <View style={styles.form}>
+          <Text style={styles.label}>SIGN IN</Text>
+          <Text style={styles.headline}>
+            Open <Text style={styles.headlineEm}>the door.</Text>
           </Text>
-        </Link>
-      </View>
+          <Text style={styles.lede}>
+            One window away from your next reservation.
+          </Text>
+          {err && <Text style={styles.error}>{err}</Text>}
+          <View style={styles.field}>
+            <Text style={styles.fieldLabel}>EMAIL</Text>
+            <TextInput
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              style={styles.input}
+              placeholder="you@somewhere.com"
+              placeholderTextColor={colors.taupe[300]}
+            />
+          </View>
+          <View style={styles.field}>
+            <Text style={styles.fieldLabel}>PASSWORD</Text>
+            <TextInput
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              style={styles.input}
+              placeholder="••••••••"
+              placeholderTextColor={colors.taupe[300]}
+            />
+          </View>
+          <Pressable
+            onPress={handleSignIn}
+            disabled={loading}
+            style={[styles.btn, loading && styles.btnDisabled]}
+          >
+            <Text style={styles.btnText}>
+              {loading ? "WAIT…" : "SIGN IN →"}
+            </Text>
+          </Pressable>
+          <Link href="/(auth)/register" style={styles.bottomLink}>
+            <Text style={styles.linkText}>
+              NEW HERE? OPEN AN ACCOUNT →
+            </Text>
+          </Link>
+        </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  inner: { flex: 1, justifyContent: "center", padding: 24 },
-  logo: { fontSize: 36, fontWeight: "bold", color: "#006fc9", textAlign: "center" },
-  title: { fontSize: 20, fontWeight: "600", textAlign: "center", marginTop: 8, marginBottom: 32, color: "#111" },
-  input: {
-    borderWidth: 1, borderColor: "#ddd", borderRadius: 12, padding: 14, fontSize: 16,
-    marginBottom: 12, backgroundColor: "#fafafa",
+  root: { flex: 1, backgroundColor: colors.background },
+  scroll: { padding: spacing.xxl, paddingTop: 80, gap: spacing.xxl },
+  wordmark: { width: 180, height: 22, alignSelf: "flex-start" },
+  form: { gap: spacing.md, marginTop: 80 },
+  label: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: sizes.label,
+    color: colors.taupe[300],
+    letterSpacing: 3.5,
+    textTransform: "uppercase",
   },
-  button: { backgroundColor: "#006fc9", borderRadius: 12, padding: 16, alignItems: "center", marginTop: 8 },
-  buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
-  link: { marginTop: 24, alignItems: "center" },
-  linkText: { color: "#666", fontSize: 14 },
-  linkBold: { color: "#006fc9", fontWeight: "600" },
+  headline: {
+    fontFamily: fonts.displayBlack,
+    fontSize: 48,
+    color: colors.primaryFg,
+    letterSpacing: -1.4,
+    lineHeight: 48,
+  },
+  headlineEm: {
+    fontFamily: fonts.editorialLight,
+    color: colors.accent,
+    fontStyle: "italic",
+  },
+  lede: {
+    fontFamily: fonts.editorial,
+    fontSize: sizes.bodyLg,
+    color: colors.bone[200],
+    fontStyle: "italic",
+    lineHeight: 22,
+    marginBottom: spacing.lg,
+  },
+  error: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: sizes.label,
+    color: colors.bone[100],
+    backgroundColor: colors.oxblood[500],
+    padding: spacing.md,
+    letterSpacing: 2.6,
+    textTransform: "uppercase",
+  },
+  field: { gap: spacing.sm },
+  fieldLabel: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: sizes.label,
+    color: colors.taupe[300],
+    letterSpacing: 3.5,
+    textTransform: "uppercase",
+  },
+  input: {
+    fontFamily: fonts.body,
+    fontSize: sizes.bodyLg,
+    color: colors.primaryFg,
+    paddingVertical: spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.smoke[700],
+  },
+  btn: {
+    backgroundColor: colors.primaryFg,
+    paddingVertical: spacing.md,
+    alignItems: "center",
+    marginTop: spacing.md,
+  },
+  btnDisabled: { opacity: 0.5 },
+  btnText: {
+    fontFamily: fonts.bodyMedium,
+    color: colors.background,
+    letterSpacing: 3.3,
+    fontSize: sizes.label,
+    textTransform: "uppercase",
+  },
+  bottomLink: { marginTop: spacing.xl, alignSelf: "center" },
+  linkText: {
+    fontFamily: fonts.mono,
+    fontSize: sizes.mono,
+    color: colors.taupe[300],
+    letterSpacing: 0.5,
+  },
 });

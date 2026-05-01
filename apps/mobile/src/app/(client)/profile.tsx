@@ -1,11 +1,14 @@
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { useState, useEffect } from "react";
+import { View, Text, ScrollView, Pressable, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { clearTokens, getStoredTokens } from "@/lib/auth";
-import { useState, useEffect } from "react";
+import { colors, fonts, sizes, spacing } from "@/theme";
 
 export default function ClientProfileScreen() {
   const router = useRouter();
-  const [user, setUser] = useState<{ firstName: string; lastName: string; email: string } | null>(null);
+  const [user, setUser] = useState<{ firstName: string; lastName: string; email: string } | null>(
+    null,
+  );
 
   useEffect(() => {
     getStoredTokens().then(({ user: u }) => setUser(u));
@@ -17,34 +20,95 @@ export default function ClientProfileScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.avatar}>
-        <Text style={styles.avatarText}>
-          {user ? `${user.firstName[0]}${user.lastName[0]}` : "?"}
+    <ScrollView
+      style={{ flex: 1, backgroundColor: colors.background }}
+      contentContainerStyle={{ padding: spacing.lg, gap: spacing.xl, paddingBottom: spacing.xxxl }}
+    >
+      <View style={{ paddingTop: 64 }}>
+        <Text style={styles.eyebrow}>ACCOUNT</Text>
+        <Text style={styles.headline}>
+          You and <Text style={styles.headlineEm}>your address.</Text>
         </Text>
       </View>
-      <Text style={styles.name}>{user ? `${user.firstName} ${user.lastName}` : ""}</Text>
-      <Text style={styles.email}>{user?.email}</Text>
 
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.logoutText}>Sign Out</Text>
-      </TouchableOpacity>
+      <View style={{ gap: spacing.lg }}>
+        <Field
+          label="Name"
+          value={user ? `${user.firstName} ${user.lastName}` : "—"}
+        />
+        <Field label="Email" value={user?.email ?? "—"} />
+        <Field label="Address" value="On file" />
+        <Field label="Card on file" value="•••• 4242" />
+      </View>
+
+      <Pressable style={styles.signOut} onPress={handleLogout}>
+        <Text style={styles.signOutText}>Sign out</Text>
+      </Pressable>
+    </ScrollView>
+  );
+}
+
+function Field({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={styles.field}>
+      <Text style={styles.fieldLabel}>{label}</Text>
+      <Text style={styles.fieldValue}>{value}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", alignItems: "center", paddingTop: 60 },
-  avatar: {
-    width: 80, height: 80, borderRadius: 40, backgroundColor: "#e0effe",
-    justifyContent: "center", alignItems: "center",
+  eyebrow: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: sizes.label,
+    color: colors.taupe[300],
+    letterSpacing: 3.5,
+    textTransform: "uppercase",
+    marginBottom: spacing.md,
   },
-  avatarText: { fontSize: 28, fontWeight: "bold", color: "#006fc9" },
-  name: { fontSize: 20, fontWeight: "600", marginTop: 16, color: "#111" },
-  email: { fontSize: 14, color: "#666", marginTop: 4 },
-  logoutButton: {
-    marginTop: 40, borderWidth: 1, borderColor: "#ddd", borderRadius: 12,
-    paddingHorizontal: 32, paddingVertical: 12,
+  headline: {
+    fontFamily: fonts.displayBlack,
+    fontSize: 40,
+    color: colors.primaryFg,
+    letterSpacing: -1.2,
+    lineHeight: 40,
   },
-  logoutText: { color: "#666", fontSize: 16 },
+  headlineEm: {
+    fontFamily: fonts.editorialLight,
+    color: colors.accent,
+    fontStyle: "italic",
+  },
+  field: {
+    paddingBottom: spacing.md,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.border,
+    gap: spacing.xs,
+  },
+  fieldLabel: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: sizes.label,
+    color: colors.taupe[300],
+    letterSpacing: 2.4,
+    textTransform: "uppercase",
+  },
+  fieldValue: {
+    fontFamily: fonts.displayMedium,
+    fontSize: sizes.bodyLg,
+    color: colors.primaryFg,
+  },
+  signOut: {
+    alignSelf: "flex-start",
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    marginTop: spacing.md,
+  },
+  signOutText: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: sizes.label,
+    color: colors.secondaryFg,
+    letterSpacing: 2.4,
+    textTransform: "uppercase",
+  },
 });

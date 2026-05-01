@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from "express";
 import { authenticate } from "../middleware/auth";
 import { requireRole } from "../middleware/role";
 import { validate } from "../middleware/validate";
-import { updateProviderProfileSchema, createPortfolioItemSchema } from "@arc/shared";
+import { updateProviderProfileSchema, createPortfolioItemSchema } from "@faineant/shared";
 import * as userService from "../services/user.service";
 import { prisma } from "../config/database";
 

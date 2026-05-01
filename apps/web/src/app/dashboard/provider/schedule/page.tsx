@@ -1,12 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { api } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth";
+import { Loader2 } from "lucide-react";
 
-const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const DAYS = [
+  { short: "Sun", full: "Sunday" },
+  { short: "Mon", full: "Monday" },
+  { short: "Tue", full: "Tuesday" },
+  { short: "Wed", full: "Wednesday" },
+  { short: "Thu", full: "Thursday" },
+  { short: "Fri", full: "Friday" },
+  { short: "Sat", full: "Saturday" },
+];
 
 interface Slot {
   dayOfWeek: number;
@@ -17,10 +26,15 @@ interface Slot {
 export default function ProviderSchedulePage() {
   const { accessToken } = useAuth();
   const [slots, setSlots] = useState<Slot[]>([]);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    new Date(),
+  );
 
   useEffect(() => {
-    // Default schedule: Mon-Sat 9-6
     setSlots(
       [1, 2, 3, 4, 5, 6].map((day) => ({
         dayOfWeek: day,
@@ -28,6 +42,7 @@ export default function ProviderSchedulePage() {
         endTime: "18:00",
       })),
     );
+    setLoading(false);
   }, []);
 
   function toggleDay(day: number) {
@@ -35,75 +50,201 @@ export default function ProviderSchedulePage() {
     if (exists) {
       setSlots(slots.filter((s) => s.dayOfWeek !== day));
     } else {
-      setSlots([...slots, { dayOfWeek: day, startTime: "09:00", endTime: "18:00" }]);
+      setSlots([
+        ...slots,
+        { dayOfWeek: day, startTime: "09:00", endTime: "18:00" },
+      ]);
     }
   }
 
-  function updateSlot(day: number, field: "startTime" | "endTime", value: string) {
-    setSlots(slots.map((s) => (s.dayOfWeek === day ? { ...s, [field]: value } : s)));
+  function updateSlot(
+    day: number,
+    field: "startTime" | "endTime",
+    value: string,
+  ) {
+    setSlots(
+      slots.map((s) => (s.dayOfWeek === day ? { ...s, [field]: value } : s)),
+    );
   }
 
   async function handleSave() {
     setSaving(true);
+    setError(null);
+    setSaved(false);
     try {
       await api.put("/availability", { slots }, { token: accessToken! });
+      setSaved(true);
     } catch {
-      // Handle error
+      setError("Failed to save changes. Please try again.");
     } finally {
       setSaving(false);
     }
   }
 
+  const activeDays = new Set(slots.map((s) => s.dayOfWeek));
+
+  function dayHasAvailability(date: Date) {
+    return activeDays.has(date.getDay());
+  }
+
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-gray-900">Schedule</h1>
-      <p className="mt-1 text-gray-600">Set your weekly availability</p>
+    <div className="p-12 px-14 flex flex-col gap-12">
+      <header className="flex justify-between items-end pb-5 border-b border-smoke-700">
+        <h2 className="font-display display-compressed text-[2.625rem] leading-none text-bone-100">
+          Your{" "}
+          <em className="font-editorial italic font-light text-champagne-400">
+            hours.
+          </em>
+        </h2>
+        <p className="font-editorial italic text-body-lg text-bone-200 max-w-[340px] text-right leading-snug">
+          Block windows when you can&rsquo;t see anyone. Default to closed.
+        </p>
+      </header>
 
-      <Card className="mt-6">
-        <div className="space-y-3">
-          {DAYS.map((day, i) => {
-            const slot = slots.find((s) => s.dayOfWeek === i);
-            return (
-              <div key={day} className="flex items-center gap-4">
-                <label className="flex w-28 items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={!!slot}
-                    onChange={() => toggleDay(i)}
-                    className="rounded border-gray-300"
-                  />
-                  <span className="text-sm font-medium text-gray-900">{day}</span>
-                </label>
-                {slot ? (
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="time"
-                      value={slot.startTime}
-                      onChange={(e) => updateSlot(i, "startTime", e.target.value)}
-                      className="rounded-lg border border-gray-300 px-2 py-1 text-sm"
-                    />
-                    <span className="text-gray-500">to</span>
-                    <input
-                      type="time"
-                      value={slot.endTime}
-                      onChange={(e) => updateSlot(i, "endTime", e.target.value)}
-                      className="rounded-lg border border-gray-300 px-2 py-1 text-sm"
-                    />
+      {error && (
+        <div className="border border-smoke-700 bg-smoke-800 px-4 py-3 text-label uppercase tracking-[0.18em] text-bone-200">
+          {error}
+        </div>
+      )}
+      {saved && (
+        <div className="border border-smoke-700 bg-smoke-800 px-4 py-3 text-label uppercase tracking-[0.18em] text-champagne-400">
+          Schedule saved.
+        </div>
+      )}
+
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-taupe-300" />
+        </div>
+      ) : (
+        <div className="grid gap-9 lg:grid-cols-[1fr_320px]">
+          <section>
+            <h4 className="text-label uppercase tracking-[0.32em] text-taupe-300 mb-5 flex justify-between items-center font-medium">
+              Weekly hours
+              <span className="font-mono text-champagne-400">
+                {slots.length.toString().padStart(2, "0")} / 07 OPEN
+              </span>
+            </h4>
+
+            <div>
+              {DAYS.map((day, i) => {
+                const slot = slots.find((s) => s.dayOfWeek === i);
+                const isActive = !!slot;
+                return (
+                  <div
+                    key={day.short}
+                    className={`border border-smoke-700 px-6 py-4 grid grid-cols-[100px_1fr] gap-6 items-center mb-px ${
+                      isActive ? "bg-smoke-900" : "bg-smoke-800"
+                    }`}
+                  >
+                    <button
+                      onClick={() => toggleDay(i)}
+                      className={`px-3 py-2 text-label uppercase tracking-[0.28em] font-medium text-[10px] border ${
+                        isActive
+                          ? "border-champagne-400 text-champagne-400"
+                          : "border-smoke-700 text-taupe-300 hover:text-bone-200"
+                      }`}
+                    >
+                      {day.short}
+                    </button>
+
+                    {isActive && slot ? (
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="time"
+                          value={slot.startTime}
+                          onChange={(e) =>
+                            updateSlot(i, "startTime", e.target.value)
+                          }
+                          className="bg-smoke-900 border border-smoke-700 px-3 py-2 font-mono text-mono text-bone-100 focus-visible:outline-none focus-visible:border-champagne-400"
+                        />
+                        <span className="font-mono text-mono text-taupe-300">
+                          —
+                        </span>
+                        <input
+                          type="time"
+                          value={slot.endTime}
+                          onChange={(e) =>
+                            updateSlot(i, "endTime", e.target.value)
+                          }
+                          className="bg-smoke-900 border border-smoke-700 px-3 py-2 font-mono text-mono text-bone-100 focus-visible:outline-none focus-visible:border-champagne-400"
+                        />
+                      </div>
+                    ) : (
+                      <span className="font-editorial italic text-body-md text-taupe-300">
+                        Closed.
+                      </span>
+                    )}
                   </div>
-                ) : (
-                  <span className="text-sm text-gray-400">Unavailable</span>
-                )}
-              </div>
-            );
-          })}
-        </div>
+                );
+              })}
+            </div>
 
-        <div className="mt-6">
-          <Button onClick={handleSave} disabled={saving}>
-            {saving ? "Saving..." : "Save Schedule"}
-          </Button>
+            <div className="flex justify-end pt-5 mt-5 border-t border-smoke-700">
+              <Button
+                variant="primary"
+                onClick={handleSave}
+                disabled={loading || saving}
+              >
+                {saving ? "Saving…" : "Save schedule"}
+              </Button>
+            </div>
+          </section>
+
+          <aside>
+            <h4 className="text-label uppercase tracking-[0.32em] text-taupe-300 mb-5 font-medium">
+              Preview
+            </h4>
+            <div className="bg-smoke-900 border border-smoke-700 p-4">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={setSelectedDate}
+                modifiers={{
+                  available: dayHasAvailability,
+                  unavailable: (date: Date) => !dayHasAvailability(date),
+                }}
+                modifiersClassNames={{
+                  available: "font-medium",
+                  unavailable: "opacity-30",
+                }}
+                disabled={{ before: new Date() }}
+                className="mx-auto"
+              />
+              {selectedDate && (
+                <div className="mt-4 pt-4 border-t border-smoke-700">
+                  <p className="text-label uppercase tracking-[0.28em] text-taupe-300 font-medium text-[10px]">
+                    {selectedDate.toLocaleDateString("en-US", {
+                      weekday: "long",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </p>
+                  {dayHasAvailability(selectedDate) ? (
+                    <p className="mt-2 font-mono text-mono text-champagne-400">
+                      {
+                        slots.find(
+                          (s) => s.dayOfWeek === selectedDate.getDay(),
+                        )?.startTime
+                      }{" "}
+                      —{" "}
+                      {
+                        slots.find(
+                          (s) => s.dayOfWeek === selectedDate.getDay(),
+                        )?.endTime
+                      }
+                    </p>
+                  ) : (
+                    <p className="mt-2 font-editorial italic text-body-md text-taupe-300">
+                      Closed.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          </aside>
         </div>
-      </Card>
+      )}
     </div>
   );
 }

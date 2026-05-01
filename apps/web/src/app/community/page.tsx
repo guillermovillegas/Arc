@@ -1,110 +1,88 @@
-"use client";
+import { Topbar } from "@/components/layout/topbar";
+import { SiteHeader } from "@/components/layout/site-header";
+import { SiteFooter } from "@/components/layout/site-footer";
 
-import { useState, useEffect } from "react";
-import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { api } from "@/lib/api-client";
-
-interface PostItem {
-  id: string;
-  title: string;
-  body: string;
-  category: string;
-  likesCount: number;
-  commentsCount: number;
-  createdAt: string;
-  author: {
-    firstName: string;
-    lastName: string;
-    role: string;
-  };
-}
-
-const CATEGORY_LABELS: Record<string, string> = {
-  GENERAL: "General",
-  FOR_SALE: "For Sale",
-  TIPS: "Tips & Tricks",
-  COLLABORATION: "Collaboration",
-  RECOMMENDATION: "Recommendations",
+export const metadata = {
+  title: "Community — FAINEANT",
+  description: "What our clients say. Three voices, in their own words.",
 };
 
+const QUOTES = [
+  {
+    number: "№ 01",
+    quote:
+      "I had been telling myself I would book a haircut for nine weeks. Maeve walked into my apartment at three on a Sunday and I have not stood in front of a salon mirror since. I am older and lazier and my hair has never looked better.",
+    attribution: "Sasha N.",
+    detail: "West Loop · Client since March",
+  },
+  {
+    number: "№ 02",
+    quote:
+      "The whole thing is so quiet. No music, no front desk, no small talk you don't want. She set up by my window, did my nails, packed up, and left. I paid through the app. It was the calmest two hours of my month.",
+    attribution: "Eleanor R.",
+    detail: "Lincoln Park · Client since August",
+  },
+  {
+    number: "№ 03",
+    quote:
+      "I was sceptical. House calls always sounded like a corner cut somewhere. They are not. The practitioner who came was better than anyone I have sat in a chair for, and she was at my kitchen table. I have rebooked twice.",
+    attribution: "Theo M.",
+    detail: "Fulton Market · Client since November",
+  },
+];
+
 export default function CommunityPage() {
-  const [posts, setPosts] = useState<PostItem[]>([]);
-  const [category, setCategory] = useState("");
-
-  useEffect(() => {
-    loadPosts();
-  }, [category]);
-
-  async function loadPosts() {
-    try {
-      const params = category ? `?category=${category}` : "";
-      const res = await api.get<{ data: { items: PostItem[] } }>(`/posts${params}`);
-      setPosts(res.data.items);
-    } catch {
-      // Handle error
-    }
-  }
-
   return (
-    <div className="flex min-h-screen flex-col">
-      <Header />
-
-      <main className="flex-1 px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl">
-          <h1 className="text-3xl font-bold text-gray-900">Community</h1>
-          <p className="mt-2 text-gray-600">
-            Connect with providers and clients. Share tips, sell gear, find collaborators.
+    <>
+      <Topbar />
+      <SiteHeader />
+      <main className="bg-smoke-900 text-bone-100">
+        <section className="max-w-[1480px] mx-auto px-14 py-24 border-b border-smoke-700">
+          <span className="text-label uppercase tracking-[0.32em] text-taupe-300 font-medium">
+            № 04 · The Room
+          </span>
+          <h1 className="font-display display-compressed text-[5rem] leading-[0.94] text-bone-100 mt-4">
+            What our{" "}
+            <em className="font-editorial italic font-light text-champagne-400">
+              clients say.
+            </em>
+          </h1>
+          <p className="font-mono text-mono uppercase tracking-[0.3em] text-taupe-300 mt-8">
+            Three voices · No edits · No incentives
           </p>
+        </section>
 
-          <div className="mt-6 flex gap-2 flex-wrap">
-            <Button variant={!category ? "primary" : "outline"} size="sm" onClick={() => setCategory("")}>
-              All
-            </Button>
-            {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
-              <Button
-                key={key}
-                variant={category === key ? "primary" : "outline"}
-                size="sm"
-                onClick={() => setCategory(key)}
-              >
-                {label}
-              </Button>
-            ))}
-          </div>
-
-          <div className="mt-6 space-y-4">
-            {posts.length === 0 ? (
-              <p className="py-8 text-center text-gray-500">No posts yet. Be the first!</p>
-            ) : (
-              posts.map((post) => (
-                <Card key={post.id}>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <span className="text-xs font-medium text-brand-600">
-                        {CATEGORY_LABELS[post.category] || post.category}
-                      </span>
-                      <h3 className="mt-1 font-semibold text-gray-900">{post.title}</h3>
-                      <p className="mt-1 text-sm text-gray-600 line-clamp-3">{post.body}</p>
-                      <div className="mt-3 flex items-center gap-4 text-xs text-gray-500">
-                        <span>
-                          {post.author.firstName} {post.author.lastName}
-                        </span>
-                        <span>{new Date(post.createdAt).toLocaleDateString()}</span>
-                        <span>{post.commentsCount} comments</span>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              ))
-            )}
-          </div>
-        </div>
+        {QUOTES.map((q, idx) => (
+          <section
+            key={q.attribution}
+            className={`max-w-[1480px] mx-auto px-14 py-32 ${
+              idx < QUOTES.length - 1 ? "border-b border-smoke-700" : ""
+            }`}
+          >
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+              <div className="lg:col-span-3">
+                <span className="font-mono text-mono uppercase tracking-[0.3em] text-taupe-300">
+                  {q.number}
+                </span>
+              </div>
+              <div className="lg:col-span-9">
+                <blockquote className="font-editorial italic font-light text-[2.5rem] leading-[1.15] text-bone-100 max-w-[920px]">
+                  &ldquo;{q.quote}&rdquo;
+                </blockquote>
+                <footer className="mt-12 pt-6 border-t border-taupe-500 max-w-[920px] flex items-baseline justify-between gap-6 flex-wrap">
+                  <cite className="not-italic font-display text-[1.5rem] leading-none text-bone-100">
+                    {q.attribution}
+                  </cite>
+                  <span className="font-mono text-mono uppercase tracking-[0.3em] text-taupe-300">
+                    {q.detail}
+                  </span>
+                </footer>
+              </div>
+            </div>
+          </section>
+        ))}
       </main>
-
-      <Footer />
-    </div>
+      <SiteFooter />
+    </>
   );
 }

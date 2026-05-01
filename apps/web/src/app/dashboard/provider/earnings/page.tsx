@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth";
+import { Loader2 } from "lucide-react";
 
 interface EarningsData {
   totalEarnings: number;
@@ -12,76 +12,163 @@ interface EarningsData {
     id: string;
     providerPayoutInCents: number;
     createdAt: string;
-    booking: { startTime: string; service: { name: string } };
+    booking: { startTime: string; service: { name: string } | null } | null;
   }[];
 }
 
 export default function ProviderEarningsPage() {
   const { accessToken } = useAuth();
   const [earnings, setEarnings] = useState<EarningsData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [connectingStripe, setConnectingStripe] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (accessToken) loadEarnings();
   }, [accessToken]);
 
   async function loadEarnings() {
+    setError(null);
+    setLoading(true);
     try {
-      const res = await api.get<{ data: EarningsData }>("/payments/earnings", { token: accessToken! });
+      const res = await api.get<{ data: EarningsData }>(
+        "/payments/earnings",
+        { token: accessToken! },
+      );
       setEarnings(res.data);
     } catch {
-      // Handle error
+      // Network error on initial load — degrade to empty state
+    } finally {
+      setLoading(false);
     }
   }
 
   async function setupStripe() {
+    setError(null);
+    setConnectingStripe(true);
     try {
-      const res = await api.post<{ data: { url: string } }>("/payments/connect", {}, { token: accessToken! });
+      const res = await api.post<{ data: { url: string } }>(
+        "/payments/connect",
+        {},
+        { token: accessToken! },
+      );
       window.location.href = res.data.url;
     } catch {
-      // Handle error
+      setError("Failed to connect to Stripe. Please try again.");
+    } finally {
+      setConnectingStripe(false);
     }
   }
 
+  const total = earnings ? (earnings.totalEarnings / 100).toFixed(2) : "0.00";
+
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-gray-900">Earnings</h1>
+    <div className="p-12 px-14 flex flex-col gap-12">
+      <header className="flex justify-between items-end pb-5 border-b border-smoke-700">
+        <h2 className="font-display display-compressed text-[2.625rem] leading-none text-bone-100">
+          What you{" "}
+          <em className="font-editorial italic font-light text-champagne-400">
+            earned.
+          </em>
+        </h2>
+        <p className="font-editorial italic text-body-lg text-bone-200 max-w-[340px] text-right leading-snug">
+          Faineant takes 5%. Stripe takes the usual fees. The rest is yours.
+        </p>
+      </header>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
-        <Card>
-          <p className="text-sm text-gray-500">Total Earnings</p>
-          <p className="mt-1 text-3xl font-bold text-gray-900">
-            ${earnings ? (earnings.totalEarnings / 100).toFixed(2) : "0.00"}
-          </p>
-        </Card>
-        <Card>
-          <p className="text-sm text-gray-500">Stripe Payments</p>
-          <Button variant="outline" size="sm" className="mt-2" onClick={setupStripe}>
-            Manage Stripe Account
-          </Button>
-        </Card>
-      </div>
+      {error && (
+        <div className="border border-smoke-700 bg-smoke-800 px-4 py-3 text-label uppercase tracking-[0.18em] text-bone-200">
+          {error}
+        </div>
+      )}
 
-      <h2 className="mt-8 text-lg font-semibold text-gray-900">Payment History</h2>
-      <div className="mt-4 space-y-3">
-        {earnings?.payments.length === 0 && (
-          <p className="py-4 text-gray-500">No payments yet</p>
-        )}
-        {earnings?.payments.map((payment) => (
-          <Card key={payment.id} padding="sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-gray-900">{payment.booking.service.name}</p>
-                <p className="text-sm text-gray-500">
-                  {new Date(payment.booking.startTime).toLocaleDateString()}
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-taupe-300" />
+        </div>
+      ) : (
+        <>
+          <section className="grid gap-px sm:grid-cols-2 bg-smoke-700">
+            <div className="bg-smoke-900 p-9 flex flex-col gap-3">
+              <p className="text-label uppercase tracking-[0.32em] text-taupe-300 font-medium">
+                Total, to date
+              </p>
+              <p className="font-display display-compressed text-[3rem] leading-none text-bone-100">
+                ${total}
+              </p>
+              <p className="font-editorial italic text-body-md text-bone-200">
+                After Faineant. Before tax.
+              </p>
+            </div>
+            <div className="bg-smoke-900 p-9 flex flex-col gap-3">
+              <p className="text-label uppercase tracking-[0.32em] text-taupe-300 font-medium">
+                Payouts
+              </p>
+              <p className="font-editorial italic text-body-md text-bone-200">
+                Stripe handles the transfers. Manage your account there.
+              </p>
+              <div className="pt-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={setupStripe}
+                  disabled={connectingStripe}
+                >
+                  {connectingStripe ? "Opening…" : "Manage Stripe"}
+                </Button>
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <h4 className="text-label uppercase tracking-[0.32em] text-taupe-300 mb-5 flex justify-between items-center font-medium">
+              Ledger
+              <span className="font-mono text-champagne-400">
+                {(earnings?.payments.length ?? 0).toString().padStart(2, "0")} /
+                ENTRIES
+              </span>
+            </h4>
+
+            {!earnings?.payments.length ? (
+              <div className="bg-smoke-900 border border-smoke-700 p-9 text-center">
+                <p className="font-editorial italic text-body-lg text-bone-200">
+                  Nothing here yet. Completed visits will leave a mark.
                 </p>
               </div>
-              <span className="font-semibold text-green-600">
-                +${(payment.providerPayoutInCents / 100).toFixed(2)}
-              </span>
-            </div>
-          </Card>
-        ))}
-      </div>
+            ) : (
+              <div>
+                {earnings.payments.map((payment) => (
+                  <div
+                    key={payment.id}
+                    className="bg-smoke-900 border border-smoke-700 p-5 px-6 grid grid-cols-[1fr_auto_auto] gap-6 items-center mb-px"
+                  >
+                    <div className="font-display font-medium text-[15px] text-bone-100 tracking-[-0.01em]">
+                      {payment.booking?.service?.name ?? "Unknown service"}
+                      <small className="block font-editorial italic font-normal text-[13px] text-bone-200 mt-0.5">
+                        {payment.booking?.startTime
+                          ? new Date(
+                              payment.booking.startTime,
+                            ).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })
+                          : "—"}
+                      </small>
+                    </div>
+                    <div className="text-label uppercase tracking-[0.18em] text-taupe-300 font-medium text-[11px]">
+                      Payout
+                    </div>
+                    <div className="font-mono text-mono text-champagne-400 text-[13px] text-right">
+                      +${(payment.providerPayoutInCents / 100).toFixed(2)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        </>
+      )}
     </div>
   );
 }

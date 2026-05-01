@@ -1,6 +1,6 @@
 import { prisma } from "../config/database";
 import { boundingBox, distanceMiles } from "../utils/geo";
-import { ServiceCategory } from "@arc/shared";
+import { ServiceCategory } from "@faineant/shared";
 
 interface SearchParams {
   latitude?: number;

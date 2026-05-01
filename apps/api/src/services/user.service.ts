@@ -1,6 +1,6 @@
 import { prisma } from "../config/database";
 import { AppError } from "../middleware/error-handler";
-import { UpdateUserProfileInput, UpdateProviderProfileInput } from "@arc/shared";
+import { UpdateUserProfileInput, UpdateProviderProfileInput } from "@faineant/shared";
 
 export async function getUserById(userId: string) {
   const user = await prisma.user.findUnique({
