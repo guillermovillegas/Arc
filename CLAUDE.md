@@ -27,6 +27,29 @@ In-home beauty services in Chicago. A directory of practitioners — barbers, ha
 - Button font sizes use `text-[0.875rem]` arbitrary values (not `text-body-sm`) to prevent tailwind-merge from stripping color classes like `text-white`.
 - Components at `src/components/ui/`. Layout at `src/components/layout/`.
 
+### Design System
+
+Editorial, dark-first brand. Tokens live in `packages/shared/src/theme/` (palette, type, motion) and are mirrored in `apps/web/tailwind.config.ts`. Update both when adding tokens.
+
+**Palette** (use brand scales, not Tailwind defaults like `gray-*`/`zinc-*`):
+- `smoke-{950,900,800,700,600}` — backgrounds (body is `bg-smoke-900`)
+- `taupe-{500,400,300}` — borders, muted text (`taupe-300` ≈ muted-foreground)
+- `champagne-{500,400,300}` — accent / hover / focus ring
+- `bone-{200,100,50}` — primary foreground (body text is `text-bone-100`)
+- `oxblood-500` — destructive only, used sparingly
+
+**Theme mode:** Dark is canonical — `:root` and `.dark` share the same CSS vars. `.light` is opt-in (transactional emails, user setting). Don't add a third theme.
+
+**Typography** — 4 families via CSS vars: `font-display` (Bricolage Grotesque), `font-sans` (Inter, default body), `font-editorial` (Cormorant Garamond, serif), `font-mono` (Geist Mono). Custom scale: `text-display-{xl,lg}`, `text-editorial-{xl,lg}`, `text-heading`, `text-subheading`, `text-body-{lg,sm}`, `text-caption`, `text-label` (0.6875rem, tracked 0.32em uppercase — used for eyebrows). Prefer scale tokens over arbitrary sizes, except on Button (see gotcha above).
+
+**Radius:** Sharp by design. `rounded-sm` and default are both `0.125rem`. Avoid `rounded-lg`/`rounded-full` outside avatars/pills.
+
+**Motion:** `ease-fai-smooth` (`cubic-bezier(0.16, 1, 0.3, 1)`) is the house easing; durations `duration-{fast:250,normal:400,slow:600}`. Named animations: `animate-fade-in`, `animate-fade-up`, `animate-sheet-in-{right,left,bottom,top}`, `animate-overlay-in`.
+
+**Button variants:** `primary` (bone on smoke, default CTA), `ghost` (transparent + taupe border), `accent` (champagne fill), `outline` (hairline), `destructive` (oxblood, rare), `link`. All have uppercase 0.3em-tracked labels.
+
+**Utility classes** (defined in `globals.css`, only ones allowed): `.rule-hairline`, `.rule-hairline-warm`, `.label-caps`, `.display-compressed`, `.monogram-watermark`. Don't add new ones — extend Tailwind theme instead.
+
 ### API (Express)
 - All routes validated with Zod via `validate()` middleware.
 - Auth via JWT Bearer tokens. `authenticate` middleware → `requireRole()` middleware.

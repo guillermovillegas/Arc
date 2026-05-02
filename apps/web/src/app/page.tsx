@@ -6,6 +6,7 @@ import { HowItWorksSection } from "./_components/how-it-works-section";
 import { IdleCollectionSection } from "./_components/idle-collection-section";
 import { ManifestoSection } from "./_components/manifesto-section";
 import { PractitionerSpotlightSection } from "./_components/practitioner-spotlight-section";
+import { WaitlistSection } from "./_components/waitlist-section";
 
 export default function HomePage() {
   return (
@@ -18,6 +19,7 @@ export default function HomePage() {
         <IdleCollectionSection />
         <ManifestoSection />
         <PractitionerSpotlightSection />
+        <WaitlistSection />
       </main>
       <SiteFooter />
     </>

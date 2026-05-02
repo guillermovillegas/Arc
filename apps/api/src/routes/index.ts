@@ -11,6 +11,7 @@ import reviewRoutes from "./review.routes";
 import postRoutes from "./post.routes";
 import adminRoutes from "./admin.routes";
 import calendarRoutes from "./calendar.routes";
+import waitlistRoutes from "./waitlist.routes";
 
 const router = Router();
 
@@ -26,5 +27,6 @@ router.use("/reviews", reviewRoutes);
 router.use("/posts", postRoutes);
 router.use("/admin", adminRoutes);
 router.use("/calendar", calendarRoutes);
+router.use("/waitlist", waitlistRoutes);
 
 export default router;

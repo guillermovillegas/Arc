@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { View, Text, Image, ActivityIndicator, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { getStoredTokens } from "@/lib/auth";
-import { colors, fonts } from "@/lib/theme";
+import { colors, fonts } from "@/theme";
 
 export default function SplashScreen() {
   const router = useRouter();
@@ -39,7 +39,7 @@ export default function SplashScreen() {
         accessibilityLabel="FAINEANT"
       />
       <Text style={styles.tagline}>House calls for the slow-living.</Text>
-      {loading && <ActivityIndicator color={colors.brass[500]} style={styles.loader} />}
+      {loading && <ActivityIndicator color={colors.champagne[400]} style={styles.loader} />}
     </View>
   );
 }
@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: colors.espresso[800],
+    backgroundColor: colors.smoke[900],
   },
   wordmark: {
     width: 240,
@@ -57,9 +57,9 @@ const styles = StyleSheet.create({
   },
   tagline: {
     fontSize: 14,
-    fontFamily: fonts.serif,
+    fontFamily: fonts.editorial,
     fontStyle: "italic",
-    color: colors.brass[500],
+    color: colors.champagne[400],
     marginTop: 12,
   },
   loader: { marginTop: 32 },
