@@ -42,7 +42,7 @@ export function SiteHeader() {
             Sign in
           </Link>
           <Button asChild variant="ghost" size="sm">
-            <Link href="/services">Reserve</Link>
+            <Link href="/#waitlist">Reserve</Link>
           </Button>
         </div>
       </nav>
