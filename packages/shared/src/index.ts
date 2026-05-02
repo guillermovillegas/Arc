@@ -19,6 +19,7 @@ export * from "./schemas/availability.schema";
 export * from "./schemas/message.schema";
 export * from "./schemas/post.schema";
 export * from "./schemas/calendar.schema";
+export * from "./schemas/waitlist.schema";
 
 // Constants
 export * from "./constants/brand";

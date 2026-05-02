@@ -369,3 +369,15 @@ model ExternalEvent {
   @@unique([calendarConnectionId, externalId])
   @@index([calendarConnectionId, startTime])
 }
+
+model WaitlistEntry {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  source    String?
+  referrer  String?
+  userAgent String?
+  ipHash    String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
