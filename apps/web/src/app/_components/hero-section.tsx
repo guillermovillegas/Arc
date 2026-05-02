@@ -25,7 +25,7 @@ export function HeroSection() {
         </h1>
         <div className="flex items-center gap-6 flex-wrap">
           <Button asChild size="lg" variant="primary">
-            <Link href="/services">Reserve a window →</Link>
+            <Link href="#waitlist">Reserve a window →</Link>
           </Button>
           <Button asChild size="lg" variant="ghost">
             <Link href="/practitioners">View practitioners →</Link>
