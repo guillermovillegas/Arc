@@ -76,6 +76,16 @@ supabase functions deploy calendar-ics-connect
 supabase functions deploy calendar-sync
 ```
 
+Changing `[auth.rate_limit]` or any other `supabase/config.toml` value does not
+reach the hosted project through a function deploy or a migration. Push it
+explicitly, or set the same value in the dashboard under Authentication → Rate
+Limits:
+
+```sh
+supabase config push --linked --dry-run
+supabase config push --linked
+```
+
 Configure Google OAuth with the deployed callback URL, Stripe webhook delivery
 with the deployed webhook URL, and Resend/Supabase Auth SMTP independently. The
 marketing-specific consent, postal-address, inbox, DNS, and unsubscribe gates are

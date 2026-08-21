@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MARKETING_CONSENT_VERSION } from "@faineant/shared";
 
 const mocks = vi.hoisted(() => ({ invoke: vi.fn() }));
@@ -11,7 +11,11 @@ vi.mock("@/lib/supabase/client", () => ({
 import { WaitlistSection } from "@/app/_components/waitlist-section";
 
 describe("WaitlistSection marketing consent", () => {
-  beforeEach(() => mocks.invoke.mockReset());
+  beforeEach(() => {
+    mocks.invoke.mockReset();
+    vi.unstubAllEnvs();
+    Reflect.deleteProperty(window, "turnstile");
+  });
 
   it("requires an affirmative marketing-email choice", async () => {
     render(<WaitlistSection />);
@@ -52,6 +56,68 @@ describe("WaitlistSection marketing consent", () => {
     expect(await screen.findByRole("status")).toHaveTextContent(
       /if it is new to the list, a welcome note is on its way/i,
     );
+  });
+
+  it("does not gate submission when no Turnstile site key is provisioned", async () => {
+    mocks.invoke.mockResolvedValue({ data: { subscribed: true }, error: null });
+    render(<WaitlistSection />);
+    fireEvent.change(screen.getByLabelText("Email address"), {
+      target: { value: "person@example.com" },
+    });
+    fireEvent.click(
+      screen.getByRole("checkbox", { name: /receive marketing emails from Faineant/i }),
+    );
+
+    expect(screen.getByRole("button", { name: "Reserve a place" })).toBeEnabled();
+    fireEvent.click(screen.getByRole("button", { name: "Reserve a place" }));
+
+    await waitFor(() => expect(mocks.invoke).toHaveBeenCalled());
+    expect(mocks.invoke.mock.calls[0][1].body).not.toHaveProperty("turnstileToken");
+  });
+
+  it("holds submission until the Turnstile challenge is solved", async () => {
+    vi.stubEnv("NEXT_PUBLIC_TURNSTILE_SITE_KEY", "0x4AAAAAAA_test_site_key");
+    mocks.invoke.mockResolvedValue({ data: { subscribed: true }, error: null });
+
+    let solve: ((token: string) => void) | undefined;
+    Object.defineProperty(window, "turnstile", {
+      configurable: true,
+      writable: true,
+      value: {
+        render: (_element: HTMLElement, options: { callback?: (token: string) => void }) => {
+          solve = options.callback;
+          return "widget-1";
+        },
+        reset: vi.fn(),
+      },
+    });
+
+    render(<WaitlistSection />);
+    fireEvent.change(screen.getByLabelText("Email address"), {
+      target: { value: "person@example.com" },
+    });
+    fireEvent.click(
+      screen.getByRole("checkbox", { name: /receive marketing emails from Faineant/i }),
+    );
+
+    // Unsolved: the form must not reach the Edge Function at all.
+    expect(screen.getByRole("button", { name: "Reserve a place" })).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: "Reserve a place" }));
+    expect(mocks.invoke).not.toHaveBeenCalled();
+
+    await waitFor(() => expect(solve).toBeDefined());
+    act(() => solve?.("turnstile-response-token"));
+
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Reserve a place" })).toBeEnabled(),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Reserve a place" }));
+
+    await waitFor(() => {
+      expect(mocks.invoke).toHaveBeenCalledWith("marketing-subscribe", {
+        body: expect.objectContaining({ turnstileToken: "turnstile-response-token" }),
+      });
+    });
   });
 
   it("links the consent disclosure to privacy and email terms", () => {

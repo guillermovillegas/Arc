@@ -63,11 +63,55 @@ The Edge Function requires these Supabase secrets:
 - `MARKETING_POSTAL_ADDRESS` — the owner's valid physical postal address
 - `MARKETING_SIGNING_SECRET` — at least 32 random bytes
 - `MARKETING_ALLOWED_ORIGINS` — optional comma-separated preview origins
+- `TURNSTILE_SECRET_KEY` — optional Cloudflare Turnstile secret. When set, a
+  solved challenge is required before any database read or write. Deploy it
+  together with `NEXT_PUBLIC_TURNSTILE_SITE_KEY` on Vercel; a secret without a
+  site key refuses every submission, so set the site key first.
 
 Never invent the postal address or commit secret values. Resend's domain DKIM and
 return-path records must resolve publicly before the function is enabled for live
 submissions. `privacy@faineantapp.com` must be a monitored mailbox or alias before
 release.
+
+## Abuse controls and the address budget
+
+Subscriptions are capped at 30 charged requests per HMAC-of-address per rolling
+hour. "Charged" means the request records consent or sends a welcome note.
+Re-submitting an address that is already subscribed and already welcomed writes
+nothing and sends nothing, so it costs no budget.
+
+The bucket key is an IP address, which is not a person. Offices, campuses, VPNs
+and carrier CGNAT put many genuine visitors behind one egress address, and a bot
+that rewrites `x-forwarded-for` gets a fresh budget for free. The budget is
+therefore a coarse flood stop only. Turnstile, the honeypot and the explicit
+consent gate are the controls that actually distinguish a person from a script.
+
+To find out whether a visitor report of "Too many requests. Try again later."
+is a real cap or a shared-address collision:
+
+```sql
+select ip_hash, count(*) as charged, min(consent_at), max(consent_at)
+from public.waitlist_entries
+where consent_at > now() - interval '1 hour'
+group by ip_hash
+order by charged desc;
+```
+
+Welcome-note delivery failures are recorded separately and never surface as a
+rate-limit message. Resend throttling appears as `Resend error 429: ...` in
+`last_email_error`:
+
+```sql
+select email, marketing_status, consent_at, welcome_email_sent_at, last_email_error
+from public.waitlist_entries
+where last_email_error is not null
+order by updated_at desc
+limit 50;
+```
+
+Supabase Auth email (signup confirmation, password reset) is a separate path
+that leaves through Resend SMTP and is governed by `[auth.rate_limit].email_sent`
+in `supabase/config.toml`, not by anything in this function.
 
 ## Email compliance controls
 

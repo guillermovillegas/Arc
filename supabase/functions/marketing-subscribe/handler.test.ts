@@ -13,8 +13,12 @@ class MemoryStore implements MarketingStore {
   lastConsent: ConsentWrite | null = null;
   lastEmailError: string | null = null;
 
+  recentConsents = 0;
+  countCalls = 0;
+
   countRecentConsentsByIpHash(): Promise<number> {
-    return Promise.resolve(0);
+    this.countCalls += 1;
+    return Promise.resolve(this.recentConsents);
   }
   findByEmail(email: string): Promise<MarketingRecord | null> {
     return Promise.resolve(this.record?.email === email ? this.record : null);
@@ -65,9 +69,12 @@ const config: MarketingConfig = {
   postalAddress: "123 Example Street, Chicago, IL 60601",
   signingSecret: "test-signing-secret-with-at-least-32-bytes",
   allowedOrigins: [],
+  turnstileSecret: "",
 };
 
-function subscribeRequest(): Request {
+function subscribeRequest(
+  overrides: Record<string, unknown> = {},
+): Request {
   return new Request(
     "https://example.supabase.co/functions/v1/marketing-subscribe",
     {
@@ -84,6 +91,7 @@ function subscribeRequest(): Request {
         consentVersion: MARKETING_CONSENT_VERSION,
         referrer: "https://example.com",
         website: "",
+        ...overrides,
       }),
     },
   );
@@ -191,4 +199,116 @@ Deno.test("subscribe rejects an unapproved browser origin", async () => {
   const response = await handler(request);
   assertEquals(response.status, 403);
   assertEquals(store.record, null);
+});
+
+Deno.test("a saturated address budget still blocks a brand new subscription", async () => {
+  const store = new MemoryStore();
+  store.recentConsents = 30;
+  const handler = createMarketingHandler({
+    store,
+    config,
+    sendEmail: async () => {
+      throw new Error("sendEmail should not run");
+    },
+  });
+
+  const response = await handler(subscribeRequest());
+  assertEquals(response.status, 429);
+  assertEquals((await response.json()).error, "Too many requests. Try again later.");
+  assertEquals(store.record, null);
+});
+
+Deno.test("the address budget admits the whole allowance before refusing", async () => {
+  const store = new MemoryStore();
+  store.recentConsents = 29;
+  const handler = createMarketingHandler({
+    store,
+    config,
+    sendEmail: async () => ({ id: "email_1" }),
+  });
+
+  assertEquals((await handler(subscribeRequest())).status, 200);
+});
+
+Deno.test("a returning subscriber is never refused by the address budget", async () => {
+  const store = new MemoryStore();
+  const handler = createMarketingHandler({
+    store,
+    config,
+    sendEmail: async () => ({ id: "email_1" }),
+  });
+
+  assertEquals((await handler(subscribeRequest())).status, 200);
+
+  // Someone else on the same shared egress address has since exhausted the
+  // budget. Re-submitting an address that is already subscribed and already
+  // welcomed writes no row and sends no mail, so it must not be charged.
+  store.recentConsents = 500;
+  const callsBefore = store.countCalls;
+  const repeat = await handler(subscribeRequest());
+
+  assertEquals(repeat.status, 200);
+  assertEquals((await repeat.json()).subscribed, true);
+  assertEquals(store.countCalls, callsBefore);
+});
+
+Deno.test("retrying a failed welcome delivery still spends budget", async () => {
+  const store = new MemoryStore();
+  const handler = createMarketingHandler({
+    store,
+    config,
+    sendEmail: async () => {
+      throw new Error("Resend error 429: rate_limit_exceeded");
+    },
+  });
+
+  assertEquals((await handler(subscribeRequest())).status, 503);
+  assertStringIncludes(store.lastEmailError ?? "", "Resend error 429");
+
+  // The consent row exists but no welcome note was delivered, so a retry is a
+  // real outbound send and stays charged: an uncharged retry path would let one
+  // caller pump mail at a third party's inbox.
+  store.recentConsents = 30;
+  assertEquals((await handler(subscribeRequest())).status, 429);
+});
+
+Deno.test("a configured Turnstile secret rejects an unsolved challenge", async () => {
+  const store = new MemoryStore();
+  const sent: string[] = [];
+  const handler = createMarketingHandler({
+    store,
+    config: { ...config, turnstileSecret: "turnstile-test-secret" },
+    sendEmail: async (_key, _from, to) => {
+      sent.push(to);
+      return { id: "email_1" };
+    },
+    verifyTurnstile: (_secret, token) => Promise.resolve(token === "solved"),
+  });
+
+  const refused = await handler(subscribeRequest());
+  assertEquals(refused.status, 400);
+  assertEquals(store.record, null);
+  assertEquals(store.countCalls, 0);
+  assertEquals(sent.length, 0);
+
+  const accepted = await handler(
+    subscribeRequest({ turnstileToken: "solved" }),
+  );
+  assertEquals(accepted.status, 200);
+  assertEquals(store.record?.email, "person@example.com");
+  assertEquals(sent, ["person@example.com"]);
+});
+
+Deno.test("Turnstile stays inert until its secret is provisioned", async () => {
+  const store = new MemoryStore();
+  const handler = createMarketingHandler({
+    store,
+    config,
+    sendEmail: async () => ({ id: "email_1" }),
+    verifyTurnstile: () => {
+      throw new Error("verification must not run without a secret");
+    },
+  });
+
+  assertEquals((await handler(subscribeRequest())).status, 200);
 });

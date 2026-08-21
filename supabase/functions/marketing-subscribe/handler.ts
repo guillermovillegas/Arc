@@ -10,6 +10,7 @@ import {
   verifyUnsubscribeToken,
 } from "./logic.ts";
 import type { ConsentWrite, MarketingRecord, MarketingStore } from "./store.ts";
+import { type VerifyTurnstile, verifyTurnstileToken } from "./turnstile.ts";
 
 type SendEmail = typeof sendEmailFunction;
 
@@ -21,6 +22,7 @@ export type MarketingConfig = {
   postalAddress: string;
   signingSecret: string;
   allowedOrigins: string[];
+  turnstileSecret: string;
 };
 
 export type MarketingHandlerDependencies = {
@@ -28,9 +30,15 @@ export type MarketingHandlerDependencies = {
   sendEmail: SendEmail;
   config: MarketingConfig;
   now?: () => Date;
+  verifyTurnstile?: VerifyTurnstile;
 };
 
-const MAX_SUBSCRIPTIONS_PER_HOUR = 5;
+// Budget per HMAC-of-address per rolling hour. The bucket key is an IP address,
+// which is not a person: offices, campuses, VPNs and carrier CGNAT put many
+// genuine visitors behind one egress address. The old ceiling of 5 locked out
+// the sixth real signup from a shared network, so the honeypot, the consent gate
+// and Turnstile carry the anti-abuse load and this stays a blunt flood stop.
+const MAX_SUBSCRIPTIONS_PER_HOUR = 30;
 
 function corsHeaders(origin: string | null): HeadersInit {
   return {
@@ -109,6 +117,7 @@ export function createMarketingHandler({
   sendEmail,
   config,
   now = () => new Date(),
+  verifyTurnstile = verifyTurnstileToken,
 }: MarketingHandlerDependencies): (request: Request) => Promise<Response> {
   const origins = allowedOrigins(config);
 
@@ -175,23 +184,24 @@ export function createMarketingHandler({
         origin,
       );
     }
-    const ipHash = await hashClientAddress(address, config.signingSecret);
-    const currentTime = now();
-    const oneHourAgo = new Date(currentTime.getTime() - 60 * 60 * 1000);
-    if (
-      await store.countRecentConsentsByIpHash(
-        ipHash,
-        oneHourAgo.toISOString(),
-      ) >=
-        MAX_SUBSCRIPTIONS_PER_HOUR
-    ) {
-      return json(
-        { error: "Too many requests. Try again later." },
-        429,
-        origin,
+
+    if (config.turnstileSecret) {
+      const solved = await verifyTurnstile(
+        config.turnstileSecret,
+        parsed.input.turnstileToken,
+        address,
       );
+      if (!solved) {
+        return json(
+          { error: "Could not verify this request. Try again." },
+          400,
+          origin,
+        );
+      }
     }
 
+    const ipHash = await hashClientAddress(address, config.signingSecret);
+    const currentTime = now();
     const consentAt = currentTime.toISOString();
     const consent: ConsentWrite = {
       email: parsed.input.email,
@@ -208,11 +218,42 @@ export function createMarketingHandler({
     };
 
     let record = await store.findByEmail(parsed.input.email);
+
+    // Resolve the request against the ledger BEFORE spending rate-limit budget.
+    // A visitor who is already subscribed and already has their welcome note is
+    // a pure no-op: it writes no row and sends no mail, so charging it against
+    // the shared per-address budget only produced "Too many requests" for people
+    // who had done nothing wrong.
+    //
+    // Known trade-off: once a bucket is saturated this exemption distinguishes a
+    // subscribed address (200) from an unknown one (429), which is a membership
+    // oracle for anyone willing to spend the budget first. Turnstile is the
+    // mitigation — it prices every probe — so provision it before treating
+    // list membership as confidential.
     if (
       record?.marketing_status === "subscribed" &&
       record.welcome_email_sent_at
     ) {
       return json({ subscribed: true }, 200, origin);
+    }
+
+    // Everything past here either records consent or sends an outbound email,
+    // so it is charged. Retrying a failed delivery still costs budget on
+    // purpose: the send is real, and an uncharged retry path would be an email
+    // amplification vector against a third party's inbox.
+    const oneHourAgo = new Date(currentTime.getTime() - 60 * 60 * 1000);
+    if (
+      await store.countRecentConsentsByIpHash(
+        ipHash,
+        oneHourAgo.toISOString(),
+      ) >=
+        MAX_SUBSCRIPTIONS_PER_HOUR
+    ) {
+      return json(
+        { error: "Too many requests. Try again later." },
+        429,
+        origin,
+      );
     }
 
     if (!record) {
