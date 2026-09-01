@@ -54,3 +54,52 @@ deno test --allow-env --node-modules-dir=auto supabase/functions
 Keep historical planning documents clearly labeled as historical. Current code,
 SQL migrations, tests, linked-project state, and deployed runtime evidence outrank
 old roadmap claims.
+
+<!-- concord:start -->
+## Concord — shared work-state for coding agents
+
+<!-- concord:workflow-version=7 -->
+
+This project uses Concord MCP. Keep coordination to the five workflow tools:
+
+- **Before editing**, call `start_work` with the task, your agent kind, your
+  `display_name`, and expected files or modules. It registers presence, accepts
+  assigned work when appropriate, claims the scope, and returns overlap warnings.
+  Concord derives your `agent_id` from your session — omit it unless your client
+  told you one.
+- **`display_name` is required and is `repo/lane`** in lowercase kebab-case,
+  e.g. `concord-mcp/fix-presence`. The lane is 1–3 plain-English words for what
+  you are doing; verbs that read well are `fix- build- docs- release- review-
+  cleanup- research-`. Say it out loud — if it sounds like an identifier, rename
+  it. It is what humans read on the roster instead of your hex id.
+- **When your session ends**, run `concord checkout`. Presence closes at once and
+  every claim you still hold keeps annotated evidence rather than being silently
+  released. A claim whose holder has departed or gone away is taken over with
+  `transfer_work action=reassign force=true`, which records the lineage.
+- Use `inspect_work` to read the workspace, one task, one agent, or one message
+  thread. Use `update_work` for durable progress and for live prompts/replies
+  to another promptable workspace agent, including while that agent is busy.
+- Use `transfer_work` for assignment, acceptance, decline, release,
+  reassignment, evidence-bearing handoff offers, and reopening.
+- **Before finishing**, call `finish_work` once with the outcome, changed
+  files, tests, assumptions, decisions, risks, guardrails, and provenance. It
+  records evidence and can mark work review-ready or terminal.
+
+Keep each claim small and resolve reported overlaps before editing. Concord
+regenerates human-readable review artifacts in `.concord/`.
+
+Enforcement remains client-dependent. `concord doctor` reports setup and
+workflow adoption; optional hooks can block exact-file collisions.
+
+In Grok Build, keep this session reachable while idle by starting one persistent
+monitor for `concord inbox watch --provider grok`. Do not start a duplicate when that monitor is active.
+
+In Cursor, start exactly one Cursor background Shell task for `concord inbox watch --provider cursor --once`.
+Leave it active when the turn ends. When Cursor resumes you with its completion,
+answer the emitted peer message and immediately start a fresh background monitor.
+
+In Gemini CLI, start the exact monitor command supplied by the SessionStart hook
+(`concord inbox watch --agent <agent-id> --provider gemini --once`) with `run_shell_command` and `is_background: true`. Project
+settings inject background completion into the agent. Answer the peer message,
+then immediately start a fresh background monitor.
+<!-- concord:end -->
