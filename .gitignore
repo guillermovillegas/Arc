@@ -45,3 +45,5 @@ apps/mobile/android/
 # Superpowers brainstorming sessions
 .superpowers/
 /.env.local
+.concord/
+deno.lock
