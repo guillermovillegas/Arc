@@ -1,4 +1,7 @@
 "use client";
 
-// Re-exports same component as client messages - same UI for both roles
-export { default } from "../../client/messages/page";
+import { ConversationList } from "@/components/messages/conversation-list";
+
+export default function ProviderMessagesPage() {
+  return <ConversationList role="provider" />;
+}

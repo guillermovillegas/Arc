@@ -969,8 +969,17 @@ export type Database = {
           service_radius: number | null
           slug: string | null
           total_reviews: number | null
+          user_id: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "provider_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Functions: {
@@ -1077,6 +1086,7 @@ export type Database = {
           service_radius: number | null
           slug: string | null
           total_reviews: number | null
+          user_id: string | null
         }[]
         SetofOptions: {
           from: "*"
