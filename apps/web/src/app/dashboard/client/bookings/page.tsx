@@ -29,6 +29,7 @@ interface BookingItem {
   notes: string | null;
   service: { name: string; category: string; durationMinutes: number };
   providerProfile?: {
+    userId?: string;
     user?: { firstName?: string; lastName?: string; avatarUrl?: string | null };
     businessName?: string;
   };
@@ -222,19 +223,30 @@ export default function ClientBookingsPage() {
                     <div className="font-mono text-mono text-champagne-400 text-[13px] text-right">
                       {formatPrice(b.totalPriceInCents)}
                     </div>
-                    {canCancel(b) ? (
-                      <button
-                        type="button"
-                        onClick={() => setCancelBooking(b)}
-                        className="px-3.5 py-2 border border-smoke-700 text-label uppercase tracking-[0.28em] text-bone-200 font-medium text-[9px]"
-                      >
-                        Cancel
-                      </button>
-                    ) : (
-                      <span className="px-3.5 py-2 text-label uppercase tracking-[0.28em] text-taupe-300 font-medium text-[9px]">
-                        &mdash;
-                      </span>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {canCancel(b) ? (
+                        <button
+                          type="button"
+                          onClick={() => setCancelBooking(b)}
+                          className="px-3.5 py-2 border border-smoke-700 text-label uppercase tracking-[0.28em] text-bone-200 font-medium text-[9px]"
+                        >
+                          Cancel
+                        </button>
+                      ) : null}
+                      {b.providerProfile?.userId ? (
+                        <Link
+                          href={`/dashboard/client/messages/new?to=${b.providerProfile.userId}`}
+                          className="px-3.5 py-2 border border-smoke-700 text-label uppercase tracking-[0.28em] text-bone-200 font-medium text-[9px] hover:text-champagne-400"
+                        >
+                          Message
+                        </Link>
+                      ) : null}
+                      {!canCancel(b) && !b.providerProfile?.userId ? (
+                        <span className="px-3.5 py-2 text-label uppercase tracking-[0.28em] text-taupe-300 font-medium text-[9px]">
+                          &mdash;
+                        </span>
+                      ) : null}
+                    </div>
                   </div>
                 ))}
               </div>

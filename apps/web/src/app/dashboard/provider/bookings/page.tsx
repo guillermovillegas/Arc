@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
+import Link from "next/link";
 import {
   Loader2,
   CheckCircle2,
@@ -485,6 +486,14 @@ export default function ProviderBookingsPage() {
                 detailBooking.status === "CONFIRMED" ||
                 detailBooking.status === "IN_PROGRESS") && (
                 <div className="flex flex-wrap justify-end gap-2 border-t border-smoke-700 pt-4">
+                  {detailBooking.client?.id && (
+                    <Link
+                      href={`/dashboard/provider/messages/new?to=${detailBooking.client.id}`}
+                      className="inline-flex items-center px-3.5 py-2 border border-smoke-700 text-label uppercase tracking-[0.28em] text-bone-200 font-medium text-[10px] hover:text-champagne-400"
+                    >
+                      Message
+                    </Link>
+                  )}
                   {detailBooking.status === "PENDING" && (
                     <>
                       <Button

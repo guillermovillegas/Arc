@@ -93,4 +93,5 @@ vi.mock("lucide-react", () => ({
   Quote: makeSvgStub("Quote"),
   Upload: makeSvgStub("Upload"),
   Loader2: makeSvgStub("Loader2"),
+  ArrowLeft: makeSvgStub("ArrowLeft"),
 }));

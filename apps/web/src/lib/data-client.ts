@@ -1,6 +1,7 @@
 "use client";
 
 import type { Database } from "@faineant/shared";
+import { sendMessageSchema } from "@faineant/shared";
 import { createClient } from "@/lib/supabase/client";
 
 type BookingStatus = Database["public"]["Enums"]["booking_status"];
@@ -36,6 +37,7 @@ export interface ClientBooking {
   notes: string | null;
   service: { name: string; category: string; durationMinutes: number };
   providerProfile?: {
+    userId?: string;
     user?: { firstName?: string; lastName?: string; avatarUrl?: string | null };
     businessName?: string;
   };
@@ -98,7 +100,19 @@ export interface ConversationSummary {
     lastName: string;
     avatarUrl: string | null;
   };
-  lastMessage: { text: string; createdAt: string; readAt: string | null } | null;
+  lastMessage:
+    | { text: string; createdAt: string; readAt: string | null; senderId: string }
+    | null;
+}
+
+export interface MessageItem {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  text: string;
+  imageUrl: string | null;
+  readAt: string | null;
+  createdAt: string;
 }
 
 export interface MyProfileDetails {
@@ -219,7 +233,7 @@ export async function listConversations(): Promise<ConversationSummary[]> {
     conversationIds.length
       ? supabase
           .from("messages")
-          .select("conversation_id,text,created_at,read_at")
+          .select("conversation_id,text,created_at,read_at,sender_id")
           .in("conversation_id", conversationIds)
           .order("created_at", { ascending: false })
       : Promise.resolve({ data: [], error: null }),
@@ -230,7 +244,7 @@ export async function listConversations(): Promise<ConversationSummary[]> {
   const profilesById = new Map((profiles.data ?? []).map((profile) => [profile.id, profile]));
   const lastMessageByConversation = new Map<
     string,
-    { text: string; createdAt: string; readAt: string | null }
+    { text: string; createdAt: string; readAt: string | null; senderId: string }
   >();
   for (const message of messages.data ?? []) {
     if (!lastMessageByConversation.has(message.conversation_id)) {
@@ -238,6 +252,7 @@ export async function listConversations(): Promise<ConversationSummary[]> {
         text: message.text,
         createdAt: message.created_at,
         readAt: message.read_at,
+        senderId: message.sender_id,
       });
     }
   }
@@ -259,6 +274,129 @@ export async function listConversations(): Promise<ConversationSummary[]> {
       lastMessage: lastMessageByConversation.get(conversation.id) ?? null,
     };
   });
+}
+
+export interface ConversationDetail {
+  id: string;
+  otherParticipantId: string;
+  otherParticipant: {
+    firstName: string;
+    lastName: string;
+    avatarUrl: string | null;
+  } | null;
+}
+
+export async function getConversation(
+  conversationId: string,
+): Promise<ConversationDetail> {
+  const userId = await currentUserId();
+  const { data, error } = await supabase
+    .from("conversations")
+    .select("id,participant_a_id,participant_b_id")
+    .eq("id", conversationId)
+    .single();
+  fail(error);
+  if (!data) throw new Error("Conversation not found.");
+  const otherId =
+    data.participant_a_id === userId
+      ? data.participant_b_id
+      : data.participant_a_id;
+
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("id,first_name,last_name,avatar_url")
+    .eq("id", otherId)
+    .maybeSingle();
+  fail(profileError);
+
+  return {
+    id: data.id,
+    otherParticipantId: otherId,
+    otherParticipant: profile
+      ? {
+          firstName: profile.first_name ?? "",
+          lastName: profile.last_name ?? "",
+          avatarUrl: profile.avatar_url ?? null,
+        }
+      : null,
+  };
+}
+
+export async function getProfileById(
+  profileId: string,
+): Promise<{ id: string; firstName: string; lastName: string; avatarUrl: string | null } | null> {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id,first_name,last_name,avatar_url")
+    .eq("id", profileId)
+    .maybeSingle();
+  fail(error);
+  if (!data) return null;
+  return {
+    id: data.id,
+    firstName: data.first_name ?? "",
+    lastName: data.last_name ?? "",
+    avatarUrl: data.avatar_url ?? null,
+  };
+}
+
+export async function getConversationMessages(
+  conversationId: string,
+): Promise<MessageItem[]> {
+  const { data, error } = await supabase
+    .from("messages")
+    .select("id,conversation_id,sender_id,text,image_url,read_at,created_at")
+    .eq("conversation_id", conversationId)
+    .order("created_at", { ascending: true });
+  fail(error);
+  return (data ?? []).map((message) => ({
+    id: message.id,
+    conversationId: message.conversation_id,
+    senderId: message.sender_id,
+    text: message.text,
+    imageUrl: message.image_url,
+    readAt: message.read_at,
+    createdAt: message.created_at,
+  }));
+}
+
+export async function sendMessage(input: {
+  recipientId: string;
+  text: string;
+}): Promise<MessageItem> {
+  const parsed = sendMessageSchema.safeParse({
+    recipientId: input.recipientId,
+    text: input.text,
+  });
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Invalid message.");
+  }
+  const { data, error } = await supabase.rpc("send_message", {
+    p_recipient_id: input.recipientId,
+    p_text: parsed.data.text,
+  });
+  fail(error);
+  if (!data) throw new Error("Message was not delivered.");
+  const message = Array.isArray(data) ? data[0] : data;
+  return {
+    id: message.id,
+    conversationId: message.conversation_id,
+    senderId: message.sender_id,
+    text: message.text,
+    imageUrl: message.image_url,
+    readAt: message.read_at,
+    createdAt: message.created_at,
+  };
+}
+
+export async function markConversationRead(
+  conversationId: string,
+): Promise<number> {
+  const { data, error } = await supabase.rpc("mark_conversation_read", {
+    p_conversation_id: conversationId,
+  });
+  fail(error);
+  return data ?? 0;
 }
 
 export async function listClientBookings(): Promise<ClientBooking[]> {
@@ -299,6 +437,7 @@ export async function listClientBookings(): Promise<ClientBooking[]> {
       },
       providerProfile: provider
         ? {
+            userId: provider.user_id ?? undefined,
             businessName: provider.business_name ?? undefined,
             user: {
               firstName: provider.first_name ?? undefined,
