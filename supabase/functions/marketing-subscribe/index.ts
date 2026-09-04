@@ -20,6 +20,7 @@ const handler = createMarketingHandler({
     siteUrl: Deno.env.get("WEB_URL") ?? "https://faineantapp.com",
     postalAddress: Deno.env.get("MARKETING_POSTAL_ADDRESS") ?? "",
     signingSecret: Deno.env.get("MARKETING_SIGNING_SECRET") ?? "",
+    turnstileSecret: Deno.env.get("TURNSTILE_SECRET_KEY") ?? "",
     allowedOrigins: (Deno.env.get("MARKETING_ALLOWED_ORIGINS") ?? "")
       .split(",")
       .map((origin) => origin.trim())

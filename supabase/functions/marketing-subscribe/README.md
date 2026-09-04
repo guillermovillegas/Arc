@@ -11,6 +11,9 @@ separate from `send-email`, which remains transactional.
 - `MARKETING_POSTAL_ADDRESS` (a valid physical postal address; never invent one)
 - `MARKETING_SIGNING_SECRET` (at least 32 random bytes)
 - `MARKETING_ALLOWED_ORIGINS` (optional comma-separated preview/local origins)
+- `TURNSTILE_SECRET_KEY` (optional; when set, every subscribe must carry a
+  solved Cloudflare Turnstile token. Pair it with `NEXT_PUBLIC_TURNSTILE_SITE_KEY`
+  on the web app. Leave both unset to keep the previous behaviour.)
 
 Supabase injects `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`. The
 service-role key never reaches the browser.
@@ -25,8 +28,21 @@ complete delivery after configuration is corrected.
   of the request address are recorded.
 - Legacy waitlist rows remain `legacy` and are not silently treated as consent.
 - Anonymous table writes are revoked; only the Edge Function records consent.
-- Five newly recorded subscriptions or resubscriptions per HMAC-address per hour
-  are allowed.
+- Thirty charged requests per HMAC-address per rolling hour are allowed. A
+  request is charged only when it records consent or sends a welcome note.
+  Re-submitting an address that is already subscribed and already welcomed is a
+  no-op and costs nothing, so returning visitors and people sharing an office,
+  campus, VPN or carrier NAT address are not told "Too many requests" for
+  someone else's signups. Retrying a failed delivery stays charged, because the
+  send is real.
+- When `TURNSTILE_SECRET_KEY` is set, an unsolved challenge is refused before
+  any database read or write. The address budget remains a coarse flood stop;
+  Turnstile is the control an `x-forwarded-for` rewrite cannot walk past.
+- Known trade-off: because the no-op case is exempt, a saturated bucket answers
+  200 for an address already on the list and 429 for one that is not. An
+  attacker willing to spend the budget first can use that to test membership.
+  Turnstile prices each probe and is the mitigation; provision it before
+  treating list membership as confidential.
 - Welcome sends use Resend idempotency keys.
 - Human unsubscribe links lead to the branded site. `List-Unsubscribe` and
   `List-Unsubscribe-Post` support provider one-click unsubscribe requests.

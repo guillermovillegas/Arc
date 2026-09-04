@@ -6,6 +6,7 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export type SubscribeInput = {
   email: string;
   referrer: string | null;
+  turnstileToken: string | null;
 };
 
 export type SubscribeParseResult =
@@ -42,7 +43,11 @@ export function parseSubscribeBody(body: unknown): SubscribeParseResult {
   const referrer = typeof value.referrer === "string"
     ? value.referrer.slice(0, 512)
     : null;
-  return { kind: "valid", input: { email, referrer } };
+  const turnstileToken = typeof value.turnstileToken === "string" &&
+      value.turnstileToken.length > 0
+    ? value.turnstileToken.slice(0, 2048)
+    : null;
+  return { kind: "valid", input: { email, referrer, turnstileToken } };
 }
 
 function bytesToBase64Url(bytes: Uint8Array): string {

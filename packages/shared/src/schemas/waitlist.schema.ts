@@ -11,6 +11,9 @@ export const waitlistSchema = z.object({
   consentVersion: z.literal(MARKETING_CONSENT_VERSION),
   // Honeypot: bots fill this; real users never see it. Must be empty.
   website: z.string().max(0).optional(),
+  // Cloudflare Turnstile response. Absent until a site key is provisioned; the
+  // Edge Function decides whether a token is required, not the browser.
+  turnstileToken: z.string().max(2048).optional(),
 });
 
 export type WaitlistInput = z.infer<typeof waitlistSchema>;

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Script from "next/script";
 import {
   MARKETING_CONSENT_DISCLOSURE,
   MARKETING_CONSENT_VERSION,
@@ -13,6 +14,34 @@ import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
 
 const supabase = createClient();
+
+// Turnstile only engages once a site key is provisioned. Without one the form
+// behaves exactly as before, so the widget can be rolled out independently of
+// the Edge Function secret. Read through a function so the literal expression
+// still folds at build time while staying stubbable under test.
+function turnstileSiteKey(): string {
+  return process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
+}
+
+type TurnstileApi = {
+  render: (
+    element: HTMLElement,
+    options: {
+      sitekey: string;
+      theme?: "auto" | "light" | "dark";
+      callback?: (token: string) => void;
+      "expired-callback"?: () => void;
+      "error-callback"?: () => void;
+    },
+  ) => string;
+  reset: (widgetId?: string) => void;
+};
+
+declare global {
+  interface Window {
+    turnstile?: TurnstileApi;
+  }
+}
 
 type Status = "idle" | "submitting" | "success" | "error";
 
@@ -49,6 +78,48 @@ export function WaitlistSection() {
   const [status, setStatus] = useState<Status>("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const turnstileMountRef = useRef<HTMLDivElement | null>(null);
+  const turnstileWidgetRef = useRef<string | null>(null);
+  const siteKey = turnstileSiteKey();
+
+  // Wait on `window.turnstile` itself rather than the script tag's load event:
+  // the script may already be cached and loaded before this effect attaches, in
+  // which case the event has been and gone and no widget would ever render.
+  useEffect(() => {
+    if (!siteKey) return;
+
+    let attempts = 0;
+    const mountWidget = (): boolean => {
+      if (turnstileWidgetRef.current !== null) return true;
+      const mount = turnstileMountRef.current;
+      const turnstile = window.turnstile;
+      if (!mount || !turnstile) return false;
+
+      turnstileWidgetRef.current = turnstile.render(mount, {
+        sitekey: siteKey,
+        theme: "dark",
+        callback: (token) => setTurnstileToken(token),
+        "expired-callback": () => setTurnstileToken(""),
+        "error-callback": () => setTurnstileToken(""),
+      });
+      return true;
+    };
+
+    if (mountWidget()) return;
+    const timer = setInterval(() => {
+      attempts += 1;
+      if (mountWidget() || attempts > 100) clearInterval(timer);
+    }, 150);
+    return () => clearInterval(timer);
+  }, [siteKey]);
+
+  // A Turnstile response is single-use, so a failed submit needs a fresh one.
+  const resetTurnstile = useCallback(() => {
+    setTurnstileToken("");
+    if (turnstileWidgetRef.current === null) return;
+    window.turnstile?.reset(turnstileWidgetRef.current);
+  }, []);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -61,6 +132,7 @@ export function WaitlistSection() {
       marketingConsent,
       consentVersion: MARKETING_CONSENT_VERSION,
       website,
+      ...(turnstileToken ? { turnstileToken } : {}),
     });
 
     if (!parsed.success) {
@@ -88,10 +160,12 @@ export function WaitlistSection() {
     } catch (err) {
       setStatus("error");
       setErrorMessage(err instanceof Error ? err.message : "Something went wrong. Try again.");
+      resetTurnstile();
     }
   }
 
   const isSubmitting = status === "submitting";
+  const awaitingChallenge = siteKey.length > 0 && turnstileToken.length === 0;
 
   return (
     <section
@@ -175,7 +249,7 @@ export function WaitlistSection() {
                     <Button
                       type="submit"
                       variant="accent"
-                      disabled={isSubmitting || email.trim().length === 0}
+                      disabled={isSubmitting || awaitingChallenge || email.trim().length === 0}
                       className="sm:w-auto"
                     >
                       {isSubmitting ? "Sending…" : "Reserve a place"}
@@ -231,6 +305,25 @@ export function WaitlistSection() {
                     onChange={(e) => setWebsite(e.target.value)}
                   />
                 </div>
+
+                {siteKey && (
+                  <div className="flex flex-col gap-2">
+                    <Script
+                      src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+                      strategy="lazyOnload"
+                    />
+                    <div ref={turnstileMountRef} />
+                    {awaitingChallenge && (
+                      <p
+                        role="status"
+                        aria-live="polite"
+                        className="font-mono text-mono text-taupe-300"
+                      >
+                        Confirming this is a real visitor before the form opens.
+                      </p>
+                    )}
+                  </div>
+                )}
 
                 {status === "error" && (
                   <p

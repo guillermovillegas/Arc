@@ -191,7 +191,10 @@ password_requirements = "lower_upper_letters_digits_symbols"
 
 [auth.rate_limit]
 # Number of emails that can be sent per hour. Requires auth.email.smtp to be enabled.
-email_sent = 2
+# This is a project-wide ceiling, not per IP: at the Supabase default of 2 an
+# ordinary morning of signups exhausts it and confirmation mail silently stops.
+# Delivery is Resend SMTP, whose own account limits are the real backstop.
+email_sent = 30
 # Number of SMS messages that can be sent per hour. Requires auth.sms to be enabled.
 sms_sent = 30
 # Number of anonymous sign-ins that can be made per hour per IP address. Requires enable_anonymous_sign_ins = true.
