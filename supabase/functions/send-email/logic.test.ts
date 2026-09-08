@@ -4,10 +4,12 @@ import { bookingConfirmationEmail, cancellationEmail, welcomeEmail } from "../_s
 Deno.test("booking confirmation renders brand voice + escapes input", () => {
   const r = bookingConfirmationEmail({
     reservationId: "bk_1", firstName: "Sasha", practitionerName: "Maeve",
-    neighbourhood: "Wicker Park", whenHumanised: "on Thursday at 2:00 PM",
+    whenHumanised: "on Thursday at 2:00 PM",
   });
   assertStringIncludes(r.subject, "booked");
-  assertStringIncludes(r.html, "Wicker Park");
+  assertStringIncludes(r.html, "Thursday at 2:00 PM");
+  assertStringIncludes(r.html, "bk_1");
+  assertStringIncludes(r.html, "Maeve");
   assertStringIncludes(r.text, "Sasha");
 });
 

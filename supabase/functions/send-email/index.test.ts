@@ -19,14 +19,24 @@ function mockDb(opts: { firstName?: string; email?: string; provFirst?: string; 
 }
 
 Deno.test("new booking -> confirmation job to client", async () => {
+  const privateAddress = "742 Evergreen Terrace, Wicker Park, Chicago, IL 60622";
   const job = await resolveJob(
     { type: "INSERT", table: "bookings", old_record: null,
-      record: { id: "bk_1", client_id: "c1", provider_profile_id: "pp1", location: "Wicker Park", start_time: "2026-06-04T19:00:00Z" } },
+      record: { id: "bk_1", client_id: "c1", provider_profile_id: "pp1", location: privateAddress, start_time: "2026-06-04T19:00:00Z" } },
     mockDb({}));
   assert(job);
   assertEquals(job!.to, "client@example.com");
   assertEquals(job!.idempotencyKey, "booking-confirmation/bk_1");
   assert(job!.rendered.subject.includes("booked"));
+  assert(job!.rendered.html.includes("Thursday at 2:00 PM"));
+  assert(job!.rendered.html.includes("Maeve Le Gal"));
+  assert(job!.rendered.html.includes("bk_1"));
+  assert(job!.rendered.text.includes("Thursday at 2:00 PM"));
+  assert(job!.rendered.text.includes("Maeve Le Gal"));
+  assert(job!.rendered.text.includes("bk_1"));
+  for (const rendered of [job!.rendered.subject, job!.rendered.html, job!.rendered.text]) {
+    assert(!rendered.includes(privateAddress));
+  }
 });
 
 Deno.test("status->CANCELLED -> cancellation job", async () => {

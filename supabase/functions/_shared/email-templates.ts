@@ -35,14 +35,12 @@ export function bookingConfirmationEmail(v: {
   reservationId: string;
   firstName: string;
   practitionerName: string;
-  neighbourhood: string;
   whenHumanised: string;
 }): RenderedEmail {
   const e = {
     reservationId: escapeHtml(v.reservationId),
     firstName: escapeHtml(v.firstName),
     practitionerName: escapeHtml(v.practitionerName),
-    neighbourhood: escapeHtml(v.neighbourhood),
     whenHumanised: escapeHtml(v.whenHumanised),
   };
   return {
@@ -52,7 +50,7 @@ export function bookingConfirmationEmail(v: {
       `It's <em style="font-family:'Cormorant Garamond',serif;font-weight:300;font-style:italic;color:#7a6f5e;">booked.</em><br>Don't get up early.`,
       `${
         para(
-          `${e.firstName} — ${e.practitionerName} will be at your ${e.neighbourhood} door ${e.whenHumanised}. They bring everything but the chair.`,
+          `${e.firstName} — your reservation (${e.reservationId}) is confirmed. ${e.practitionerName} will see you ${e.whenHumanised}. They bring everything but the chair.`,
         )
       }${
         para(
@@ -61,7 +59,7 @@ export function bookingConfirmationEmail(v: {
       }`,
     ),
     text:
-      `${v.firstName} — your reservation (${v.reservationId}) is confirmed. ${v.practitionerName} will be at your ${v.neighbourhood} door ${v.whenHumanised}.\n\n— Faineant · Chicago · Nothing urgent.`,
+      `${v.firstName} — your reservation (${v.reservationId}) is confirmed. ${v.practitionerName} will see you ${v.whenHumanised}. They bring everything but the chair.\n\n— Faineant · Chicago · Nothing urgent.`,
   };
 }
 
