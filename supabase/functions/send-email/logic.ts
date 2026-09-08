@@ -11,7 +11,7 @@ export interface EmailJob { to: string; rendered: RenderedEmail; idempotencyKey:
 
 export interface BookingContext {
   clientEmail: string; clientFirstName: string; practitionerName: string;
-  neighbourhood: string; whenHumanised: string;
+  whenHumanised: string;
 }
 
 export function humaniseWhen(startIso: string): string {
@@ -26,7 +26,7 @@ export function bookingConfirmationJob(bookingId: string, ctx: BookingContext): 
     to: ctx.clientEmail,
     rendered: bookingConfirmationEmail({
       reservationId: bookingId, firstName: ctx.clientFirstName,
-      practitionerName: ctx.practitionerName, neighbourhood: ctx.neighbourhood,
+      practitionerName: ctx.practitionerName,
       whenHumanised: ctx.whenHumanised,
     }),
     idempotencyKey: `booking-confirmation/${bookingId}`,
@@ -83,7 +83,6 @@ export async function resolveJob(p: WebhookPayload, db: DbClient): Promise<Email
     if (isCancellation(p)) return cancellationJob(bookingId, { clientEmail, clientFirstName, practitionerName });
     return bookingConfirmationJob(bookingId, {
       clientEmail, clientFirstName, practitionerName,
-      neighbourhood: (b.location as string) ?? "home",
       whenHumanised: humaniseWhen(b.start_time as string),
     });
   }
